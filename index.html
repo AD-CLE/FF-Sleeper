@@ -531,12 +531,18 @@
                 if (!gid) throw new Error(`Unknown sheet: ${sheetName}`);
                 
                 const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${gid}`;
+                console.log(`📥 Fetching from: ${url}`);
+                
                 const response = await fetch(url);
                 const csv = await response.text();
                 
-                // Parse CSV manually
+                console.log(`📥 CSV from ${sheetName}:`, csv.substring(0, 300));
+                
+                // Parse CSV manually with better handling
                 const lines = csv.split('\n');
                 const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+                console.log(`Headers for ${sheetName}:`, headers);
+                
                 const rows = [];
                 
                 for (let i = 1; i < lines.length; i++) {
@@ -548,6 +554,11 @@
                         obj[header] = values[idx] || null;
                     });
                     rows.push(obj);
+                }
+                
+                console.log(`✅ Parsed ${rows.length} rows from ${sheetName}`);
+                if (rows.length > 0) {
+                    console.log(`Sample row:`, rows[0]);
                 }
                 
                 return rows;
