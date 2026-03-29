@@ -28,24 +28,16 @@
         .header-content {
             max-width: 80rem;
             margin: 0 auto;
-        }
-
-        .header-title {
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 0.75rem;
-            margin-bottom: 1.5rem;
         }
 
-        .header-title h1 {
+        .header-left h1 {
             font-size: 2rem;
             font-weight: 700;
             color: white;
-        }
-
-        .header-icon {
-            font-size: 2rem;
-            color: #fbbf24;
+            margin-bottom: 0.5rem;
         }
 
         .header-subtitle {
@@ -70,67 +62,40 @@
             flex: 1;
         }
 
-        .search-icon {
-            position: absolute;
-            left: 1rem;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #64748b;
-            pointer-events: none;
-        }
-
         .search-input {
             width: 100%;
-            padding: 0.75rem 0.75rem 0.75rem 3rem;
+            padding: 0.75rem 1rem;
             background: #1e293b;
             border: 1px solid #475569;
             border-radius: 0.5rem;
             color: white;
             font-size: 1rem;
-            transition: all 0.2s;
-        }
-
-        .search-input::placeholder {
-            color: #64748b;
         }
 
         .search-input:focus {
             outline: none;
             border-color: #fbbf24;
-            box-shadow: 0 0 0 2px #fbbf24;
         }
 
-        .year-select {
-            padding: 0.75rem;
+        .year-select, .search-button {
+            padding: 0.75rem 1.5rem;
             background: #1e293b;
             border: 1px solid #475569;
             border-radius: 0.5rem;
             color: white;
             font-size: 1rem;
             cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .year-select:focus {
-            outline: none;
-            border-color: #fbbf24;
-            box-shadow: 0 0 0 2px #fbbf24;
         }
 
         .search-button {
-            padding: 0.75rem 1.5rem;
             background: #fbbf24;
             color: #1e293b;
-            border: none;
-            border-radius: 0.5rem;
             font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
+            border: none;
         }
 
         .search-button:hover:not(:disabled) {
             background: #f59e0b;
-            transform: translateY(-2px);
         }
 
         .search-button:disabled {
@@ -138,71 +103,27 @@
             cursor: not-allowed;
         }
 
+        .loading-container {
+            text-align: center;
+            padding: 3rem;
+            color: #94a3b8;
+        }
+
         .error-container {
-            display: flex;
-            gap: 0.75rem;
             margin-bottom: 2rem;
             padding: 1rem;
             background: rgba(127, 29, 29, 0.3);
             border: 1px solid #7f1d1d;
             border-radius: 0.5rem;
-        }
-
-        .error-icon {
-            color: #fca5a5;
-            flex-shrink: 0;
-        }
-
-        .error-title {
-            color: #fca5a5;
-            font-weight: 600;
-            margin: 0;
-        }
-
-        .error-message {
             color: #fecaca;
-            font-size: 0.875rem;
-            margin: 0;
-        }
-
-        .loading-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 3rem 1rem;
-            color: #94a3b8;
-        }
-
-        .loading-icon {
-            width: 2rem;
-            height: 2rem;
-            color: #fbbf24;
-            margin-right: 0.75rem;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
         }
 
         .user-card {
-            display: flex;
-            gap: 1rem;
             margin-bottom: 3rem;
             padding: 1.5rem;
             background: linear-gradient(to right, #1e293b, rgba(30, 41, 59, 0.5));
             border: 1px solid #475569;
             border-radius: 0.75rem;
-        }
-
-        .user-avatar {
-            width: 4rem;
-            height: 4rem;
-            border-radius: 50%;
-            border: 2px solid #fbbf24;
-            object-fit: cover;
-            flex-shrink: 0;
         }
 
         .user-name {
@@ -212,10 +133,10 @@
             margin: 0;
         }
 
-        .user-username {
-            font-size: 0.875rem;
+        .user-meta {
             color: #94a3b8;
-            margin: 0.25rem 0 0;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
         }
 
         .leagues-section {
@@ -223,29 +144,17 @@
         }
 
         .leagues-title {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
             font-size: 1.5rem;
             font-weight: 700;
             color: white;
             margin-bottom: 1.5rem;
         }
 
-        .leagues-grid {
-            display: grid;
-            gap: 1rem;
-        }
-
         .league-card {
             border: 1px solid #475569;
             border-radius: 0.5rem;
+            margin-bottom: 1rem;
             overflow: hidden;
-            transition: all 0.2s;
-        }
-
-        .league-card:hover {
-            border-color: #64748b;
         }
 
         .league-header {
@@ -255,38 +164,31 @@
             border: none;
             cursor: pointer;
             display: flex;
-            align-items: center;
             justify-content: space-between;
+            align-items: center;
             transition: all 0.2s;
-            font-size: 1rem;
         }
 
         .league-header:hover {
             background: #0f172a;
         }
 
-        .league-info {
-            text-align: left;
-        }
-
         .league-name {
             font-size: 1.125rem;
             font-weight: 700;
             color: white;
-            margin: 0;
         }
 
         .league-meta {
             font-size: 0.875rem;
             color: #94a3b8;
-            margin: 0.25rem 0 0;
+            margin-top: 0.25rem;
         }
 
         .league-chevron {
             font-size: 1.5rem;
             color: #fbbf24;
             transition: transform 0.2s;
-            flex-shrink: 0;
         }
 
         .league-card.expanded .league-chevron {
@@ -297,136 +199,87 @@
             background: rgba(15, 23, 42, 0.5);
             border-top: 1px solid #475569;
             padding: 1.5rem;
-            animation: slideDown 0.2s ease-out;
         }
 
-        @keyframes slideDown {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .rosters-list {
-            display: grid;
-            gap: 1rem;
-        }
-
-        .roster-item {
-            display: grid;
-            grid-template-columns: auto 1fr auto;
-            gap: 1rem;
-            padding: 1rem;
-            background: #1e293b;
-            border: 1px solid #475569;
-            border-radius: 0.5rem;
-            align-items: center;
-            transition: all 0.2s;
-        }
-
-        .roster-item:hover {
-            border-color: #fbbf24;
-            background: #334155;
-        }
-
-        .roster-rank {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 2rem;
-            height: 2rem;
-            border-radius: 50%;
-            background: rgba(251, 191, 36, 0.2);
-            font-weight: 600;
-            font-size: 0.875rem;
-            color: #fbbf24;
-            flex-shrink: 0;
-        }
-
-        .roster-details {
-            text-align: left;
-        }
-
-        .roster-owner {
-            font-weight: 600;
-            color: white;
-            margin: 0;
-            font-size: 1rem;
-        }
-
-        .roster-record {
-            font-size: 0.875rem;
-            color: #94a3b8;
-            margin: 0.25rem 0 0;
-        }
-
-        .roster-points {
-            text-align: right;
-        }
-
-        .points-value {
-            font-weight: 700;
-            font-size: 1.25rem;
-            color: #fbbf24;
-            margin: 0;
-        }
-
-        .points-label {
-            font-size: 0.75rem;
-            color: #64748b;
-            margin: 0.125rem 0 0;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 3rem 1rem;
-            color: #94a3b8;
-        }
-
-        .hidden {
+        .rosters-container.hidden {
             display: none;
         }
 
-        .player-card {
-            padding: 0.75rem;
-            color: #cbd5e1;
-            font-size: 0.9rem;
-            border-radius: 0.375rem;
-            background: rgba(30, 41, 59, 0.5);
-            margin-bottom: 0.5rem;
-            border-left: 3px solid;
+        .roster-info {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #475569;
         }
 
-        .player-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: start;
+        .roster-info-title {
+            color: #fbbf24;
+            font-weight: 600;
             margin-bottom: 0.5rem;
         }
 
-        .player-name-section {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
+        .roster-info-text {
+            color: #cbd5e1;
+            font-size: 0.85rem;
         }
 
-        .player-rank {
-            color: #cbd5e1;
+        .position-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .position-header {
+            color: #94a3b8;
             font-weight: 600;
             font-size: 0.85rem;
-            white-space: nowrap;
+            margin-bottom: 0.75rem;
+            border-bottom: 1px solid #475569;
+            padding-bottom: 0.5rem;
+        }
+
+        .player-item {
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            background: rgba(30, 41, 59, 0.7);
+            border-left: 3px solid #fbbf24;
+            border-radius: 0.375rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .player-info {
+            flex: 1;
+        }
+
+        .player-name {
+            color: white;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .player-meta {
+            color: #94a3b8;
+            font-size: 0.8rem;
+            margin-top: 0.25rem;
+        }
+
+        .player-ranks {
+            text-align: right;
+            flex-shrink: 0;
             margin-left: 1rem;
         }
 
-        .player-details {
-            margin-top: 0.375rem;
-            font-size: 0.8rem;
+        .player-ovr {
+            color: #cbd5e1;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .player-pos {
             color: #94a3b8;
+            font-size: 0.8rem;
         }
 
         @media (max-width: 640px) {
-            .header-title h1 {
-                font-size: 1.5rem;
-            }
-
             .main-content {
                 padding: 1.5rem 1rem;
             }
@@ -435,36 +288,8 @@
                 flex-direction: column;
             }
 
-            .search-button {
+            .search-button, .year-select {
                 width: 100%;
-            }
-
-            .year-select {
-                width: 100%;
-            }
-
-            .user-card {
-                flex-direction: column;
-                align-items: center;
-                text-align: center;
-            }
-
-            .league-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 0.75rem;
-            }
-
-            .roster-item {
-                grid-template-columns: auto 1fr;
-                gap: 0.75rem;
-            }
-
-            .roster-points {
-                grid-column: 1 / -1;
-                text-align: left;
-                padding-top: 0.75rem;
-                border-top: 1px solid #475569;
             }
         }
     </style>
@@ -472,19 +297,17 @@
 <body>
     <div class="header-section">
         <div class="header-content">
-            <div class="header-title">
-                <span class="header-icon">🏆</span>
-                <h1>Sleeper Manager</h1>
-                <span style="font-size: 0.85rem; color: #94a3b8; margin-left: auto;">v1.1-beta</span>
+            <div class="header-left">
+                <h1>🏆 Sleeper Manager</h1>
+                <p class="header-subtitle">Fantasy league roster allocation & analysis</p>
             </div>
-            <p class="header-subtitle">View your fantasy leagues, rosters, and team management</p>
+            <span style="font-size: 0.85rem; color: #94a3b8;">v1.2-beta</span>
         </div>
     </div>
 
     <div class="main-content">
         <form class="search-form" id="searchForm">
             <div class="search-container">
-                <span class="search-icon">🔍</span>
                 <input 
                     type="text" 
                     id="username" 
@@ -513,107 +336,43 @@
         const yearSelect = document.getElementById('year');
         const searchBtn = document.getElementById('searchBtn');
 
-        // Google Sheets configuration
-        const SHEET_ID = '1V0Y_Bl7kSy--vABftJUOlXnWflPCi5P_Km6LG9VhEsQ';
-
-        // Data caches
         let playerLookupCache = {};
-        let userOverrideCache = {};
+        let positionStarters = {};
 
-        async function fetchGoogleSheetData(sheetName) {
+        async function loadPlayerLookup() {
             try {
-                // Map sheet names to their gid (tab ID)
-                const sheetIds = {
-                    'Player_Lookup': '2112770654',
-                    'User_Override_Rank': '1983730686'
-                };
-                
-                const gid = sheetIds[sheetName];
-                if (!gid) throw new Error(`Unknown sheet: ${sheetName}`);
-                
-                const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${gid}`;
-                console.log(`📥 Fetching from: ${url}`);
+                const sheetId = '1V0Y_Bl7kSy--vABftJUOlXnWflPCi5P_Km6LG9VhEsQ';
+                const gid = '2112770654';
+                const url = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`;
                 
                 const response = await fetch(url);
                 const csv = await response.text();
-                
-                console.log(`📥 CSV from ${sheetName}:`, csv.substring(0, 300));
-                
-                // Parse CSV manually with better handling
                 const lines = csv.split('\n');
-                const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
-                console.log(`Headers for ${sheetName}:`, headers);
-                
-                const rows = [];
+                const headers = lines[0].split(',');
                 
                 for (let i = 1; i < lines.length; i++) {
                     if (!lines[i].trim()) continue;
-                    
-                    const values = lines[i].split(',').map(v => v.trim().replace(/"/g, ''));
-                    const obj = {};
-                    headers.forEach((header, idx) => {
-                        obj[header] = values[idx] || null;
+                    const values = lines[i].split(',');
+                    const row = {};
+                    headers.forEach((h, idx) => {
+                        row[h.trim()] = values[idx]?.trim() || '';
                     });
-                    rows.push(obj);
+                    
+                    const sleeperId = String(row['SLEEPER_ID']);
+                    playerLookupCache[sleeperId] = {
+                        playerName: row['PLAYER_NAME'],
+                        position: row['POSITION'],
+                        age: parseInt(row['AGE']) || 0,
+                        team: row['TEAM'],
+                        depthChartPos: row['DEPTH_CHART_POS'],
+                        depthChartOrder: parseInt(row['DEPTH_CHART_ORDER']) || 0,
+                        yearsExp: parseInt(row['YEARS_EXP']) || 0,
+                        posRank: row['POS_RANK'],
+                        defaultRank: parseInt(row['Default_Rank']) || 9999
+                    };
                 }
-                
-                console.log(`✅ Parsed ${rows.length} rows from ${sheetName}`);
-                if (rows.length > 0) {
-                    console.log(`Sample row:`, rows[0]);
-                }
-                
-                return rows;
-            } catch (err) {
-                console.error(`Error fetching ${sheetName}:`, err);
-                return [];
-            }
-        }
-
-        async function initializePlayerData() {
-            try {
-                console.log('📊 Loading player data from Google Sheets...');
-                
-                // Fetch Player_Lookup tab
-                const playerLookup = await fetchGoogleSheetData('Player_Lookup');
-                playerLookupCache = {};
-                playerLookup.forEach(row => {
-                    if (row['SLEEPER_ID']) {
-                        const sleeperId = String(row['SLEEPER_ID']); // Convert to string
-                        playerLookupCache[sleeperId] = {
-                            playerName: row['PLAYER_NAME'],
-                            position: row['POSITION'],
-                            age: row['AGE'],
-                            team: row['TEAM'],
-                            depthChartPos: row['DEPTH_CHART_POS'],
-                            depthChartOrder: row['DEPTH_CHART_ORDER'],
-                            yearsExp: row['YEARS_EXP'],
-                            posRank: row['POS_RANK'],
-                            defaultRank: row['Default_Rank'] || 9999
-                        };
-                    }
-                });
-                
-                // Fetch User_Override_Rank tab
-                const userOverrides = await fetchGoogleSheetData('User_Override_Rank');
-                userOverrideCache = {};
-                userOverrides.forEach(row => {
-                    if (row['SLEEPER_ID'] && row['LEAGUE_ID']) {
-                        const sleeperId = String(row['SLEEPER_ID']); // Convert to string
-                        const key = `${sleeperId}_${row['LEAGUE_ID']}`;
-                        userOverrideCache[key] = {
-                            defaultClassification: row['Default_Classification'],
-                            overrideClassification: row['Override_Classification'],
-                            notes: row['Notes']
-                        };
-                    }
-                });
-                
-                console.log(`✅ Loaded ${Object.keys(playerLookupCache).length} players`);
-                console.log(`✅ Loaded ${Object.keys(userOverrideCache).length} overrides`);
-                return true;
-            } catch (err) {
-                console.error('Error initializing player data:', err);
-                return false;
+            } catch (e) {
+                console.log('Could not load Player_Lookup:', e);
             }
         }
 
@@ -621,490 +380,192 @@
             return playerLookupCache[String(sleeperId)] || null;
         }
 
-        function getUserOverride(sleeperId, leagueId) {
-            const key = `${String(sleeperId)}_${leagueId}`;
-            return userOverrideCache[key] || null;
-        }
-
-        function getCategoryColor(category) {
-            const colors = {
-                'Stars': '#fbbf24',
-                'Starters': '#34d399',
-                'Bench': '#cbd5e1',
-                'Trade Potentials': '#f97316',
-                'Cut Candidates': '#ef4444'
-            };
-            return colors[category] || '#cbd5e1';
-        }
-
-        function getCategoryEmoji(category) {
-            const emojis = {
-                'Stars': '⭐',
-                'Starters': '✓',
-                'Bench': '—',
-                'Trade Potentials': '↔️',
-                'Cut Candidates': '✂️'
-            };
-            return emojis[category] || '';
-        }
-
-        function addStarsClassification(allocation, tepTier, positionStarters) {
-            // Add Stars tier based on Position_Rank
-            Object.keys(allocation).forEach(playerId => {
-                const record = allocation[playerId];
-                const posRank = record.posRank || '';
-                const posRankNum = posRank ? parseInt(posRank.split('_')[1]) : 9999;
-                const position = record.position;
-                
-                if (!record.finalStatus) return; // Skip if not allocated
-                
-                let isStars = false;
-                
-                // Position-rank based Stars thresholds
-                if (position === 'QB') {
-                    const qbStarters = positionStarters['QB'] || 1;
-                    if (qbStarters === 1) {
-                        isStars = posRankNum <= 6; // 1QB: top 6 QBs
-                    } else {
-                        isStars = posRankNum <= 12; // SF: top 12 QBs
-                    }
-                } else if (position === 'RB') {
-                    isStars = posRankNum <= 12; // Top 12 RBs
-                } else if (position === 'WR') {
-                    isStars = posRankNum <= 12; // Top 12 WRs
-                } else if (position === 'TE') {
-                    if (tepTier === 'Off') {
-                        isStars = posRankNum <= 6; // Non-TEP: top 6 TEs
-                    } else {
-                        isStars = posRankNum <= 12; // TEP/TEP+: top 12 TEs
-                    }
-                }
-                
-                // Update finalStatus to include Stars marker
-                if (isStars && record.finalStatus && record.finalStatus.includes('Starter')) {
-                    record.finalStatus = '⭐ ' + record.finalStatus;
-                }
-            });
-            
-            return allocation;
-        }
-        
-        function classifyPlayers(userRoster, league, user, tepTier) {
+        function allocateRoster(userRoster, league, tepTier) {
             if (!userRoster.players || userRoster.players.length === 0) return {};
-            
+
             const rosterSlots = {};
             league.roster_positions?.forEach(pos => {
                 rosterSlots[pos] = (rosterSlots[pos] || 0) + 1;
             });
-            
-            const playersByPosition = {};
-            userRoster.players.forEach(playerId => {
-                const playerData = getPlayerData(playerId);
-                const position = playerData?.position || 'N/A';
-                
-                if (!playersByPosition[position]) {
-                    playersByPosition[position] = [];
-                }
-                playersByPosition[position].push({
-                    playerId,
-                    playerData,
-                    defaultRank: playerData?.defaultRank || 9999
-                });
-            });
-            
-            // Sort players within each position by ECR rank
-            Object.keys(playersByPosition).forEach(pos => {
-                playersByPosition[pos].sort((a, b) => a.defaultRank - b.defaultRank);
-            });
-            
-            const classification = {};
-            
-            // Step 1: Allocate position starters (QB includes SUPER_FLEX)
-            const positionStarters = {
+
+            positionStarters = {
                 'QB': (rosterSlots['QB'] || 0) + (rosterSlots['SUPER_FLEX'] || 0),
                 'RB': rosterSlots['RB'] || 0,
                 'WR': rosterSlots['WR'] || 0,
                 'TE': rosterSlots['TE'] || 0,
                 'K': rosterSlots['K'] || 0,
-                'DEF': rosterSlots['DEF'] || 0
+                'DEF': rosterSlots['DEF'] || 0,
+                'FLEX': rosterSlots['FLEX'] || 0,
+                'SUPER_FLEX': rosterSlots['SUPER_FLEX'] || 0
             };
-            
-            // Classify position starters
-            ['QB', 'RB', 'WR', 'TE', 'K', 'DEF'].forEach(position => {
-                const players = playersByPosition[position] || [];
-                const starterCount = positionStarters[position];
-                
-                players.forEach((playerData, index) => {
-                    if (index < starterCount) {
-                        const category = playerData.defaultRank <= 25 ? 'Stars' : 'Starters';
-                        classification[playerData.playerId] = {
-                            category,
-                            position,
-                            index,
-                            defaultRank: playerData.defaultRank,
-                            slotType: 'Position'
-                        };
-                    }
-                });
-            });
-            
-            // Step 2: Collect overflow RB/WR/TE for FLEX allocation
-            const flexiblePlayers = [];
-            ['RB', 'WR', 'TE'].forEach(position => {
-                const players = playersByPosition[position] || [];
-                const starterCount = positionStarters[position];
-                
-                players.forEach((playerData, index) => {
-                    if (index >= starterCount) {
-                        flexiblePlayers.push({
-                            playerId: playerData.playerId,
-                            playerData: playerData.playerData,
-                            position,
-                            index,
-                            defaultRank: playerData.defaultRank
-                        });
-                    }
-                });
-            });
-            
-            flexiblePlayers.sort((a, b) => a.defaultRank - b.defaultRank);
-            
-            // Step 3: Fill FLEX slots
-            const flexSlots = rosterSlots['FLEX'] || 0;
-            flexiblePlayers.slice(0, flexSlots).forEach(playerData => {
-                const category = playerData.defaultRank <= 25 ? 'Stars' : 'Starters';
-                classification[playerData.playerId] = {
-                    category,
-                    position: playerData.position,
-                    index: playerData.index,
-                    defaultRank: playerData.defaultRank,
-                    slotType: 'FLEX'
-                };
-            });
-            
-            // Step 4: Allocate bench spots
-            const benchAllocations = {
-                'QB': positionStarters['QB'] + 1,
-                'RB': positionStarters['RB'] + 2,
-                'WR': positionStarters['WR'] + 2,
-                'TE': positionStarters['TE'] + 1,
-                'K': positionStarters['K'],
-                'DEF': positionStarters['DEF']
-            };
-            
-            ['QB', 'RB', 'WR', 'TE', 'K', 'DEF'].forEach(position => {
-                const players = playersByPosition[position] || [];
-                const starterCount = positionStarters[position];
-                const benchLimit = benchAllocations[position];
-                
-                players.forEach((playerData, index) => {
-                    if (classification[playerData.playerId]) return;
-                    
-                    if (index < benchLimit) {
-                        classification[playerData.playerId] = {
-                            category: 'Bench',
-                            position,
-                            index,
-                            defaultRank: playerData.defaultRank,
-                            slotType: 'Bench'
-                        };
-                    }
-                });
-            });
-            
-            // Step 5: Handle remaining FLEX/RB/WR players
-            flexiblePlayers.slice(flexSlots).forEach(playerData => {
-                if (classification[playerData.playerId]) return;
-                
-                const benchLimit = benchAllocations[playerData.position];
-                
-                if (playerData.index < benchLimit) {
-                    classification[playerData.playerId] = {
-                        category: 'Bench',
-                        position: playerData.position,
-                        index: playerData.index,
-                        defaultRank: playerData.defaultRank,
-                        slotType: 'Bench'
-                    };
-                } else {
-                    const defaultRank = playerData.defaultRank;
-                    const age = playerData.playerData?.age || 0;
-                    
-                    const category = (defaultRank > 500 || age > 32) ? 'Cut Candidates' : 'Trade Potentials';
-                    classification[playerData.playerId] = {
-                        category,
-                        position: playerData.position,
-                        index: playerData.index,
-                        defaultRank: playerData.defaultRank,
-                        slotType: 'Overflow'
-                    };
-                }
-            });
-            
-            // Step 6: Classify remaining unclassified
+
+            const allocation = {};
+            const classified = {'KEEP': [], 'Trade': [], 'Cut': []};
+
             userRoster.players.forEach(playerId => {
-                if (!classification[playerId]) {
-                    const playerObj = getPlayerData(playerId);
-                    const position = playerObj?.position || 'N/A';
-                    const defaultRank = parseInt(playerObj?.defaultRank) || 9999;
-                    const age = playerObj?.age || 0;
-                    const yearsExp = parseInt(playerObj?.yearsExp) || 0;
-                    const depthChartOrder = parseInt(playerObj?.depthChartOrder) || 0;
-                    
-                    let category = 'Trade Potentials'; // Default
-                    
-                    // QB Logic
-                    if (position === 'QB') {
-                        const qbStarters = positionStarters['QB'];
-                        
-                        if (qbStarters === 1) {
-                            // 1QB League: 4th+ QB = Cut
-                            const qbCount = userRoster.players.filter(id => {
-                                const p = getPlayerData(id);
-                                return p?.position === 'QB';
-                            }).length;
-                            
-                            if (qbCount >= 4) {
-                                category = 'Cut Candidates';
-                            }
-                        } else {
-                            // SF League: DC-based logic
-                            const qbsByRank = userRoster.players
-                                .filter(id => {
-                                    const p = getPlayerData(id);
-                                    return p?.position === 'QB';
-                                })
-                                .map(id => {
-                                    const p = getPlayerData(id);
-                                    return {
-                                        id,
-                                        rank: parseInt(p?.defaultRank) || 9999
-                                    };
-                                })
-                                .sort((a, b) => a.rank - b.rank);
-                            
-                            const qbIndex = qbsByRank.findIndex(q => q.id === playerId);
-                            
-                            if (depthChartOrder === 1 || depthChartOrder === '1') {
-                                // DC#1: Check if top 2 by rank
-                                if (qbIndex < qbStarters) {
-                                    category = 'Starters';
-                                } else {
-                                    category = 'Bench';
-                                }
-                            } else if (depthChartOrder === 2 || depthChartOrder === '2') {
-                                // DC#2: Always Trade
-                                category = 'Trade Potentials';
-                            } else if (depthChartOrder >= 3) {
-                                // DC#3+: Trade if young, Cut if veteran
-                                if (yearsExp < 4) {
-                                    category = 'Trade Potentials';
-                                } else {
-                                    category = 'Cut Candidates';
-                                }
-                            }
-                        }
-                    }
-                    // WR Logic
-                    else if (position === 'WR' && defaultRank > 120 && yearsExp > 4 && depthChartOrder > 3) {
-                        category = 'Cut Candidates';
-                    }
-                    // K/DEF Logic - if you have extras, cut them
-                    else if ((position === 'K' || position === 'DEF') && defaultRank > 100) {
-                        category = 'Cut Candidates';
-                    }
-                    // RB/WR Overflow Logic (after position starters and FLEX)
-                    else if ((position === 'RB' || position === 'WR')) {
-                        // DC#1 overflow
-                        if (depthChartOrder === 1 || depthChartOrder === '1') {
-                            category = 'Bench'; // DC#1 but not top starter
-                        }
-                        // DC#2 (RB/WR)
-                        else if (depthChartOrder === 2 || depthChartOrder === '2') {
-                            if (yearsExp < 4) {
-                                category = 'Bench'; // Young backup, injury lottery
-                            } else {
-                                category = 'Trade Potentials'; // Veteran, moveable
-                            }
-                        }
-                        // DC#3+ (RB/WR)
-                        else if (depthChartOrder >= 3) {
-                            if (yearsExp < 2) {
-                                category = 'Bench'; // Young prospect
-                            } else if (defaultRank <= 300) {
-                                category = 'Trade Potentials'; // Someone will pay
-                            } else {
-                                category = 'Cut Candidates'; // Obvious dump
-                            }
-                        }
-                        // DC unranked
-                        else if (!depthChartOrder || depthChartOrder === 0) {
-                            if (yearsExp === 0) {
-                                category = 'Trade Potentials'; // Rookie
-                            } else {
-                                category = 'Cut Candidates';
-                            }
-                        }
-                    }
-                    // TE-specific logic (tier-based: Non-TEP, TEP, TEP+)
-                    else if (position === 'TE') {
-                        const posRank = playerObj?.posRank || ''; // e.g., "TE_001"
-                        const teRankNum = posRank ? parseInt(posRank.split('_')[1]) : 9999;
-                        
-                        if (tepTier === 'Off') {
-                            // Non-TEP: Super simple position-rank based
-                            if (teRankNum <= 2) {
-                                // TE#1-2: Keep (starter + bench minimum)
-                                category = teRankNum === 1 ? 'Starters' : 'Bench';
-                            } else {
-                                // TE#3+: Trade if ranked or rookie, Cut if not
-                                if (defaultRank <= 200 || yearsExp === 0) {
-                                    category = 'Trade Potentials';
-                                } else {
-                                    category = 'Cut Candidates';
-                                }
-                            }
-                        } else {
-                            // TEP (1.5) or TEP+ (2.0): DC-based logic
-                            if (depthChartOrder === 1 || depthChartOrder === '1') {
-                                // DC#1: Check if top starter by overall rank
-                                if (teRankNum === 1) {
-                                    category = 'Starters';
-                                } else {
-                                    category = 'Bench';
-                                }
-                            } else if (depthChartOrder === 2 || depthChartOrder === '2') {
-                                // DC#2: Young backup = Bench, Veteran = Trade
-                                if (yearsExp < 4) {
-                                    category = 'Bench';
-                                } else {
-                                    category = 'Trade Potentials';
-                                }
-                            } else if (depthChartOrder >= 3) {
-                                // DC#3+: Very young = Bench, ranked = Trade, else Cut
-                                if (yearsExp < 2) {
-                                    category = 'Bench';
-                                } else if (defaultRank <= 300) {
-                                    category = 'Trade Potentials';
-                                } else {
-                                    category = 'Cut Candidates';
-                                }
-                            } else if (!depthChartOrder || depthChartOrder === 0) {
-                                // DC unranked: Rookie = Trade, else Cut
-                                if (yearsExp === 0) {
-                                    category = 'Trade Potentials';
-                                } else {
-                                    category = 'Cut Candidates';
-                                }
-                            }
-                        }
-                    }
-                    // Default Trade/Cut based on rank and age
-                    else if (defaultRank > 500 || age > 32) {
-                        category = 'Cut Candidates';
-                    }
-                    
-                    classification[playerId] = {
-                        category,
-                        position,
-                        defaultRank,
-                        slotType: 'Overflow'
-                    };
-                }
-            });
-            
-            return { classification, positionStarters };
-        }
+                const playerObj = getPlayerData(playerId);
+                if (!playerObj) return;
 
-        function checkPositionalShortages(userRoster, league, classification) {
-            const rosterSlots = {};
-            league.roster_positions?.forEach(pos => {
-                rosterSlots[pos] = (rosterSlots[pos] || 0) + 1;
-            });
-            
-            const positionBenchMinimums = {
-                'QB': 1,
-                'RB': 2,
-                'WR': 2,
-                'TE': 1,
-                'K': 0,
-                'DEF': 0
-            };
-            
-            const shortages = [];
-            
-            // Check for missing required positions
-            ['QB', 'RB', 'WR', 'TE', 'K', 'DEF'].forEach(position => {
-                const requiredSlots = rosterSlots[position] || 0;
-                if (requiredSlots > 0) {
-                    const playerCount = userRoster.players.filter(playerId => {
-                        const playerData = getPlayerData(playerId);
-                        return playerData?.position === position;
-                    }).length;
-                    
-                    if (playerCount === 0) {
-                        shortages.push(`Missing: 1 ${position}`);
-                    }
-                }
-            });
-            
-            // Check for positional bench shortages
-            ['QB', 'RB', 'WR', 'TE'].forEach(position => {
-                const requiredSlots = rosterSlots[position] || 0;
-                const benchMinimum = positionBenchMinimums[position];
-                const totalNeeded = requiredSlots + benchMinimum;
-                
-                if (totalNeeded > 0) {
-                    const playerCount = userRoster.players.filter(playerId => {
-                        const playerData = getPlayerData(playerId);
-                        return playerData?.position === position;
-                    }).length;
-                    
-                    if (playerCount < totalNeeded) {
-                        const shortfall = totalNeeded - playerCount;
-                        shortages.push(`${position} Bench Shortage: need ${benchMinimum}, have ${Math.max(0, playerCount - requiredSlots)}`);
-                    }
-                }
-            });
-            
-            return shortages;
-        }
+                const position = playerObj.position;
+                const defaultRank = playerObj.defaultRank;
+                const posRank = playerObj.posRank || '';
+                const yearsExp = playerObj.yearsExp;
+                const depthChartOrder = playerObj.depthChartOrder;
+                const posRankNum = posRank ? parseInt(posRank.split('_')[1]) : 9999;
 
-        function summarizeRosterPositions(positions) {
-            const summary = {};
+                let classification = 'Trade';
+
+                if (position === 'QB') {
+                    if (positionStarters['QB'] === 1) {
+                        const qbCount = userRoster.players.filter(id => getPlayerData(id)?.position === 'QB').length;
+                        classification = qbCount >= 4 ? 'Cut' : 'KEEP';
+                    } else {
+                        if (depthChartOrder === 1) classification = 'KEEP';
+                        else if (depthChartOrder === 2) classification = 'Trade';
+                        else if (depthChartOrder >= 3) classification = yearsExp < 4 ? 'Trade' : 'Cut';
+                        else classification = yearsExp === 0 ? 'Trade' : 'Cut';
+                    }
+                } else if (position === 'WR') {
+                    classification = (defaultRank > 120 && yearsExp > 4 && depthChartOrder > 3) ? 'Cut' : 'KEEP';
+                } else if (position === 'K' || position === 'DEF') {
+                    classification = defaultRank > 100 ? 'Cut' : 'KEEP';
+                } else if (position === 'RB' || position === 'TE') {
+                    if (depthChartOrder === 1) classification = 'KEEP';
+                    else if (depthChartOrder === 2) classification = yearsExp < 4 ? 'KEEP' : 'Trade';
+                    else if (depthChartOrder >= 3) {
+                        if (yearsExp < 2) classification = 'KEEP';
+                        else if (defaultRank <= 300) classification = 'Trade';
+                        else classification = 'Cut';
+                    } else classification = yearsExp === 0 ? 'Trade' : 'Cut';
+                }
+
+                if (position === 'TE' && tepTier === 'Off') {
+                    classification = posRankNum <= 2 ? 'KEEP' : (defaultRank <= 200 || yearsExp === 0 ? 'Trade' : 'Cut');
+                }
+
+                allocation[playerId] = {position, classification, defaultRank, posRank, yearsExp, depthChartOrder, finalStatus: null};
+                classified[classification].push(playerId);
+            });
+
+            Object.keys(classified).forEach(classif => {
+                classified[classif].sort((a, b) => (getPlayerData(a)?.defaultRank || 9999) - (getPlayerData(b)?.defaultRank || 9999));
+            });
+
+            const assigned = new Set();
+
+            const positions = ['QB', 'RB', 'WR', 'TE', 'K', 'DEF'];
             positions.forEach(pos => {
-                summary[pos] = (summary[pos] || 0) + 1;
-            });
-            
-            const positionOrder = ['QB', 'RB', 'WR', 'TE', 'FLEX', 'SUPER_FLEX', 'IR', 'TAXI', 'BN'];
-            const result = [];
-            positionOrder.forEach(pos => {
-                if (summary[pos]) {
-                    const displayPos = pos === 'SUPER_FLEX' ? 'Super Flex' : pos;
-                    result.push(`${summary[pos]} ${displayPos}`);
+                const slots = positionStarters[pos] || 0;
+                for (let i = 0; i < slots; i++) {
+                    let player = null;
+                    const keepIdx = classified['KEEP'].findIndex(id => getPlayerData(id)?.position === pos);
+                    const tradeIdx = classified['Trade'].findIndex(id => getPlayerData(id)?.position === pos);
+                    
+                    if (keepIdx >= 0) {
+                        player = classified['KEEP'].splice(keepIdx, 1)[0];
+                    } else if (tradeIdx >= 0) {
+                        player = classified['Trade'].splice(tradeIdx, 1)[0];
+                    }
+                    
+                    if (player) {
+                        allocation[player].finalStatus = 'Starter';
+                        assigned.add(player);
+                    }
                 }
             });
-            
-            Object.keys(summary).forEach(pos => {
-                if (!positionOrder.includes(pos)) {
-                    result.push(`${summary[pos]} ${pos}`);
+
+            const flexSlots = positionStarters['FLEX'] || 0;
+            for (let i = 0; i < flexSlots; i++) {
+                let bestPlayer = null;
+                let bestRank = 9999;
+                
+                [...classified['KEEP'], ...classified['Trade']].forEach(playerId => {
+                    const playerObj = getPlayerData(playerId);
+                    if (['RB', 'WR', 'TE'].includes(playerObj?.position)) {
+                        const rank = playerObj?.defaultRank || 9999;
+                        if (rank < bestRank) {
+                            bestPlayer = playerId;
+                            bestRank = rank;
+                        }
+                    }
+                });
+
+                if (bestPlayer) {
+                    allocation[bestPlayer].finalStatus = 'FLEX';
+                    assigned.add(bestPlayer);
+                    classified['KEEP'].splice(classified['KEEP'].indexOf(bestPlayer), 1);
+                    classified['Trade'].splice(classified['Trade'].indexOf(bestPlayer), 1);
+                }
+            }
+
+            const benchMin = {'QB': 1, 'RB': 2, 'WR': 2, 'TE': 1, 'K': 0, 'DEF': 0};
+            positions.forEach(pos => {
+                const needed = benchMin[pos] || 0;
+                for (let i = 0; i < needed; i++) {
+                    let player = null;
+                    const keepIdx = classified['KEEP'].findIndex(id => getPlayerData(id)?.position === pos);
+                    const tradeIdx = classified['Trade'].findIndex(id => getPlayerData(id)?.position === pos);
+                    
+                    if (keepIdx >= 0) {
+                        player = classified['KEEP'].splice(keepIdx, 1)[0];
+                    } else if (tradeIdx >= 0) {
+                        player = classified['Trade'].splice(tradeIdx, 1)[0];
+                    }
+                    
+                    if (player) {
+                        allocation[player].finalStatus = 'Bench';
+                        assigned.add(player);
+                    }
                 }
             });
-            
-            return result.join(', ');
+
+            const bnSlots = rosterSlots['BN'] || 12;
+            const benchUsed = Array.from(assigned).filter(pid => ['Bench', 'FLEX'].includes(allocation[pid].finalStatus)).length;
+            const remainingBench = bnSlots - benchUsed;
+
+            for (let i = 0; i < remainingBench; i++) {
+                let player = classified['KEEP'].shift() || classified['Trade'].shift();
+                if (player) {
+                    allocation[player].finalStatus = 'Bench';
+                    assigned.add(player);
+                }
+            }
+
+            Object.keys(allocation).forEach(playerId => {
+                if (!assigned.has(playerId)) {
+                    const record = allocation[playerId];
+                    record.finalStatus = record.classification === 'Cut' ? 'Cut' : 'Trade';
+                }
+            });
+
+            Object.keys(allocation).forEach(playerId => {
+                const record = allocation[playerId];
+                const posRankNum = record.posRank ? parseInt(record.posRank.split('_')[1]) : 9999;
+                let isStars = false;
+
+                if (record.position === 'QB') {
+                    isStars = positionStarters['QB'] === 1 ? posRankNum <= 6 : posRankNum <= 12;
+                } else if (record.position === 'RB' || record.position === 'WR') {
+                    isStars = posRankNum <= 12;
+                } else if (record.position === 'TE') {
+                    isStars = tepTier === 'Off' ? posRankNum <= 6 : posRankNum <= 12;
+                }
+
+                if (isStars && record.finalStatus === 'Starter') {
+                    record.finalStatus = '⭐ Starter';
+                }
+            });
+
+            return allocation;
         }
 
         async function fetchSleeperData(username, year) {
             try {
                 searchBtn.disabled = true;
                 searchBtn.textContent = 'Loading...';
-                contentDiv.innerHTML = '<div class="loading-container"><span class="loading-icon">⏳</span><span>Fetching your data...</span></div>';
+                contentDiv.innerHTML = '<div class="loading-container">⏳ Fetching your data...</div>';
 
-                // Initialize player data from Google Sheets first
-                const dataReady = await initializePlayerData();
-                if (!dataReady) {
-                    throw new Error('Could not load player data from Google Sheets');
-                }
+                await loadPlayerLookup();
 
                 const userRes = await fetch(`https://api.sleeper.app/v1/user/${username}`);
                 if (!userRes.ok) throw new Error('Username not found');
@@ -1119,16 +580,16 @@
                         try {
                             const rostersRes = await fetch(`https://api.sleeper.app/v1/league/${league.league_id}/rosters`);
                             const rosters = await rostersRes.json();
-                            return { ...league, rosters: rosters.sort((a, b) => (b.wins || 0) - (a.wins || 0)) };
+                            return {...league, rosters: rosters.sort((a, b) => (b.wins || 0) - (a.wins || 0))};
                         } catch {
-                            return { ...league, rosters: [] };
+                            return {...league, rosters: []};
                         }
                     })
                 );
 
                 renderUI(user, leaguesWithRosters);
             } catch (err) {
-                contentDiv.innerHTML = `<div class="error-container"><span class="error-icon">⚠️</span><div><p class="error-title">Error</p><p class="error-message">${err.message}</p></div></div>`;
+                contentDiv.innerHTML = `<div class="error-container">⚠️ Error: ${err.message}</div>`;
             } finally {
                 searchBtn.disabled = false;
                 searchBtn.textContent = 'Search';
@@ -1136,210 +597,94 @@
         }
 
         function renderUI(user, leagues) {
-            let html = '<div class="user-card">';
-            if (user.avatar) {
-                html += `<img src="https://sleepercdn.com/avatars/thumbs/${user.avatar}" alt="${user.username}" class="user-avatar" />`;
-            }
-            html += `<div><h2 class="user-name">${user.display_name}</h2><p class="user-username">@${user.username} • ID: ${user.user_id}</p><p class="user-username">${leagues.length} league${leagues.length !== 1 ? 's' : ''}</p></div></div>`;
+            let html = `<div class="user-card"><div><h2 class="user-name">${user.display_name}</h2><p class="user-meta">@${user.username} • ${leagues.length} league${leagues.length !== 1 ? 's' : ''}</p></div></div>`;
+            html += '<div class="leagues-section"><h3 class="leagues-title">🏆 Your Leagues</h3>';
 
-            html += `<div class="leagues-section"><h3 class="leagues-title"><span style="font-size: 1.5rem;">🏆</span> Your Leagues (${leagues.length})</h3><div class="leagues-grid">`;
-            
             leagues.forEach((league, leagueIdx) => {
-                const userRoster = league.rosters ? league.rosters.find(r => r.owner_id === user.user_id) : null;
-                
-                // Determine scoring type from actual league settings
-                let scoringType = 'PPR';
-                let tepTier = 'Off'; // Off, TEP, or TEP+
-                const hasSuperFlex = league.roster_positions?.includes('SUPER_FLEX');
+                const userRoster = league.rosters?.find(r => r.owner_id === user.user_id);
                 const scoringSettings = league.scoring_settings || {};
-                
-                const scoringParts = [];
-                
-                if (hasSuperFlex) {
-                    scoringParts.push('SF');
-                }
-                
-                const recValue = scoringSettings.rec;
-                if (recValue === 1) {
-                    scoringParts.push('PPR');
-                } else if (recValue === 0.5) {
-                    scoringParts.push('HPPR');
-                } else if (recValue === 0) {
-                    scoringParts.push('STD');
-                } else {
-                    scoringParts.push('PPR');
-                }
-                
-                // Determine TEP tier
                 const bonusRecTe = parseFloat(scoringSettings.bonus_rec_te) || 0;
-                if (bonusRecTe === 0) {
-                    tepTier = 'Off';
-                } else if (bonusRecTe > 0 && bonusRecTe <= 1) {
-                    tepTier = 'TEP';
-                } else if (bonusRecTe > 1) {
-                    tepTier = 'TEP+';
-                }
-                
-                if (bonusRecTe > 0) {
-                    const tepMultiplier = recValue + bonusRecTe;
-                    scoringParts.push(`${tepMultiplier}TEP`);
-                }
-                
-                if (league.settings?.best_ball === 1) {
-                    scoringParts.push('Best Ball');
-                }
-                
-                scoringType = scoringParts.join(' ');
-                
-                html += `<div class="league-card" id="league-${leagueIdx}"><button class="league-header" onclick="toggleLeague(${leagueIdx})"><div class="league-info"><h3 class="league-name">${league.name}</h3><p class="league-meta">${league.total_rosters} teams • Season ${league.season} • ID: ${league.league_id}</p><p class="league-meta" style="color: #fbbf24; margin-top: 0.375rem;">Scoring: ${scoringType} | ${league.total_rosters} Teams</p></div><span class="league-chevron">▼</span></button><div class="rosters-container hidden" id="rosters-${leagueIdx}"><div class="rosters-list">`;
-                
+                let tepTier = bonusRecTe === 0 ? 'Off' : (bonusRecTe <= 1 ? 'TEP' : 'TEP+');
+
+                const scoringParts = [];
+                if (league.roster_positions?.includes('SUPER_FLEX')) scoringParts.push('SF');
+                const recValue = scoringSettings.rec;
+                if (recValue === 1) scoringParts.push('PPR');
+                else if (recValue === 0.5) scoringParts.push('HPPR');
+                else if (recValue === 0) scoringParts.push('STD');
+                else scoringParts.push('PPR');
+                if (bonusRecTe > 0) scoringParts.push(`${recValue + bonusRecTe}TEP`);
+                if (league.settings?.best_ball === 1) scoringParts.push('Best Ball');
+
+                html += `<div class="league-card"><button class="league-header" onclick="toggleLeague(${leagueIdx})"><div><div class="league-name">${league.name}</div><div class="league-meta">${league.total_rosters} teams • Season ${league.season}</div><div class="league-meta" style="color: #fbbf24; margin-top: 0.5rem;">Scoring: ${scoringParts.join(' ')}</div></div><span class="league-chevron">▼</span></button>`;
+                html += `<div class="rosters-container hidden" id="rosters-${leagueIdx}">`;
+
                 if (userRoster) {
-                    if (league.roster_positions) {
-                        const rosterSummary = summarizeRosterPositions(league.roster_positions);
-                        html += `<div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #475569;"><p style="color: #fbbf24; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.95rem;">Roster Requirements (${league.roster_positions.length} players):</p><p style="color: #cbd5e1; font-size: 0.85rem;">${rosterSummary}</p></div>`;
-                    }
+                    const allocation = allocateRoster(userRoster, league, tepTier);
                     
-                    if (userRoster.players && userRoster.players.length > 0) {
-                        const { classification: playerClassification, positionStarters } = classifyPlayers(userRoster, league, user, tepTier);
-                        addStarsClassification(playerClassification, tepTier, positionStarters);
-                        const shortages = checkPositionalShortages(userRoster, league, playerClassification);
-                        
-                        // Display shortage warnings if any
-                        if (shortages.length > 0) {
-                            html += `<div style="margin-top: 1rem; padding: 0.75rem; background: rgba(239, 68, 68, 0.2); border: 1px solid #dc2626; border-radius: 0.375rem; margin-bottom: 1rem;">`;
-                            html += `<p style="color: #fca5a5; font-weight: 600; margin: 0 0 0.5rem 0; font-size: 0.9rem;">⚠️ Roster Alerts</p>`;
-                            shortages.forEach(shortage => {
-                                html += `<p style="color: #fecaca; margin: 0.25rem 0; font-size: 0.85rem;">• ${shortage}</p>`;
-                            });
-                            html += `</div>`;
-                        }
-                        
-                        const playersByPosition = {};
-                        
-                        userRoster.players.forEach(playerId => {
-                            const playerData = getPlayerData(playerId);
-                            const position = playerData?.position || 'N/A';
-                            if (!playersByPosition[position]) {
-                                playersByPosition[position] = [];
-                            }
-                            playersByPosition[position].push({ playerId, playerData });
+                    html += '<div class="roster-info"><div class="roster-info-title">Your Roster Summary</div>';
+                    html += `<div class="roster-info-text">Total Players: ${userRoster.players.length}</div>`;
+                    html += '</div>';
+
+                    const playersByPosition = {};
+                    userRoster.players.forEach(playerId => {
+                        const playerObj = getPlayerData(playerId);
+                        const position = playerObj?.position || 'N/A';
+                        if (!playersByPosition[position]) playersByPosition[position] = [];
+                        playersByPosition[position].push(playerId);
+                    });
+
+                    const positionOrder = ['QB', 'RB', 'WR', 'TE', 'K', 'DEF'];
+                    const sortedPositions = positionOrder.filter(pos => playersByPosition[pos]);
+
+                    sortedPositions.forEach(position => {
+                        html += `<div class="position-group"><div class="position-header">━━ ${position} ━━</div>`;
+
+                        playersByPosition[position].sort((a, b) => {
+                            const rankA = getPlayerData(a)?.defaultRank || 9999;
+                            const rankB = getPlayerData(b)?.defaultRank || 9999;
+                            return rankA - rankB;
+                        }).forEach(playerId => {
+                            const playerObj = getPlayerData(playerId);
+                            const alloc = allocation[playerId];
+                            const name = playerObj?.playerName || 'Unknown';
+                            const team = playerObj?.team || 'N/A';
+                            const ovrRank = playerObj?.defaultRank < 9999 ? playerObj.defaultRank : 'Unranked';
+                            const posRank = playerObj?.posRank || '';
+                            const posNum = posRank ? posRank.split('_')[1] : '';
+                            const status = alloc?.finalStatus || 'Unknown';
+
+                            const statusColor = status.includes('Starter') ? '#34d399' : (status === 'Bench' ? '#cbd5e1' : (status === 'Trade' ? '#f97316' : '#ef4444'));
+
+                            html += `<div class="player-item"><div class="player-info"><div class="player-name">${status} ${name} (${team})</div><div class="player-meta">Age: ${playerObj?.age || 'N/A'} | Depth: ${playerObj?.depthChartPos || 'N/A'} #${playerObj?.depthChartOrder || 'N/A'}</div></div><div class="player-ranks"><div class="player-ovr" style="color: ${statusColor};">OVR #${ovrRank}</div>${posNum ? `<div class="player-pos">${position} #${posNum}</div>` : ''}</div></div>`;
                         });
-                        
-                        // Count players by position for summary
-                        const positionCounts = {};
-                        ['QB', 'RB', 'WR', 'TE', 'K', 'DEF'].forEach(pos => {
-                            if (playersByPosition[pos]) {
-                                positionCounts[pos] = playersByPosition[pos].length;
-                            }
-                        });
-                        
-                        const positionSummary = [];
-                        ['QB', 'RB', 'WR', 'TE', 'K', 'DEF'].forEach(pos => {
-                            if (positionCounts[pos]) {
-                                positionSummary.push(`${positionCounts[pos]} ${pos}`);
-                            }
-                        });
-                        
-                        html += '<div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #475569;">';
-                        html += `<p style="color: #fbbf24; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.95rem;">Your Roster (${userRoster.players.length} players):</p><p style="color: #cbd5e1; font-size: 0.85rem; margin-bottom: 1rem;">${positionSummary.join(', ')}</p>`;
-                        
-                        const positionOrder = ['QB', 'RB', 'WR', 'TE', 'K', 'DEF', 'FLEX', 'SUPER_FLEX', 'BN', 'IR', 'TAXI'];
-                        const sortedPositions = positionOrder.filter(pos => playersByPosition[pos]);
-                        Object.keys(playersByPosition).forEach(pos => {
-                            if (!positionOrder.includes(pos)) {
-                                sortedPositions.push(pos);
-                            }
-                        });
-                        
-                        sortedPositions.forEach(position => {
-                            const positionPlayers = playersByPosition[position].sort((a, b) => {
-                                const rankA = a.playerData?.defaultRank || 9999;
-                                const rankB = b.playerData?.defaultRank || 9999;
-                                return rankA - rankB;
-                            });
-                            
-                            const displayPos = position === 'SUPER_FLEX' ? 'Super Flex' : position;
-                            html += `<div style="margin-bottom: 1rem;">`;
-                            html += `<p style="color: #94a3b8; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.5rem;">━━ ${displayPos} ━━</p>`;
-                            
-                            positionPlayers.forEach(({ playerId, playerData }) => {
-                                const playerName = playerData ? `${playerData.playerName || playerData.position}` : `Player ${playerId}`;
-                                const team = playerData?.team || 'N/A';
-                                const defaultRank = playerData?.defaultRank && playerData.defaultRank < 9999 ? playerData.defaultRank : 'Unranked';
-                                const posRank = playerData?.posRank || 'Unranked';
-                                
-                                // Extract position letter from posRank (e.g., "QB_001" → "QB", "001")
-                                let posLetter = '';
-                                let posNum = '';
-                                if (posRank !== 'Unranked') {
-                                    const parts = posRank.split('_');
-                                    posLetter = parts[0];
-                                    posNum = parts[1];
-                                }
-                                
-                                const rankColor = playerData?.defaultRank && playerData.defaultRank <= 12 ? '#fbbf24' : '#cbd5e1';
-                                
-                                const classification = playerClassification[playerId];
-                                const categoryColor = getCategoryColor(classification?.category);
-                                const categoryEmoji = getCategoryEmoji(classification?.category);
-                                
-                                const age = playerData?.age || 'N/A';
-                                const depthPos = playerData?.depthChartPos || 'N/A';
-                                const depthOrder = playerData?.depthChartOrder || 'N/A';
-                                
-                                html += `<div class="player-card" style="border-left-color: ${categoryColor};">`;
-                                html += `<div class="player-header">`;
-                                html += `<div class="player-name-section">`;
-                                html += `<span style="color: ${categoryColor}; font-weight: 600;">${categoryEmoji} ${classification?.category || 'N/A'}</span>`;
-                                html += `<strong style="color: white;">${playerName}</strong>`;
-                                html += `<span style="color: #64748b;">(${team})</span>`;
-                                html += `</div>`;
-                                html += `<div class="player-ranks" style="text-align: right;">`;
-                                html += `<div style="color: ${rankColor}; font-weight: 600; font-size: 0.9rem;">OVR #${defaultRank === 'Unranked' ? 'Unranked' : defaultRank}</div>`;
-                                if (posRank !== 'Unranked') {
-                                    html += `<div style="color: #94a3b8; font-size: 0.8rem;">${posLetter} #${posNum}</div>`;
-                                }
-                                html += `</div>`;
-                                html += `</div>`;
-                                html += `<div class="player-details">Age: ${age} | Depth: ${depthPos} #${depthOrder}</div>`;
-                                html += `</div>`;
-                            });
-                            
-                            html += `</div>`;
-                        });
-                        
+
                         html += '</div>';
-                    }
+                    });
                 } else {
                     html += '<p style="color: #94a3b8;">You are not in this league</p>';
                 }
-                
-                html += '</div></div></div>';
+
+                html += '</div></div>';
             });
 
-            html += '</div></div>';
+            html += '</div>';
             contentDiv.innerHTML = html;
         }
 
         function toggleLeague(idx) {
             const rosters = document.getElementById(`rosters-${idx}`);
-            const card = document.getElementById(`league-${idx}`);
             rosters.classList.toggle('hidden');
-            card.classList.toggle('expanded');
         }
 
         searchForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const username = usernameInput.value.trim();
-            const year = yearSelect.value;
-            if (username) {
-                fetchSleeperData(username, year);
-            }
+            if (username) fetchSleeperData(username, yearSelect.value);
         });
 
         window.addEventListener('load', () => {
-            const year = yearSelect.value;
-            fetchSleeperData(usernameInput.value, year);
+            fetchSleeperData(usernameInput.value, yearSelect.value);
         });
     </script>
 </body>
