@@ -872,6 +872,8 @@
             
             return shortages;
         }
+
+        function summarizeRosterPositions(positions) {
             const summary = {};
             positions.forEach(pos => {
                 summary[pos] = (summary[pos] || 0) + 1;
