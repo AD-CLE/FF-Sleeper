@@ -585,7 +585,7 @@
                             team: row['TEAM'],
                             depthChartPos: row['DEPTH_CHART_POS'],
                             depthChartOrder: row['DEPTH_CHART_ORDER'],
-                            ecrRank: row['ECR_RANK'] || 9999
+                            defaultRank: row['Default_Rank'] || 9999
                         };
                     }
                 });
@@ -664,13 +664,13 @@
                 playersByPosition[position].push({
                     playerId,
                     playerData,
-                    ecrRank: playerData?.ecrRank || 9999
+                    defaultRank: playerData?.defaultRank || 9999
                 });
             });
             
             // Sort players within each position by ECR rank
             Object.keys(playersByPosition).forEach(pos => {
-                playersByPosition[pos].sort((a, b) => a.ecrRank - b.ecrRank);
+                playersByPosition[pos].sort((a, b) => a.defaultRank - b.defaultRank);
             });
             
             const classification = {};
@@ -692,12 +692,12 @@
                 
                 players.forEach((playerData, index) => {
                     if (index < starterCount) {
-                        const category = playerData.ecrRank <= 12 ? 'Stars' : 'Starters';
+                        const category = playerData.defaultRank <= 12 ? 'Stars' : 'Starters';
                         classification[playerData.playerId] = {
                             category,
                             position,
                             index,
-                            ecrRank: playerData.ecrRank,
+                            defaultRank: playerData.defaultRank,
                             slotType: 'Position'
                         };
                     }
@@ -717,23 +717,23 @@
                             playerData: playerData.playerData,
                             position,
                             index,
-                            ecrRank: playerData.ecrRank
+                            defaultRank: playerData.defaultRank
                         });
                     }
                 });
             });
             
-            flexiblePlayers.sort((a, b) => a.ecrRank - b.ecrRank);
+            flexiblePlayers.sort((a, b) => a.defaultRank - b.defaultRank);
             
             // Step 3: Fill FLEX slots
             const flexSlots = rosterSlots['FLEX'] || 0;
             flexiblePlayers.slice(0, flexSlots).forEach(playerData => {
-                const category = playerData.ecrRank <= 12 ? 'Stars' : 'Starters';
+                const category = playerData.defaultRank <= 12 ? 'Stars' : 'Starters';
                 classification[playerData.playerId] = {
                     category,
                     position: playerData.position,
                     index: playerData.index,
-                    ecrRank: playerData.ecrRank,
+                    defaultRank: playerData.defaultRank,
                     slotType: 'FLEX'
                 };
             });
@@ -761,7 +761,7 @@
                             category: 'Bench',
                             position,
                             index,
-                            ecrRank: playerData.ecrRank,
+                            defaultRank: playerData.defaultRank,
                             slotType: 'Bench'
                         };
                     }
@@ -779,19 +779,19 @@
                         category: 'Bench',
                         position: playerData.position,
                         index: playerData.index,
-                        ecrRank: playerData.ecrRank,
+                        defaultRank: playerData.defaultRank,
                         slotType: 'Bench'
                     };
                 } else {
-                    const ecrRank = playerData.ecrRank;
+                    const defaultRank = playerData.defaultRank;
                     const age = playerData.playerData?.age || 0;
                     
-                    const category = (ecrRank > 500 || age > 32) ? 'Cut Candidates' : 'Trade Potentials';
+                    const category = (defaultRank > 500 || age > 32) ? 'Cut Candidates' : 'Trade Potentials';
                     classification[playerData.playerId] = {
                         category,
                         position: playerData.position,
                         index: playerData.index,
-                        ecrRank: playerData.ecrRank,
+                        defaultRank: playerData.defaultRank,
                         slotType: 'Overflow'
                     };
                 }
@@ -802,14 +802,14 @@
                 if (!classification[playerId]) {
                     const playerObj = getPlayerData(playerId);
                     const position = playerObj?.position || 'N/A';
-                    const ecrRank = playerObj?.ecrRank || 9999;
+                    const defaultRank = playerObj?.defaultRank || 9999;
                     const age = playerObj?.age || 0;
                     
-                    const category = (ecrRank > 500 || age > 32) ? 'Cut Candidates' : 'Trade Potentials';
+                    const category = (defaultRank > 500 || age > 32) ? 'Cut Candidates' : 'Trade Potentials';
                     classification[playerId] = {
                         category,
                         position,
-                        ecrRank,
+                        defaultRank,
                         slotType: 'Overflow'
                     };
                 }
@@ -977,8 +977,8 @@
                         
                         sortedPositions.forEach(position => {
                             const positionPlayers = playersByPosition[position].sort((a, b) => {
-                                const rankA = a.playerData?.ecrRank || 9999;
-                                const rankB = b.playerData?.ecrRank || 9999;
+                                const rankA = a.playerData?.defaultRank || 9999;
+                                const rankB = b.playerData?.defaultRank || 9999;
                                 return rankA - rankB;
                             });
                             
@@ -989,8 +989,8 @@
                             positionPlayers.forEach(({ playerId, playerData }) => {
                                 const playerName = playerData ? `${playerData.playerName || playerData.position}` : `Player ${playerId}`;
                                 const team = playerData?.team || 'N/A';
-                                const ecrRank = playerData?.ecrRank && playerData.ecrRank < 9999 ? `#${playerData.ecrRank}` : 'Unranked';
-                                const rankColor = playerData?.ecrRank && playerData.ecrRank <= 12 ? '#fbbf24' : '#cbd5e1';
+                                const defaultRank = playerData?.defaultRank && playerData.defaultRank < 9999 ? `#${playerData.defaultRank}` : 'Unranked';
+                                const rankColor = playerData?.defaultRank && playerData.defaultRank <= 12 ? '#fbbf24' : '#cbd5e1';
                                 
                                 const classification = playerClassification[playerId];
                                 const categoryColor = getCategoryColor(classification?.category);
@@ -1007,7 +1007,7 @@
                                 html += `<strong style="color: white;">${playerName}</strong>`;
                                 html += `<span style="color: #64748b;">(${team})</span>`;
                                 html += `</div>`;
-                                html += `<span class="player-rank" style="color: ${rankColor};">${ecrRank}</span>`;
+                                html += `<span class="player-rank" style="color: ${rankColor};">${defaultRank}</span>`;
                                 html += `</div>`;
                                 html += `<div class="player-details">Age: ${age} | Depth: ${depthPos} #${depthOrder}</div>`;
                                 html += `</div>`;
