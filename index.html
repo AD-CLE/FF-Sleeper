@@ -475,7 +475,7 @@
             <div class="header-title">
                 <span class="header-icon">🏆</span>
                 <h1>Sleeper Manager</h1>
-                <span style="font-size: 0.85rem; color: #94a3b8; margin-left: auto;">v0.2-beta</span>
+                <span style="font-size: 0.85rem; color: #94a3b8; margin-left: auto;">v0.3-beta</span>
             </div>
             <p class="header-subtitle">View your fantasy leagues, rosters, and team management</p>
         </div>
@@ -586,6 +586,7 @@
                             team: row['TEAM'],
                             depthChartPos: row['DEPTH_CHART_POS'],
                             depthChartOrder: row['DEPTH_CHART_ORDER'],
+                            yearsExp: row['YEARS_EXP'],
                             defaultRank: row['Default_Rank'] || 9999
                         };
                     }
@@ -805,8 +806,51 @@
                     const position = playerObj?.position || 'N/A';
                     const defaultRank = playerObj?.defaultRank || 9999;
                     const age = playerObj?.age || 0;
+                    const yearsExp = playerObj?.yearsExp || 0;
+                    const depthChartOrder = playerObj?.depthChartOrder || 0;
                     
-                    const category = (defaultRank > 500 || age > 32) ? 'Cut Candidates' : 'Trade Potentials';
+                    let category = 'Trade Potentials'; // Default
+                    
+                    // QB Logic
+                    if (position === 'QB') {
+                        const qbStarters = positionStarters['QB'];
+                        
+                        if (qbStarters === 1) {
+                            // 1QB League: 4th+ QB = Cut
+                            const qbCount = userRoster.players.filter(id => {
+                                const p = getPlayerData(id);
+                                return p?.position === 'QB';
+                            }).length;
+                            
+                            if (qbCount >= 4) {
+                                category = 'Cut Candidates';
+                            }
+                        } else {
+                            // SF League: Apply depth/rank logic
+                            if (depthChartOrder === 1 || depthChartOrder === '1') {
+                                category = 'Starters'; // Currently starting
+                            } else if (depthChartOrder >= 2 && defaultRank > 300) {
+                                category = 'Cut Candidates';
+                            } else if (defaultRank <= 300) {
+                                category = 'Starters'; // Backup with potential
+                            } else {
+                                category = 'Cut Candidates';
+                            }
+                        }
+                    }
+                    // WR Logic
+                    else if (position === 'WR' && defaultRank > 120 && yearsExp > 4 && depthChartOrder > 3) {
+                        category = 'Cut Candidates';
+                    }
+                    // K/DEF Logic - if you have extras, cut them
+                    else if ((position === 'K' || position === 'DEF') && defaultRank > 100) {
+                        category = 'Cut Candidates';
+                    }
+                    // Default Trade/Cut based on rank and age
+                    else if (defaultRank > 500 || age > 32) {
+                        category = 'Cut Candidates';
+                    }
+                    
                     classification[playerId] = {
                         category,
                         position,
