@@ -475,7 +475,7 @@
             <div class="header-title">
                 <span class="header-icon">🏆</span>
                 <h1>Sleeper Manager</h1>
-                <span style="font-size: 0.85rem; color: #94a3b8; margin-left: auto;">v0.4-beta</span>
+                <span style="font-size: 0.85rem; color: #94a3b8; margin-left: auto;">v0.5-beta</span>
             </div>
             <p class="header-subtitle">View your fantasy leagues, rosters, and team management</p>
         </div>
@@ -587,6 +587,7 @@
                             depthChartPos: row['DEPTH_CHART_POS'],
                             depthChartOrder: row['DEPTH_CHART_ORDER'],
                             yearsExp: row['YEARS_EXP'],
+                            posRank: row['POS_RANK'],
                             defaultRank: row['Default_Rank'] || 9999
                         };
                     }
@@ -647,7 +648,7 @@
             return emojis[category] || '';
         }
 
-        function classifyPlayers(userRoster, league, user) {
+        function classifyPlayers(userRoster, league, user, tepTier) {
             if (!userRoster.players || userRoster.players.length === 0) return {};
             
             const rosterSlots = {};
@@ -871,6 +872,92 @@
                     else if ((position === 'K' || position === 'DEF') && defaultRank > 100) {
                         category = 'Cut Candidates';
                     }
+                    // RB/WR Overflow Logic (after position starters and FLEX)
+                    else if ((position === 'RB' || position === 'WR')) {
+                        // DC#1 overflow
+                        if (depthChartOrder === 1 || depthChartOrder === '1') {
+                            category = 'Bench'; // DC#1 but not top starter
+                        }
+                        // DC#2 (RB/WR)
+                        else if (depthChartOrder === 2 || depthChartOrder === '2') {
+                            if (yearsExp < 4) {
+                                category = 'Bench'; // Young backup, injury lottery
+                            } else {
+                                category = 'Trade Potentials'; // Veteran, moveable
+                            }
+                        }
+                        // DC#3+ (RB/WR)
+                        else if (depthChartOrder >= 3) {
+                            if (yearsExp < 2) {
+                                category = 'Bench'; // Young prospect
+                            } else if (defaultRank <= 300) {
+                                category = 'Trade Potentials'; // Someone will pay
+                            } else {
+                                category = 'Cut Candidates'; // Obvious dump
+                            }
+                        }
+                        // DC unranked
+                        else if (!depthChartOrder || depthChartOrder === 0) {
+                            if (yearsExp === 0) {
+                                category = 'Trade Potentials'; // Rookie
+                            } else {
+                                category = 'Cut Candidates';
+                            }
+                        }
+                    }
+                    // TE-specific logic (tier-based: Non-TEP, TEP, TEP+)
+                    else if (position === 'TE') {
+                        const posRank = playerObj?.posRank || ''; // e.g., "TE_001"
+                        const teRankNum = posRank ? parseInt(posRank.split('_')[1]) : 9999;
+                        
+                        if (tepTier === 'Off') {
+                            // Non-TEP: Super simple position-rank based
+                            if (teRankNum <= 2) {
+                                // TE#1-2: Keep (starter + bench minimum)
+                                category = teRankNum === 1 ? 'Starters' : 'Bench';
+                            } else {
+                                // TE#3+: Trade if ranked or rookie, Cut if not
+                                if (defaultRank <= 200 || yearsExp === 0) {
+                                    category = 'Trade Potentials';
+                                } else {
+                                    category = 'Cut Candidates';
+                                }
+                            }
+                        } else {
+                            // TEP (1.5) or TEP+ (2.0): DC-based logic
+                            if (depthChartOrder === 1 || depthChartOrder === '1') {
+                                // DC#1: Check if top starter by overall rank
+                                if (teRankNum === 1) {
+                                    category = 'Starters';
+                                } else {
+                                    category = 'Bench';
+                                }
+                            } else if (depthChartOrder === 2 || depthChartOrder === '2') {
+                                // DC#2: Young backup = Bench, Veteran = Trade
+                                if (yearsExp < 4) {
+                                    category = 'Bench';
+                                } else {
+                                    category = 'Trade Potentials';
+                                }
+                            } else if (depthChartOrder >= 3) {
+                                // DC#3+: Very young = Bench, ranked = Trade, else Cut
+                                if (yearsExp < 2) {
+                                    category = 'Bench';
+                                } else if (defaultRank <= 300) {
+                                    category = 'Trade Potentials';
+                                } else {
+                                    category = 'Cut Candidates';
+                                }
+                            } else if (!depthChartOrder || depthChartOrder === 0) {
+                                // DC unranked: Rookie = Trade, else Cut
+                                if (yearsExp === 0) {
+                                    category = 'Trade Potentials';
+                                } else {
+                                    category = 'Cut Candidates';
+                                }
+                            }
+                        }
+                    }
                     // Default Trade/Cut based on rank and age
                     else if (defaultRank > 500 || age > 32) {
                         category = 'Cut Candidates';
@@ -1021,6 +1108,7 @@
                 
                 // Determine scoring type from actual league settings
                 let scoringType = 'PPR';
+                let tepTier = 'Off'; // Off, TEP, or TEP+
                 const hasSuperFlex = league.roster_positions?.includes('SUPER_FLEX');
                 const scoringSettings = league.scoring_settings || {};
                 
@@ -1041,8 +1129,18 @@
                     scoringParts.push('PPR');
                 }
                 
-                if (scoringSettings.bonus_rec_te > 0) {
-                    const tepMultiplier = recValue + scoringSettings.bonus_rec_te;
+                // Determine TEP tier
+                const bonusRecTe = parseFloat(scoringSettings.bonus_rec_te) || 0;
+                if (bonusRecTe === 0) {
+                    tepTier = 'Off';
+                } else if (bonusRecTe > 0 && bonusRecTe <= 1) {
+                    tepTier = 'TEP';
+                } else if (bonusRecTe > 1) {
+                    tepTier = 'TEP+';
+                }
+                
+                if (bonusRecTe > 0) {
+                    const tepMultiplier = recValue + bonusRecTe;
                     scoringParts.push(`${tepMultiplier}TEP`);
                 }
                 
@@ -1061,7 +1159,7 @@
                     }
                     
                     if (userRoster.players && userRoster.players.length > 0) {
-                        const playerClassification = classifyPlayers(userRoster, league, user);
+                        const playerClassification = classifyPlayers(userRoster, league, user, tepTier);
                         const shortages = checkPositionalShortages(userRoster, league, playerClassification);
                         
                         // Display shortage warnings if any
