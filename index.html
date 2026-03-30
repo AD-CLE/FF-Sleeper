@@ -307,7 +307,7 @@
                 <h1>🏆 Sleeper Manager</h1>
                 <p class="header-subtitle">Fantasy league roster allocation & analysis</p>
             </div>
-            <span style="font-size: 0.85rem; color: #94a3b8;">v1.7-beta</span>
+            <span style="font-size: 0.85rem; color: #94a3b8;">v1.7.1-beta</span>
         </div>
     </div>
 
@@ -625,12 +625,6 @@
 
             // STEP 6: Apply Stars
             Object.keys(allocation).forEach(playerId => {
-                    const record = allocation[playerId];
-                    record.finalStatus = record.classification === 'Cut' ? 'Cut' : 'Trade';
-                }
-            });
-
-            Object.keys(allocation).forEach(playerId => {
                 const record = allocation[playerId];
                 const posRankNum = record.posRank ? parseInt(record.posRank.split('_')[1]) : 9999;
                 let isStars = false;
@@ -643,7 +637,6 @@
                     isStars = tepTier === 'Off' ? posRankNum <= 6 : posRankNum <= 12;
                 }
 
-                // Only add star if meets position-rank cutoff (don't add to all starters)
                 if (isStars && (record.finalStatus === 'Starter' || record.finalStatus === 'FLEX')) {
                     record.finalStatus = '⭐ ' + record.finalStatus;
                 }
