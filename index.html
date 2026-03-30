@@ -433,7 +433,14 @@
             const allocation = {};
             const classified = {'KEEP': [], 'Trade': [], 'Cut': []};
 
+            // Debug: Log all players in roster
+            console.log('=== ROSTER PLAYERS DEBUG ===');
+            console.log('Total players:', userRoster.players.length);
+            console.log('Player IDs:', userRoster.players);
             userRoster.players.forEach(playerId => {
+                const playerObj = getPlayerData(playerId);
+                console.log(`Player ${playerId}: ${playerObj?.playerName || 'NOT FOUND'} (${playerObj?.position || 'N/A'})`);
+            });
                 const playerObj = getPlayerData(playerId);
                 if (!playerObj) return;
 
