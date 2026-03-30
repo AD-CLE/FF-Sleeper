@@ -307,7 +307,7 @@
                 <h1>🏆 Sleeper Manager</h1>
                 <p class="header-subtitle">Fantasy league roster allocation & analysis</p>
             </div>
-            <span style="font-size: 0.85rem; color: #94a3b8;">v1.6-beta</span>
+            <span style="font-size: 0.85rem; color: #94a3b8;">v1.6.1-beta</span>
         </div>
     </div>
 
@@ -441,6 +441,8 @@
                 const playerObj = getPlayerData(playerId);
                 console.log(`Player ${playerId}: ${playerObj?.playerName || 'NOT FOUND'} (${playerObj?.position || 'N/A'})`);
             });
+
+            userRoster.players.forEach(playerId => {
                 const playerObj = getPlayerData(playerId);
                 if (!playerObj) return;
 
