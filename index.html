@@ -307,7 +307,7 @@
                 <h1>🏆 Sleeper Manager</h1>
                 <p class="header-subtitle">Fantasy league roster allocation & analysis</p>
             </div>
-            <span style="font-size: 0.85rem; color: #94a3b8;">v1.6.3-beta</span>
+            <span style="font-size: 0.85rem; color: #94a3b8;">v1.7-beta</span>
         </div>
     </div>
 
@@ -464,8 +464,9 @@
                 'SUPER_FLEX': rosterSlots['SUPER_FLEX'] || 0
             };
 
-            const allocation = {};
+            // STEP 1: CLASSIFY all players
             const classified = {'KEEP': [], 'Trade': [], 'Cut': []};
+            const allocation = {};
 
             // Debug: Log all players in roster
             console.log('=== ROSTER PLAYERS DEBUG ===');
@@ -489,28 +490,27 @@
 
                 let classification = 'Trade';
 
-                if (position === 'QB') {
+                // Unknown players = KEEP
+                if (position === 'UNK') {
+                    classification = 'KEEP';
+                } else if (position === 'QB') {
                     if (positionStarters['QB'] === 1) {
-                        const qbCount = userRoster.players.filter(id => getPlayerData(id)?.position === 'QB').length;
-                        if (qbCount >= 4) {
-                            classification = depthChartOrder === 1 ? 'KEEP' : 'Trade';
-                        } else {
+                        const allQBs = userRoster.players
+                            .map(id => ({ id, rank: getPlayerData(id)?.defaultRank || 9999, yearsExp: getPlayerData(id)?.yearsExp || 0 }))
+                            .filter(q => getPlayerData(q.id)?.position === 'QB')
+                            .sort((a, b) => a.rank - b.rank);
+                        
+                        const qbRankIndex = allQBs.findIndex(q => q.id === playerId);
+                        if (qbRankIndex <= 2) {
                             classification = 'KEEP';
+                        } else {
+                            classification = allQBs[qbRankIndex].yearsExp < 2 ? 'Trade' : 'Cut';
                         }
                     } else {
                         if (depthChartOrder === 1) classification = 'KEEP';
                         else if (depthChartOrder === 2) classification = 'Trade';
                         else if (depthChartOrder >= 3) classification = yearsExp < 4 ? 'Trade' : 'Cut';
                         else classification = yearsExp === 0 ? 'Trade' : 'Cut';
-                    }
-                } else if (position === 'WR') {
-                    classification = (defaultRank > 120 && yearsExp > 4 && depthChartOrder > 3) ? 'Cut' : 'KEEP';
-                } else if (position === 'K' || position === 'DEF') {
-                    if (depthChartOrder === 1) {
-                        classification = 'KEEP'; // Always keep starter
-                    } else {
-                        // Backup/extra: top 6 pos rank = bench, else cut
-                        classification = posRankNum <= 6 ? 'Bench' : 'Cut';
                     }
                 } else if (position === 'RB' || position === 'TE') {
                     if (depthChartOrder === 1) classification = 'KEEP';
@@ -520,10 +520,22 @@
                         else if (defaultRank <= 300) classification = 'Trade';
                         else classification = 'Cut';
                     } else classification = yearsExp === 0 ? 'Trade' : 'Cut';
-                }
-
-                if (position === 'TE' && tepTier === 'Off') {
-                    classification = posRankNum <= 2 ? 'KEEP' : (defaultRank <= 200 || yearsExp === 0 ? 'Trade' : 'Cut');
+                    
+                    if (position === 'TE' && tepTier === 'Off') {
+                        if (depthChartOrder === 1) {
+                            classification = 'KEEP';
+                        } else {
+                            classification = posRankNum <= 2 ? 'KEEP' : (defaultRank <= 200 || yearsExp === 0 ? 'Trade' : 'Cut');
+                        }
+                    }
+                } else if (position === 'WR') {
+                    classification = (defaultRank > 120 && yearsExp > 4 && depthChartOrder > 3) ? 'Cut' : 'KEEP';
+                } else if (position === 'K' || position === 'DEF') {
+                    if (depthChartOrder === 1) {
+                        classification = 'KEEP';
+                    } else {
+                        classification = posRankNum <= 6 ? 'Bench' : 'Cut';
+                    }
                 }
 
                 allocation[playerId] = {position, classification, defaultRank, posRank, yearsExp, depthChartOrder, finalStatus: null};
@@ -535,87 +547,84 @@
             });
 
             const assigned = new Set();
-
             const positions = ['QB', 'RB', 'WR', 'TE', 'K', 'DEF'];
+
+            // STEP 2: Fill Starters
             positions.forEach(pos => {
                 const slots = positionStarters[pos] || 0;
                 for (let i = 0; i < slots; i++) {
-                    let player = null;
-                    const keepIdx = classified['KEEP'].findIndex(id => getPlayerData(id)?.position === pos);
-                    const tradeIdx = classified['Trade'].findIndex(id => getPlayerData(id)?.position === pos);
-                    
-                    if (keepIdx >= 0) {
-                        player = classified['KEEP'].splice(keepIdx, 1)[0];
-                    } else if (tradeIdx >= 0) {
-                        player = classified['Trade'].splice(tradeIdx, 1)[0];
+                    const keepPlayer = classified['KEEP'].find(id => getPlayerData(id)?.position === pos && !assigned.has(id));
+                    if (keepPlayer) {
+                        allocation[keepPlayer].finalStatus = 'Starter';
+                        assigned.add(keepPlayer);
+                        continue;
                     }
-                    
-                    if (player) {
-                        allocation[player].finalStatus = 'Starter';
-                        assigned.add(player);
+                    const tradePlayer = classified['Trade'].find(id => getPlayerData(id)?.position === pos && !assigned.has(id));
+                    if (tradePlayer) {
+                        allocation[tradePlayer].finalStatus = 'Starter';
+                        assigned.add(tradePlayer);
                     }
                 }
             });
 
+            // STEP 3: Fill FLEX
             const flexSlots = positionStarters['FLEX'] || 0;
             for (let i = 0; i < flexSlots; i++) {
-                let bestPlayer = null;
-                let bestRank = 9999;
-                
-                [...classified['KEEP'], ...classified['Trade']].forEach(playerId => {
-                    const playerObj = getPlayerData(playerId);
-                    if (['RB', 'WR', 'TE'].includes(playerObj?.position)) {
-                        const rank = playerObj?.defaultRank || 9999;
-                        if (rank < bestRank) {
-                            bestPlayer = playerId;
-                            bestRank = rank;
-                        }
-                    }
+                const flexEligible = ['RB', 'WR', 'TE'];
+                const flexPlayer = classified['KEEP'].find(id => {
+                    const pos = getPlayerData(id)?.position;
+                    return flexEligible.includes(pos) && !assigned.has(id);
                 });
-
-                if (bestPlayer) {
-                    allocation[bestPlayer].finalStatus = 'FLEX';
-                    assigned.add(bestPlayer);
-                    classified['KEEP'].splice(classified['KEEP'].indexOf(bestPlayer), 1);
-                    classified['Trade'].splice(classified['Trade'].indexOf(bestPlayer), 1);
+                if (flexPlayer) {
+                    allocation[flexPlayer].finalStatus = 'FLEX';
+                    assigned.add(flexPlayer);
+                } else {
+                    const flexTrade = classified['Trade'].find(id => {
+                        const pos = getPlayerData(id)?.position;
+                        return flexEligible.includes(pos) && !assigned.has(id);
+                    });
+                    if (flexTrade) {
+                        allocation[flexTrade].finalStatus = 'FLEX';
+                        assigned.add(flexTrade);
+                    }
                 }
             }
 
-            const benchMin = {'QB': 1, 'RB': 2, 'WR': 2, 'TE': 1, 'K': 0, 'DEF': 0};
-            positions.forEach(pos => {
-                const needed = benchMin[pos] || 0;
-                for (let i = 0; i < needed; i++) {
-                    let player = null;
-                    const keepIdx = classified['KEEP'].findIndex(id => getPlayerData(id)?.position === pos);
-                    const tradeIdx = classified['Trade'].findIndex(id => getPlayerData(id)?.position === pos);
-                    
-                    if (keepIdx >= 0) {
-                        player = classified['KEEP'].splice(keepIdx, 1)[0];
-                    } else if (tradeIdx >= 0) {
-                        player = classified['Trade'].splice(tradeIdx, 1)[0];
-                    }
-                    
-                    if (player) {
-                        allocation[player].finalStatus = 'Bench';
-                        assigned.add(player);
+            // STEP 4: Fill Bench
+            const totalRosterSlots = league.roster_positions?.length || 22;
+            const filledSlots = assigned.size;
+            const benchSlots = Math.max(0, totalRosterSlots - filledSlots);
+
+            for (let i = 0; i < benchSlots; i++) {
+                const benchKeep = classified['KEEP'].find(id => !assigned.has(id));
+                if (benchKeep) {
+                    allocation[benchKeep].finalStatus = 'Bench';
+                    assigned.add(benchKeep);
+                    continue;
+                }
+                const benchTrade = classified['Trade'].find(id => !assigned.has(id));
+                if (benchTrade) {
+                    allocation[benchTrade].finalStatus = 'Bench';
+                    assigned.add(benchTrade);
+                }
+            }
+
+            // STEP 5: Handle unassigned
+            userRoster.players.forEach(playerId => {
+                if (!assigned.has(playerId)) {
+                    const record = allocation[playerId];
+                    if (record.classification === 'KEEP') {
+                        record.finalStatus = 'Trade'; // KEEP overflow
+                    } else if (record.classification === 'Trade') {
+                        record.finalStatus = 'Trade';
+                    } else {
+                        record.finalStatus = 'Cut';
                     }
                 }
             });
 
-            const bnSlots = rosterSlots['BN'] || 12;
-            const benchUsed = Array.from(assigned).filter(pid => ['Bench', 'FLEX'].includes(allocation[pid].finalStatus)).length;
-            const remainingBench = bnSlots - benchUsed;
-
-            for (let i = 0; i < remainingBench; i++) {
-                let player = classified['KEEP'].shift() || classified['Trade'].shift();
-                if (player) {
-                    allocation[player].finalStatus = 'Bench';
-                    assigned.add(player);
-                }
-            }
-
+            // STEP 6: Apply Stars
             Object.keys(allocation).forEach(playerId => {
-                if (!assigned.has(playerId)) {
                     const record = allocation[playerId];
                     record.finalStatus = record.classification === 'Cut' ? 'Cut' : 'Trade';
                 }
@@ -681,7 +690,7 @@
         }
 
         function renderUI(user, leagues) {
-            let html = `<div class="user-card"><div><h2 class="user-name">${user.display_name}</h2><p class="user-meta">@${user.username} • ${leagues.length} league${leagues.length !== 1 ? 's' : ''}</p></div></div>`;
+            let html = `<div class="user-card"><div><h2 class="user-name">${user.display_name}</h2><p class="user-meta">@${user.username} • ID: ${user.user_id}</p><p class="user-meta">${leagues.length} league${leagues.length !== 1 ? 's' : ''}</p></div></div>`;
             html += '<div class="leagues-section"><h3 class="leagues-title">🏆 Your Leagues</h3>';
             html += '<div class="roster-info" style="margin-bottom: 1.5rem;"><div class="roster-info-text" style="font-size: 0.9rem; color: #cbd5e1;">⭐ Star | 🎯 Starter/FLEX • 🪑 Bench • 🔀 Trade • 🗑️ Cut | 💔 IR • 🚕 Taxi</div></div>';
 
@@ -701,7 +710,7 @@
                 if (bonusRecTe > 0) scoringParts.push(`${recValue + bonusRecTe}TEP`);
                 if (league.settings?.best_ball === 1) scoringParts.push('Best Ball');
 
-                html += `<div class="league-card"><button class="league-header" onclick="toggleLeague(${leagueIdx})"><div><div class="league-name">${league.name}</div><div class="league-meta">${league.total_rosters} teams • Season ${league.season}</div><div class="league-meta" style="color: #fbbf24; margin-top: 0.5rem;">Scoring: ${scoringParts.join(' ')}</div></div><span class="league-chevron">▼</span></button>`;
+                html += `<div class="league-card"><button class="league-header" onclick="toggleLeague(${leagueIdx})"><div><div class="league-name">${league.name}</div><div class="league-meta">${league.total_rosters} teams • Season ${league.season} • ID: ${league.league_id}</div><div class="league-meta" style="color: #fbbf24; margin-top: 0.5rem;">Scoring: ${scoringParts.join(' ')}</div></div><span class="league-chevron">▼</span></button>`;
                 html += `<div class="rosters-container hidden" id="rosters-${leagueIdx}">`;
 
                 if (userRoster) {
