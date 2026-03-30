@@ -307,7 +307,7 @@
                 <h1>🏆 Sleeper Manager</h1>
                 <p class="header-subtitle">Fantasy league roster allocation & analysis</p>
             </div>
-            <span style="font-size: 0.85rem; color: #94a3b8;">v1.5-beta</span>
+            <span style="font-size: 0.85rem; color: #94a3b8;">v1.6-beta</span>
         </div>
     </div>
 
@@ -383,7 +383,23 @@
         }
 
         function getPlayerData(sleeperId) {
-            return playerLookupCache[String(sleeperId)] || null;
+            const data = playerLookupCache[String(sleeperId)] || null;
+            if (!data) {
+                // Fallback for missing players
+                return {
+                    sleeperId: sleeperId,
+                    playerName: `Unknown Player (${sleeperId})`,
+                    position: 'UNK',
+                    age: 'N/A',
+                    team: 'N/A',
+                    depthChartPos: 'N/A',
+                    depthChartOrder: 0,
+                    yearsExp: 0,
+                    posRank: 'UNK_000',
+                    defaultRank: 9999
+                };
+            }
+            return data;
         }
 
         function getStatusIcon(status) {
@@ -433,7 +449,11 @@
                 if (position === 'QB') {
                     if (positionStarters['QB'] === 1) {
                         const qbCount = userRoster.players.filter(id => getPlayerData(id)?.position === 'QB').length;
-                        classification = qbCount >= 4 ? 'Cut' : 'KEEP';
+                        if (qbCount >= 4) {
+                            classification = depthChartOrder === 1 ? 'KEEP' : 'Trade';
+                        } else {
+                            classification = 'KEEP';
+                        }
                     } else {
                         if (depthChartOrder === 1) classification = 'KEEP';
                         else if (depthChartOrder === 2) classification = 'Trade';
@@ -620,6 +640,7 @@
         function renderUI(user, leagues) {
             let html = `<div class="user-card"><div><h2 class="user-name">${user.display_name}</h2><p class="user-meta">@${user.username} • ${leagues.length} league${leagues.length !== 1 ? 's' : ''}</p></div></div>`;
             html += '<div class="leagues-section"><h3 class="leagues-title">🏆 Your Leagues</h3>';
+            html += '<div class="roster-info" style="margin-bottom: 1.5rem;"><div class="roster-info-text" style="font-size: 0.9rem; color: #cbd5e1;">⭐ Star | 🎯 Starter/FLEX • 🪑 Bench • 🔀 Trade • 🗑️ Cut | 💔 IR • 🚕 Taxi</div></div>';
 
             leagues.forEach((league, leagueIdx) => {
                 const userRoster = league.rosters?.find(r => r.owner_id === user.user_id);
@@ -659,8 +680,8 @@
                     html += `<div class="roster-info-text">Total Players: ${userRoster.players.length}</div>`;
                     html += '</div>';
                     
-                    html += '<div class="roster-info"><div class="roster-info-title">Status Legend</div>';
-                    html += '<div class="roster-info-text">⭐ Star • 🎯 Starter/FLEX • 🪑 Bench • 🔀 Trade • 🗑️ Cut | 💔 IR • 🚕 Taxi</div>';
+                    html += '<div class="roster-info"><div class="roster-info-title">Draft Picks</div>';
+                    html += '<div class="roster-info-text">2026: PLACEHOLDER</div>';
                     html += '</div>';
 
                     const playersByPosition = {};
@@ -693,7 +714,14 @@
 
                             // Get icon and clean status text
                             const statusIcon = getStatusIcon(status);
-                            const statusText = status.replace('⭐ ', '').replace(' Starter', '').replace(' FLEX', '');
+                            
+                            // If Star, show both ⭐ and the status icon (🎯/🪑/🔀/🗑️)
+                            let displayIcon = statusIcon;
+                            if (status.includes('Star')) {
+                                const baseStatus = status.replace('⭐ ', '').trim();
+                                const baseIcon = getStatusIcon(baseStatus);
+                                displayIcon = `⭐ ${baseIcon}`;
+                            }
 
                             // Check if player is on IR or Taxi
                             const isOnIR = userRoster.reserve && userRoster.reserve.includes(playerId);
@@ -702,7 +730,7 @@
 
                             const statusColor = (status.includes('Starter') || status.includes('FLEX')) ? '#34d399' : (status === 'Bench' ? '#cbd5e1' : (status === 'Trade' ? '#f97316' : '#ef4444'));
 
-                            html += `<div class="player-item"><div class="player-info"><div class="player-name">${statusIcon}${slotFlag} ${status} ${name} (${team})</div><div class="player-meta">Age: ${playerObj?.age || 'N/A'} (Exp: ${playerObj?.yearsExp || 'N/A'}) | Depth #${playerObj?.depthChartOrder || 'N/A'} (${playerObj?.depthChartPos || 'N/A'})</div></div><div class="player-ranks"><div class="player-ovr" style="color: ${statusColor};">OVR #${ovrRank}</div>${posNum ? `<div class="player-pos">${position} #${posNum}</div>` : ''}</div></div>`;
+                            html += `<div class="player-item"><div class="player-info"><div class="player-name">${displayIcon}${slotFlag} ${name} (${team})</div><div class="player-meta">Age: ${playerObj?.age || 'N/A'} (Exp: ${playerObj?.yearsExp || 'N/A'}) | Depth #${playerObj?.depthChartOrder || 'N/A'} (${playerObj?.depthChartPos || 'N/A'})</div></div><div class="player-ranks"><div class="player-ovr" style="color: ${statusColor};">OVR #${ovrRank}</div>${posNum ? `<div class="player-pos">${position} #${posNum}</div>` : ''}</div></div>`;
                         });
 
                         html += '</div>';
