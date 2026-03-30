@@ -172,6 +172,7 @@
         
         .league-header > div:first-child {
             flex: 1;
+            text-align: left;
         }
 
         .league-header:hover {
@@ -306,7 +307,7 @@
                 <h1>🏆 Sleeper Manager</h1>
                 <p class="header-subtitle">Fantasy league roster allocation & analysis</p>
             </div>
-            <span style="font-size: 0.85rem; color: #94a3b8;">v1.3-beta</span>
+            <span style="font-size: 0.85rem; color: #94a3b8;">v1.4-beta</span>
         </div>
     </div>
 
@@ -431,7 +432,7 @@
                         else classification = yearsExp === 0 ? 'Trade' : 'Cut';
                     }
                 } else if (position === 'WR') {
-                    classification = (defaultRank > 120 && yearsExp > 4 && (depthChartOrder > 3 || depthChartOrder === 0)) ? 'Cut' : 'KEEP';
+                    classification = (defaultRank > 120 && yearsExp > 4 && depthChartOrder > 3) ? 'Cut' : 'KEEP';
                 } else if (position === 'K' || position === 'DEF') {
                     if (depthChartOrder === 1) {
                         classification = 'KEEP'; // Always keep starter
@@ -641,7 +642,7 @@
                     const posOrder = ['QB', 'RB', 'WR', 'TE', 'FLEX', 'SUPER_FLEX', 'K', 'DEF', 'IR', 'TAXI', 'BN'];
                     const reqSummary = posOrder.filter(pos => rosterReqs[pos]).map(pos => `${rosterReqs[pos]} ${pos === 'SUPER_FLEX' ? 'SF' : pos}`).join(', ');
                     
-                    html += '<div class="roster-info"><div class="roster-info-title">Roster Requirements (${league.roster_positions.length} players)</div>';
+                    html += '<div class="roster-info"><div class="roster-info-title">Roster Requirements (' + league.roster_positions.length + ' players)</div>';
                     html += `<div class="roster-info-text">${reqSummary}</div>`;
                     html += '</div>';
                     
@@ -677,9 +678,14 @@
                             const posNum = posRank ? posRank.split('_')[1] : '';
                             const status = alloc?.finalStatus || 'Unknown';
 
-                            const statusColor = (status.includes('Starter') || status === 'FLEX') ? '#34d399' : (status === 'Bench' ? '#cbd5e1' : (status === 'Trade' ? '#f97316' : '#ef4444'));
+                            // Check if player is on IR or Taxi
+                            const isOnIR = userRoster.reserve && userRoster.reserve.includes(playerId);
+                            const isOnTaxi = userRoster.taxi && userRoster.taxi.includes(playerId);
+                            const slotFlag = isOnIR ? ' 💔' : (isOnTaxi ? ' 🚕' : '');
 
-                            html += `<div class="player-item"><div class="player-info"><div class="player-name">${status} ${name} (${team})</div><div class="player-meta">Age: ${playerObj?.age || 'N/A'} | Depth: ${playerObj?.depthChartPos || 'N/A'} #${playerObj?.depthChartOrder || 'N/A'}</div></div><div class="player-ranks"><div class="player-ovr" style="color: ${statusColor};">OVR #${ovrRank}</div>${posNum ? `<div class="player-pos">${position} #${posNum}</div>` : ''}</div></div>`;
+                            const statusColor = (status.includes('Starter') || status.includes('FLEX')) ? '#34d399' : (status === 'Bench' ? '#cbd5e1' : (status === 'Trade' ? '#f97316' : '#ef4444'));
+
+                            html += `<div class="player-item"><div class="player-info"><div class="player-name">${status} ${name}${slotFlag} (${team})</div><div class="player-meta">Age: ${playerObj?.age || 'N/A'} | Depth: ${playerObj?.depthChartPos || 'N/A'} #${playerObj?.depthChartOrder || 'N/A'}</div></div><div class="player-ranks"><div class="player-ovr" style="color: ${statusColor};">OVR #${ovrRank}</div>${posNum ? `<div class="player-pos">${position} #${posNum}</div>` : ''}</div></div>`;
                         });
 
                         html += '</div>';
