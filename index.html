@@ -403,7 +403,7 @@
         }
 
         function getStatusIcon(status) {
-            if (status.includes('Star')) return '⭐';
+            if (status === 'Star' || status.startsWith('⭐')) return '⭐';
             if (status.includes('Starter') || status.includes('FLEX')) return '🎯';
             if (status === 'Bench') return '🪑';
             if (status === 'Trade') return '🔀';
