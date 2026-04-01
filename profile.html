@@ -247,7 +247,7 @@
                 <a href="league.html" class="nav-link"><span>🏟️</span> League View</a>
                 <a href="profile.html" class="nav-link active"><span>🔍</span> Manager Profiles</a>
             </div>
-            <span class="nav-version">v1.8.1-beta</span>
+            <span class="nav-version">v1.8.2-beta</span>
         </div>
     </nav>
 
@@ -297,18 +297,11 @@
         async function loadPlayerLookup() {
             if (Object.keys(playerLookupCache).length > 0) return;
             try {
-                const sheetId = '1V0Y_Bl7kSy--vABftJUOlXnWflPCi5P_Km6LG9VhEsQ';
-                const gid = '2112770654';
-                const url = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`;
-                const response = await fetch(url);
-                const csv = await response.text();
-                const lines = csv.split('\n');
-                const headers = lines[0].split(',');
-                for (let i = 1; i < lines.length; i++) {
-                    if (!lines[i].trim()) continue;
-                    const values = lines[i].split(',');
-                    const row = {};
-                    headers.forEach((h, idx) => { row[h.trim()] = values[idx]?.trim() || ''; });
+                const response = await fetch('players.json');
+                if (!response.ok) throw new Error('players.json not found');
+                const data = await response.json();
+                const players = data.players || data;
+                players.forEach(row => {
                     const sleeperId = String(row['SLEEPER_ID']);
                     playerLookupCache[sleeperId] = {
                         playerName: row['PLAYER_NAME'], position: row['POSITION'],
@@ -320,8 +313,8 @@
                         posRank: row['POS_RANK'],
                         defaultRank: parseInt(row['Default_Rank']) || 9999
                     };
-                }
-            } catch (e) { console.log('Could not load Player_Lookup:', e); }
+                });
+            } catch (e) { console.log('Could not load players.json:', e); }
         }
 
         const defenseMap = {
