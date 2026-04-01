@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sleeper Manager - Manager Profiles</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .nav {
+            background: rgba(10, 16, 30, 0.95);
+            border-bottom: 1px solid rgba(251, 191, 36, 0.2);
+            backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-inner {
+            max-width: 80rem;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            display: flex;
+            align-items: center;
+            height: 56px;
+        }
+
+        .nav-brand { font-size: 1.1rem; font-weight: 700; color: #fbbf24; text-decoration: none; letter-spacing: -0.02em; margin-right: 2rem; flex-shrink: 0; }
+        .nav-links { display: flex; align-items: center; gap: 0.25rem; flex: 1; }
+
+        .nav-link {
+            padding: 0.4rem 1rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #94a3b8;
+            text-decoration: none;
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .nav-link:hover { color: white; background: rgba(255,255,255,0.06); }
+        .nav-link.active { color: #fbbf24; background: rgba(251, 191, 36, 0.1); }
+        .nav-version { font-size: 0.7rem; color: #475569; font-family: monospace; margin-left: auto; }
+
+        .header-section {
+            border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+            background: rgba(15, 23, 42, 0.6);
+            padding: 2rem 1.5rem;
+        }
+
+        .header-content { max-width: 80rem; margin: 0 auto; }
+        .header-content h1 { font-size: 1.75rem; font-weight: 700; color: white; margin-bottom: 0.35rem; }
+        .header-subtitle { color: #64748b; font-size: 0.9rem; }
+
+        .main-content { max-width: 80rem; margin: 0 auto; padding: 2.5rem 1.5rem; }
+
+        .search-bar {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 0.5rem;
+            color: white;
+            font-size: 0.95rem;
+        }
+
+        .search-input:focus { outline: none; border-color: #fbbf24; }
+        .search-input::placeholder { color: #475569; }
+
+        .year-select {
+            padding: 0.75rem 1rem;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 0.5rem;
+            color: white;
+            font-size: 0.95rem;
+        }
+
+        .search-btn {
+            padding: 0.75rem 1.5rem;
+            background: #fbbf24;
+            color: #0f172a;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+        }
+
+        .search-btn:hover:not(:disabled) { background: #f59e0b; }
+        .search-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* Profile layout */
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: rgba(30,41,59,0.7);
+            border: 1px solid #334155;
+            border-radius: 0.75rem;
+        }
+
+        .profile-avatar {
+            width: 4rem;
+            height: 4rem;
+            border-radius: 50%;
+            border: 2px solid #fbbf24;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        .profile-avatar-placeholder {
+            width: 4rem;
+            height: 4rem;
+            border-radius: 50%;
+            border: 2px solid #fbbf24;
+            background: rgba(251,191,36,0.12);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .profile-name { font-size: 1.5rem; font-weight: 700; color: white; }
+        .profile-meta { color: #64748b; font-size: 0.85rem; margin-top: 0.25rem; }
+
+        /* Insight cards grid */
+        .insights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .insight-card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+        }
+
+        .insight-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #475569;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+
+        .insight-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        .insight-sub { font-size: 0.8rem; color: #64748b; margin-top: 0.25rem; }
+
+        /* Position tendency bars */
+        .tendency-row {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.6rem;
+        }
+
+        .tend-label { font-size: 0.8rem; color: #94a3b8; width: 2.5rem; flex-shrink: 0; }
+        .tend-track { flex: 1; height: 6px; background: #0f172a; border-radius: 99px; overflow: hidden; }
+        .tend-fill { height: 100%; border-radius: 99px; }
+        .tend-val { font-size: 0.78rem; color: #64748b; width: 2.5rem; text-align: right; flex-shrink: 0; }
+
+        /* Team bias */
+        .bias-pill {
+            display: inline-block;
+            padding: 0.25rem 0.65rem;
+            background: rgba(251,191,36,0.1);
+            border: 1px solid rgba(251,191,36,0.2);
+            border-radius: 99px;
+            font-size: 0.78rem;
+            color: #fbbf24;
+            margin: 0.2rem;
+        }
+
+        /* Leagues list */
+        .leagues-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        .leagues-table th { text-align: left; color: #475569; font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; padding: 0.5rem 0.75rem; border-bottom: 1px solid #1e293b; }
+        .leagues-table td { padding: 0.65rem 0.75rem; color: #cbd5e1; border-bottom: 1px solid #0f172a; }
+        .leagues-table tr:last-child td { border-bottom: none; }
+        .leagues-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+        .loading-container { text-align: center; padding: 3rem; color: #64748b; }
+        .error-container { padding: 1rem 1.25rem; background: rgba(127,29,29,0.25); border: 1px solid rgba(239,68,68,0.3); border-radius: 0.5rem; color: #fca5a5; font-size: 0.9rem; }
+
+        .empty-state { text-align: center; padding: 4rem 2rem; }
+        .empty-state-icon { font-size: 3rem; margin-bottom: 1rem; }
+        .empty-state-text { font-size: 1rem; color: #475569; }
+
+        .section-title { font-size: 1rem; font-weight: 700; color: white; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+
+        .section-block { margin-bottom: 2rem; }
+
+        .coming-soon {
+            padding: 1.5rem;
+            background: rgba(251,191,36,0.05);
+            border: 1px dashed rgba(251,191,36,0.2);
+            border-radius: 0.5rem;
+            text-align: center;
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+
+        @media (max-width: 640px) {
+            .main-content { padding: 1.5rem 1rem; }
+            .search-bar { flex-direction: column; }
+            .search-btn, .year-select { width: 100%; }
+            .nav-version { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="nav">
+        <div class="nav-inner">
+            <a href="index.html" class="nav-brand">🏆 Sleeper Manager</a>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link"><span>👤</span> My Rosters</a>
+                <a href="league.html" class="nav-link"><span>🏟️</span> League View</a>
+                <a href="profile.html" class="nav-link active"><span>🔍</span> Manager Profiles</a>
+            </div>
+            <span class="nav-version">v1.8.0-beta</span>
+        </div>
+    </nav>
+
+    <div class="header-section">
+        <div class="header-content">
+            <h1>Manager Profiles</h1>
+            <p class="header-subtitle">Deep intel on any manager — tendencies, biases &amp; trade insights</p>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="search-bar">
+            <input type="text" id="usernameInput" class="search-input" placeholder="Enter Sleeper username..." />
+            <select id="yearSelect" class="year-select">
+                <option value="2023">2023</option>
+                <option value="2024">2024</option>
+                <option value="2025">2025</option>
+                <option value="2026" selected>2026</option>
+            </select>
+            <button class="search-btn" id="searchBtn" onclick="loadProfile()">Load Profile</button>
+        </div>
+
+        <div id="content">
+            <div class="empty-state">
+                <div class="empty-state-icon">🔍</div>
+                <div class="empty-state-text">Enter a Sleeper username to build their manager profile</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const contentDiv = document.getElementById('content');
+        const usernameInput = document.getElementById('usernameInput');
+        const yearSelect = document.getElementById('yearSelect');
+        const searchBtn = document.getElementById('searchBtn');
+
+        let playerLookupCache = {};
+
+        // Pre-fill from URL param
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlUser = urlParams.get('user');
+        if (urlUser) {
+            usernameInput.value = urlUser;
+            window.addEventListener('load', () => loadProfile());
+        }
+
+        async function loadPlayerLookup() {
+            if (Object.keys(playerLookupCache).length > 0) return;
+            try {
+                const sheetId = '1V0Y_Bl7kSy--vABftJUOlXnWflPCi5P_Km6LG9VhEsQ';
+                const gid = '2112770654';
+                const url = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`;
+                const response = await fetch(url);
+                const csv = await response.text();
+                const lines = csv.split('\n');
+                const headers = lines[0].split(',');
+                for (let i = 1; i < lines.length; i++) {
+                    if (!lines[i].trim()) continue;
+                    const values = lines[i].split(',');
+                    const row = {};
+                    headers.forEach((h, idx) => { row[h.trim()] = values[idx]?.trim() || ''; });
+                    const sleeperId = String(row['SLEEPER_ID']);
+                    playerLookupCache[sleeperId] = {
+                        playerName: row['PLAYER_NAME'], position: row['POSITION'],
+                        age: parseInt(row['AGE']) || 0, team: row['TEAM'],
+                        college: row['COLLEGE'] || '',
+                        depthChartPos: row['DEPTH_CHART_POS'],
+                        depthChartOrder: parseInt(row['DEPTH_CHART_ORDER']) || 0,
+                        yearsExp: parseInt(row['YEARS_EXP']) || 0,
+                        posRank: row['POS_RANK'],
+                        defaultRank: parseInt(row['Default_Rank']) || 9999
+                    };
+                }
+            } catch (e) { console.log('Could not load Player_Lookup:', e); }
+        }
+
+        const defenseMap = {
+            'ARZ':'Arizona Cardinals Defense','ATL':'Atlanta Falcons Defense','BAL':'Baltimore Ravens Defense',
+            'BUF':'Buffalo Bills Defense','CAR':'Carolina Panthers Defense','CHI':'Chicago Bears Defense',
+            'CIN':'Cincinnati Bengals Defense','CLE':'Cleveland Browns Defense','DAL':'Dallas Cowboys Defense',
+            'DEN':'Denver Broncos Defense','DET':'Detroit Lions Defense','GB':'Green Bay Packers Defense',
+            'HOU':'Houston Texans Defense','IND':'Indianapolis Colts Defense','JAX':'Jacksonville Jaguars Defense',
+            'KC':'Kansas City Chiefs Defense','LAC':'Los Angeles Chargers Defense','LAR':'Los Angeles Rams Defense',
+            'LV':'Las Vegas Raiders Defense','MIA':'Miami Dolphins Defense','MIN':'Minnesota Vikings Defense',
+            'NE':'New England Patriots Defense','NO':'New Orleans Saints Defense','NYG':'New York Giants Defense',
+            'NYJ':'New York Jets Defense','PHI':'Philadelphia Eagles Defense','PIT':'Pittsburgh Steelers Defense',
+            'SF':'San Francisco 49ers Defense','SEA':'Seattle Seahawks Defense','TB':'Tampa Bay Buccaneers Defense',
+            'TEN':'Tennessee Titans Defense','WAS':'Washington Commanders Defense'
+        };
+
+        function getPlayerData(sleeperId) {
+            const s = String(sleeperId);
+            if (playerLookupCache[s]) return playerLookupCache[s];
+            if (defenseMap[s]) return { playerName: defenseMap[s], position: 'DEF', age: 'N/A', team: s, college: '', depthChartPos: 'DEF', depthChartOrder: 1, yearsExp: 0, posRank: 'DEF_001', defaultRank: 9999 };
+            return { playerName: `Unknown (${s})`, position: 'UNK', age: 'N/A', team: 'N/A', college: '', depthChartPos: 'N/A', depthChartOrder: 0, yearsExp: 0, posRank: 'UNK_000', defaultRank: 9999 };
+        }
+
+        function analyzeProfile(allLeaguesRosters) {
+            // Aggregate all unique players across all leagues this manager is in
+            const allPlayers = [];
+            const positionCounts = { QB: 0, RB: 0, WR: 0, TE: 0, K: 0, DEF: 0 };
+            const teamCounts = {};
+            const collegeCounts = {};
+
+            allLeaguesRosters.forEach(({ roster }) => {
+                (roster.players || []).forEach(id => {
+                    const p = getPlayerData(id);
+                    allPlayers.push(p);
+                    if (positionCounts[p.position] !== undefined) positionCounts[p.position]++;
+                    if (p.team && p.team !== 'N/A' && p.position !== 'DEF') {
+                        teamCounts[p.team] = (teamCounts[p.team] || 0) + 1;
+                    }
+                    if (p.college && p.college !== 'N/A' && p.college !== '') {
+                        collegeCounts[p.college] = (collegeCounts[p.college] || 0) + 1;
+                    }
+                });
+            });
+
+            const totalSkill = (positionCounts.QB + positionCounts.RB + positionCounts.WR + positionCounts.TE) || 1;
+            const positionPct = {
+                QB: Math.round((positionCounts.QB / totalSkill) * 100),
+                RB: Math.round((positionCounts.RB / totalSkill) * 100),
+                WR: Math.round((positionCounts.WR / totalSkill) * 100),
+                TE: Math.round((positionCounts.TE / totalSkill) * 100),
+            };
+
+            // Top NFL team biases (3+ players from same team)
+            const teamBiases = Object.entries(teamCounts).filter(([,v]) => v >= 2).sort((a,b) => b[1]-a[1]).slice(0, 8).map(([team]) => team);
+
+            // Top college biases
+            const collegeBiases = Object.entries(collegeCounts).filter(([,v]) => v >= 2).sort((a,b) => b[1]-a[1]).slice(0, 6).map(([college]) => college);
+
+            // Average age across all skill players
+            const agePlayers = allPlayers.filter(p => ['QB','RB','WR','TE'].includes(p.position) && typeof p.age === 'number' && p.age > 0);
+            const avgAge = agePlayers.length > 0 ? (agePlayers.reduce((s,p) => s + p.age, 0) / agePlayers.length).toFixed(1) : 'N/A';
+
+            // Stars (top 50 overall)
+            const stars = allPlayers.filter(p => p.defaultRank <= 50).length;
+
+            return { positionPct, teamBiases, collegeBiases, avgAge, stars, totalPlayers: allPlayers.length };
+        }
+
+        async function loadProfile() {
+            const username = usernameInput.value.trim();
+            const year = yearSelect.value;
+            if (!username) return;
+
+            searchBtn.disabled = true;
+            searchBtn.textContent = 'Loading...';
+            contentDiv.innerHTML = '<div class="loading-container">⏳ Building manager profile...</div>';
+
+            try {
+                await loadPlayerLookup();
+
+                // Fetch user
+                const userRes = await fetch(`https://api.sleeper.app/v1/user/${username}`);
+                if (!userRes.ok) throw new Error('Username not found');
+                const user = await userRes.json();
+
+                // Fetch all their leagues
+                const leaguesRes = await fetch(`https://api.sleeper.app/v1/user/${user.user_id}/leagues/nfl/${year}`);
+                const leagues = await leaguesRes.json();
+
+                if (!leagues || leagues.length === 0) {
+                    contentDiv.innerHTML = `<div class="error-container">⚠️ No leagues found for ${username} in ${year}.</div>`;
+                    return;
+                }
+
+                // Fetch rosters for each league
+                const leagueRosters = await Promise.all(leagues.map(async (league) => {
+                    try {
+                        const rostersRes = await fetch(`https://api.sleeper.app/v1/league/${league.league_id}/rosters`);
+                        const rosters = await rostersRes.json();
+                        const myRoster = rosters.find(r => r.owner_id === user.user_id);
+                        return { league, roster: myRoster || null };
+                    } catch {
+                        return { league, roster: null };
+                    }
+                }));
+
+                const validRosters = leagueRosters.filter(r => r.roster);
+                const analysis = analyzeProfile(validRosters);
+
+                renderProfile(user, leagues, validRosters, analysis, year);
+            } catch (err) {
+                contentDiv.innerHTML = `<div class="error-container">⚠️ ${err.message}</div>`;
+            } finally {
+                searchBtn.disabled = false;
+                searchBtn.textContent = 'Load Profile';
+            }
+        }
+
+        function renderProfile(user, leagues, leagueRosters, analysis, year) {
+            let html = '';
+
+            // Header
+            html += `<div class="profile-header">`;
+            if (user.avatar) {
+                html += `<img src="https://sleepercdn.com/avatars/thumbs/${user.avatar}" class="profile-avatar" alt="${user.display_name}" />`;
+            } else {
+                html += `<div class="profile-avatar-placeholder">👤</div>`;
+            }
+            html += `<div>
+                <div class="profile-name">${user.display_name}</div>
+                <div class="profile-meta">@${user.username} · ${leagues.length} league${leagues.length !== 1 ? 's' : ''} in ${year}</div>
+            </div></div>`;
+
+            // Summary stats
+            html += `<div class="insights-grid">
+                <div class="insight-card">
+                    <div class="insight-title">Leagues</div>
+                    <div class="insight-value">${leagues.length}</div>
+                    <div class="insight-sub">in ${year} season</div>
+                </div>
+                <div class="insight-card">
+                    <div class="insight-title">Avg Roster Age</div>
+                    <div class="insight-value">${analysis.avgAge}</div>
+                    <div class="insight-sub">across all rosters</div>
+                </div>
+                <div class="insight-card">
+                    <div class="insight-title">Stars Held</div>
+                    <div class="insight-value">${analysis.stars}</div>
+                    <div class="insight-sub">players ranked top 50 overall</div>
+                </div>
+            </div>`;
+
+            // Position tendencies
+            html += `<div class="section-block">
+                <div class="section-title">📊 Position Tendencies</div>
+                <div class="insight-card">
+                    ${tendencyBar('QB', analysis.positionPct.QB, '#60a5fa')}
+                    ${tendencyBar('RB', analysis.positionPct.RB, '#34d399')}
+                    ${tendencyBar('WR', analysis.positionPct.WR, '#fbbf24')}
+                    ${tendencyBar('TE', analysis.positionPct.TE, '#a78bfa')}
+                    <div style="font-size:0.75rem;color:#334155;margin-top:0.75rem;">% of skill position roster spots</div>
+                </div>
+            </div>`;
+
+            // NFL team biases
+            html += `<div class="section-block">
+                <div class="section-title">🏈 NFL Team Biases</div>
+                <div class="insight-card">`;
+            if (analysis.teamBiases.length > 0) {
+                html += analysis.teamBiases.map(t => `<span class="bias-pill">${t}</span>`).join('');
+                html += `<div style="font-size:0.75rem;color:#334155;margin-top:0.75rem;">Teams with 2+ players across this manager's rosters</div>`;
+            } else {
+                html += `<div style="color:#334155;font-size:0.85rem;">No strong team biases detected</div>`;
+            }
+            html += `</div></div>`;
+
+            // College biases
+            html += `<div class="section-block">
+                <div class="section-title">🎓 College Biases</div>
+                <div class="insight-card">`;
+            if (analysis.collegeBiases.length > 0) {
+                html += analysis.collegeBiases.map(c => `<span class="bias-pill" style="border-color:rgba(96,165,250,0.3);color:#60a5fa;background:rgba(96,165,250,0.08);">${c}</span>`).join('');
+                html += `<div style="font-size:0.75rem;color:#334155;margin-top:0.75rem;">Colleges with 2+ players rostered</div>`;
+            } else {
+                html += `<div style="color:#334155;font-size:0.85rem;">No strong college biases detected yet — more data needed</div>`;
+            }
+            html += `</div></div>`;
+
+            // All leagues table
+            html += `<div class="section-block">
+                <div class="section-title">🏆 All Leagues (${year})</div>
+                <div class="insight-card" style="padding:0;overflow:hidden;">
+                <table class="leagues-table">
+                    <thead><tr>
+                        <th>League</th>
+                        <th>Scoring</th>
+                        <th>Teams</th>
+                        <th>Roster</th>
+                    </tr></thead>
+                    <tbody>`;
+
+            leagueRosters.forEach(({ league, roster }) => {
+                const s = league.scoring_settings || {};
+                const parts = [];
+                if (league.roster_positions?.includes('SUPER_FLEX')) parts.push('SF');
+                const rec = s.rec;
+                if (rec === 1) parts.push('PPR');
+                else if (rec === 0.5) parts.push('HPPR');
+                else if (rec === 0) parts.push('STD');
+                else parts.push('PPR');
+                if (s.bonus_rec_te > 0) parts.push(`${rec + s.bonus_rec_te}TEP`);
+                const scoring = parts.join(' ');
+                const playerCount = roster?.players?.length || 0;
+
+                html += `<tr>
+                    <td>
+                        <a href="league.html?id=${league.league_id}" style="color:#fbbf24;text-decoration:none;">${league.name}</a>
+                    </td>
+                    <td style="color:#94a3b8;">${scoring}</td>
+                    <td style="color:#64748b;">${league.total_rosters}</td>
+                    <td style="color:#64748b;">${playerCount} players</td>
+                </tr>`;
+            });
+
+            html += `</tbody></table></div></div>`;
+
+            // Trade intel — coming soon
+            html += `<div class="section-block">
+                <div class="section-title">🔀 Trade Intel</div>
+                <div class="coming-soon">
+                    Trade history analysis coming soon — will surface what this manager overpays for and undervalues
+                </div>
+            </div>`;
+
+            contentDiv.innerHTML = html;
+        }
+
+        function tendencyBar(label, value, color) {
+            return `<div class="tendency-row">
+                <span class="tend-label">${label}</span>
+                <div class="tend-track"><div class="tend-fill" style="width:${value}%;background:${color};"></div></div>
+                <span class="tend-val">${value}%</span>
+            </div>`;
+        }
+    </script>
+</body>
+</html>
