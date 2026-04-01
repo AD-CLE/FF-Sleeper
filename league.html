@@ -472,21 +472,25 @@
             try {
                 await loadPlayerLookup();
 
-                const [leagueRes, rostersRes, usersRes] = await Promise.all([
+                const [leagueRes, rostersRes, usersRes, tradedPicksRes] = await Promise.all([
                     fetch(`https://api.sleeper.app/v1/league/${leagueId}`),
                     fetch(`https://api.sleeper.app/v1/league/${leagueId}/rosters`),
-                    fetch(`https://api.sleeper.app/v1/league/${leagueId}/users`)
+                    fetch(`https://api.sleeper.app/v1/league/${leagueId}/users`),
+                    fetch(`https://api.sleeper.app/v1/league/${leagueId}/traded_picks`)
                 ]);
 
                 if (!leagueRes.ok) throw new Error('League not found. Check the ID and try again.');
                 const league = await leagueRes.json();
                 const rosters = await rostersRes.json();
                 const users = await usersRes.json();
+                const tradedPicks = await tradedPicksRes.json();
 
                 const userMap = {};
                 users.forEach(u => { userMap[u.user_id] = u; });
+                const rosterMap = {};
+                rosters.forEach(r => { rosterMap[r.roster_id] = r; });
 
-                renderLeague(league, rosters, userMap);
+                renderLeague(league, rosters, userMap, tradedPicks, rosterMap);
             } catch (err) {
                 contentDiv.innerHTML = `<div class="error-container">⚠️ ${err.message}</div>`;
             } finally {
@@ -495,7 +499,63 @@
             }
         }
 
-        function renderLeague(league, rosters, userMap) {
+
+        function buildPickInventory(myRosterId, tradedPicks, rosterMap, totalTeams) {
+            const years = ['2026','2027','2028'];
+            const rounds = [1,2,3,4];
+            const owned = {};
+            for (let i = 1; i <= totalTeams; i++) {
+                owned[i] = [];
+                years.forEach(y => rounds.forEach(r => { owned[i].push({season:y, round:r, originalRosterId:i, pickSlot:null}); }));
+            }
+            tradedPicks.forEach(tp => {
+                if (parseInt(tp.season) < 2026) return;
+                const origId = tp.roster_id;
+                const newOwner = tp.owner_id;
+                Object.keys(owned).forEach(rid => {
+                    owned[rid] = owned[rid].filter(p => !(p.season === tp.season && p.round === tp.round && p.originalRosterId === origId));
+                });
+                if (!owned[newOwner]) owned[newOwner] = [];
+                owned[newOwner].push({season: tp.season, round: tp.round, originalRosterId: origId, pickSlot: tp.pick_no || null});
+            });
+            return owned[myRosterId] || [];
+        }
+
+        function getTeamShortName(rosterId, rosterMap, userMap) {
+            const roster = rosterMap[rosterId];
+            if (!roster) return 'Team ' + rosterId;
+            const user = userMap[roster.owner_id] || {};
+            const n = (roster.metadata && roster.metadata.team_name) || (user.metadata && user.metadata.team_name) || user.display_name || ('Team ' + rosterId);
+            return n.length > 14 ? n.split(' ')[0] : n;
+        }
+
+        function renderPickInventory(myRosterId, tradedPicks, rosterMap, userMap) {
+            const total = Object.keys(rosterMap).length || 12;
+            const picks = buildPickInventory(myRosterId, tradedPicks, rosterMap, total);
+            const byYear = {'2026':[], '2027':[], '2028':[]};
+            picks.forEach(p => { if (byYear[p.season]) byYear[p.season].push(p); });
+            const rl = r => r===1?'1st':r===2?'2nd':r===3?'3rd':'4th';
+            let html = '';
+            ['2026','2027','2028'].forEach(yr => {
+                const yp = byYear[yr];
+                if (yp.length === 0) {
+                    html += '<div style="margin-bottom:0.25rem"><span style="color:#fbbf24;font-weight:600">'+yr+':</span> <span style="color:#ef4444;font-size:0.75rem">No picks</span></div>';
+                    return;
+                }
+                yp.sort((a,b) => a.round !== b.round ? a.round-b.round : (a.pickSlot||99)-(b.pickSlot||99));
+                const parts = yp.map(p => {
+                    const own = p.originalRosterId === myRosterId;
+                    const lbl = (yr==='2026' && p.pickSlot) ? (p.round+'.'+String(p.pickSlot).padStart(2,'0')) : rl(p.round);
+                    const sfx = own ? '' : ' <span style="color:#475569;font-size:0.72rem">('+getTeamShortName(p.originalRosterId, rosterMap, userMap)+')</span>';
+                    const col = p.round===1?'#fbbf24':p.round===2?'#94a3b8':'#475569';
+                    return '<span style="color:'+col+'">'+lbl+'</span>'+sfx;
+                }).join(' <span style="color:#1e293b">&middot;</span> ');
+                html += '<div style="margin-bottom:0.25rem;line-height:1.7;font-size:0.8rem"><span style="color:#fbbf24;font-weight:600">'+yr+':</span> '+parts+'</div>';
+            });
+            return html || '<span style="color:#475569;font-size:0.8rem">No future picks</span>';
+        }
+
+        function renderLeague(league, rosters, userMap, tradedPicks, rosterMap) {
             const scoring = getScoringLabel(league);
             let html = `<div class="league-info-bar">
                 <div>
@@ -564,6 +624,10 @@
                     <div class="team-top-players">
                         <div class="top-player-label">Top players</div>
                         ${topPlayers.map(p => `<span class="top-player-pill">${p.data.playerName?.split(' ').pop() || '?'} <span style="color:#64748b;">#${p.data.defaultRank < 9999 ? p.data.defaultRank : '—'}</span></span>`).join('')}
+                    </div>
+                    <div style="padding:0 1.25rem 0.75rem;border-top:1px solid #0f172a;margin-top:0.5rem;padding-top:0.75rem;">
+                        <div class="top-player-label" style="margin-bottom:0.5rem;">Draft picks</div>
+                        ${renderPickInventory(roster.roster_id, tradedPicks, rosterMap, userMap)}
                     </div>
 
                     <button class="expand-btn" onclick="toggleRoster(${idx})">▼ Full roster</button>

@@ -562,6 +562,62 @@
             return allocation;
         }
 
+
+        function buildPickInventory(myRosterId, tradedPicks, rosterMap, totalTeams) {
+            const years = ['2026','2027','2028'];
+            const rounds = [1,2,3,4];
+            const owned = {};
+            for (let i = 1; i <= totalTeams; i++) {
+                owned[i] = [];
+                years.forEach(y => rounds.forEach(r => { owned[i].push({season:y, round:r, originalRosterId:i, pickSlot:null}); }));
+            }
+            tradedPicks.forEach(tp => {
+                if (parseInt(tp.season) < 2026) return;
+                const origId = tp.roster_id;
+                const newOwner = tp.owner_id;
+                Object.keys(owned).forEach(rid => {
+                    owned[rid] = owned[rid].filter(p => !(p.season === tp.season && p.round === tp.round && p.originalRosterId === origId));
+                });
+                if (!owned[newOwner]) owned[newOwner] = [];
+                owned[newOwner].push({season: tp.season, round: tp.round, originalRosterId: origId, pickSlot: tp.pick_no || null});
+            });
+            return owned[myRosterId] || [];
+        }
+
+        function getTeamShortName(rosterId, rosterMap, userMap) {
+            const roster = rosterMap[rosterId];
+            if (!roster) return 'Team ' + rosterId;
+            const user = userMap[roster.owner_id] || {};
+            const n = (roster.metadata && roster.metadata.team_name) || (user.metadata && user.metadata.team_name) || user.display_name || ('Team ' + rosterId);
+            return n.length > 14 ? n.split(' ')[0] : n;
+        }
+
+        function renderPickInventory(myRosterId, tradedPicks, rosterMap, userMap) {
+            const total = Object.keys(rosterMap).length || 12;
+            const picks = buildPickInventory(myRosterId, tradedPicks, rosterMap, total);
+            const byYear = {'2026':[], '2027':[], '2028':[]};
+            picks.forEach(p => { if (byYear[p.season]) byYear[p.season].push(p); });
+            const rl = r => r===1?'1st':r===2?'2nd':r===3?'3rd':'4th';
+            let html = '';
+            ['2026','2027','2028'].forEach(yr => {
+                const yp = byYear[yr];
+                if (yp.length === 0) {
+                    html += '<div style="margin-bottom:0.4rem"><span style="color:#fbbf24;font-weight:600">' + yr + ':</span> <span style="color:#ef4444;font-size:0.8rem">No picks</span></div>';
+                    return;
+                }
+                yp.sort((a,b) => a.round !== b.round ? a.round-b.round : (a.pickSlot||99)-(b.pickSlot||99));
+                const parts = yp.map(p => {
+                    const own = p.originalRosterId === myRosterId;
+                    const lbl = (yr==='2026' && p.pickSlot) ? (p.round+'.'+String(p.pickSlot).padStart(2,'0')) : rl(p.round);
+                    const sfx = own ? '' : ' <span style="color:#64748b;font-size:0.75rem">('+getTeamShortName(p.originalRosterId, rosterMap, userMap)+')</span>';
+                    const col = p.round===1?'#fbbf24':p.round===2?'#94a3b8':'#475569';
+                    return '<span style="color:'+col+'">'+lbl+'</span>'+sfx;
+                }).join(' <span style="color:#334155">&middot;</span> ');
+                html += '<div style="margin-bottom:0.4rem;line-height:1.8"><span style="color:#fbbf24;font-weight:600">'+yr+':</span> '+parts+'</div>';
+            });
+            return html || '<span style="color:#475569">No future picks</span>';
+        }
+
         async function fetchSleeperData(username, year) {
             try {
                 searchBtn.disabled = true;
@@ -576,10 +632,20 @@
                 const leagues = await leaguesRes.json();
                 const leaguesWithRosters = await Promise.all(leagues.map(async (league) => {
                     try {
-                        const rostersRes = await fetch(`https://api.sleeper.app/v1/league/${league.league_id}/rosters`);
+                        const [rostersRes, tradedPicksRes, usersRes] = await Promise.all([
+                            fetch(`https://api.sleeper.app/v1/league/${league.league_id}/rosters`),
+                            fetch(`https://api.sleeper.app/v1/league/${league.league_id}/traded_picks`),
+                            fetch(`https://api.sleeper.app/v1/league/${league.league_id}/users`)
+                        ]);
                         const rosters = await rostersRes.json();
-                        return {...league, rosters: rosters.sort((a, b) => (b.wins || 0) - (a.wins || 0))};
-                    } catch { return {...league, rosters: []}; }
+                        const tradedPicks = await tradedPicksRes.json();
+                        const users = await usersRes.json();
+                        const userMap = {};
+                        users.forEach(u => { userMap[u.user_id] = u; });
+                        const rosterMap = {};
+                        rosters.forEach(r => { rosterMap[r.roster_id] = r; });
+                        return {...league, rosters: rosters.sort((a, b) => (b.wins || 0) - (a.wins || 0)), tradedPicks, userMap, rosterMap};
+                    } catch { return {...league, rosters: [], tradedPicks: [], userMap: {}, rosterMap: {}}; }
                 }));
                 renderUI(user, leaguesWithRosters);
             } catch (err) {
@@ -643,7 +709,7 @@
 
                     html += `<div class="roster-info"><div class="roster-info-title">Roster Requirements (${league.roster_positions.length} players)</div><div class="roster-info-text">${reqSummary}</div></div>`;
                     html += `<div class="roster-info"><div class="roster-info-title">Your Roster Summary</div><div class="roster-info-text">Total Players: ${userRoster.players?.length || 0}</div></div>`;
-                    html += `<div class="roster-info"><div class="roster-info-title">Draft Picks</div><div class="roster-info-text">2026: PLACEHOLDER</div></div>`;
+                    html += `<div class="roster-info"><div class="roster-info-title">Draft Picks</div><div class="roster-info-text">${renderPickInventory(userRoster.roster_id, league.tradedPicks || [], league.rosterMap || {}, league.userMap || {}, league.season)}</div></div>`;
 
                     const playersByPosition = {};
                     userRoster.players?.forEach(playerId => {
