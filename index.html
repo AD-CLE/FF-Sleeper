@@ -349,7 +349,7 @@
                     <span class="nav-icon">🔍</span> Manager Profiles
                 </a>
             </div>
-            <span class="nav-version">v1.9.1-beta</span>
+            <span class="nav-version">v1.9.2-beta</span>
         </div>
     </nav>
 
@@ -878,14 +878,30 @@
                 : status === 'Cut' ? '#ef4444'
                 : '#334155';
 
-            return `<div class="player-item" style="border-left-color:${borderColor};">
+            // Calculate dynasty score
+            const dynastyScore = scorePlayer(playerObj);
+            const hasDynastyScore = ['WR','RB'].includes(position) && dynastyScore > 0;
+            const scoreColor = dynastyScore >= 90 ? '#fbbf24'
+                : dynastyScore >= 75 ? '#34d399'
+                : dynastyScore >= 50 ? '#94a3b8'
+                : dynastyScore >= 25 ? '#f97316'
+                : '#ef4444';
+
+            // Border color — use score color for scored positions, status color for others
+            const finalBorderColor = hasDynastyScore ? scoreColor : borderColor;
+
+            return `<div class="player-item" style="border-left-color:${finalBorderColor};">
                 <div class="player-info">
                     <div class="player-name">${displayIcon}${slotFlag} ${name} <span style="color:#475569;font-weight:400;">(${team})</span></div>
                     <div class="player-meta">Age: ${playerObj?.age || 'N/A'} · Exp: ${playerObj?.yearsExp ?? 'N/A'} yrs · Depth #${playerObj?.depthChartOrder || 'N/A'} ${playerObj?.depthChartPos ? `(${playerObj.depthChartPos})` : ''}</div>
                 </div>
                 <div class="player-ranks">
-                    <div class="player-ovr" style="color:${statusColor};">OVR #${ovrRank}</div>
-                    ${posNum ? `<div class="player-pos">${position} #${posNum}</div>` : ''}
+                    ${hasDynastyScore
+                        ? `<div class="player-ovr" style="color:${scoreColor};font-size:1.1rem;font-weight:700;">${dynastyScore}</div>
+                           <div class="player-pos" style="color:#475569;">${position} #${posNum || ovrRank}</div>`
+                        : `<div class="player-ovr" style="color:${statusColor};">OVR #${ovrRank}</div>
+                           ${posNum ? `<div class="player-pos">${position} #${posNum}</div>` : ''}`
+                    }
                 </div>
             </div>`;
         }
