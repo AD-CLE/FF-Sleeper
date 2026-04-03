@@ -7,238 +7,77 @@
     <title>Sleeper Manager - Manager Profiles</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-            min-height: 100vh;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        .nav {
-            background: rgba(10, 16, 30, 0.95);
-            border-bottom: 1px solid rgba(251, 191, 36, 0.2);
-            backdrop-filter: blur(12px);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .nav-inner {
-            max-width: 80rem;
-            margin: 0 auto;
-            padding: 0 1.5rem;
-            display: flex;
-            align-items: center;
-            height: 56px;
-        }
-
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); min-height: 100vh; -webkit-font-smoothing: antialiased; }
+        .nav { background: rgba(10,16,30,0.95); border-bottom: 1px solid rgba(251,191,36,0.2); backdrop-filter: blur(12px); position: sticky; top: 0; z-index: 100; }
+        .nav-inner { max-width: 80rem; margin: 0 auto; padding: 0 1.5rem; display: flex; align-items: center; height: 56px; }
         .nav-brand { font-size: 1.1rem; font-weight: 700; color: #fbbf24; text-decoration: none; letter-spacing: -0.02em; margin-right: 2rem; flex-shrink: 0; }
         .nav-links { display: flex; align-items: center; gap: 0.25rem; flex: 1; }
-
-        .nav-link {
-            padding: 0.4rem 1rem;
-            border-radius: 0.375rem;
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: #94a3b8;
-            text-decoration: none;
-            transition: all 0.15s;
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-        }
-
+        .nav-link { padding: 0.4rem 1rem; border-radius: 0.375rem; font-size: 0.875rem; font-weight: 500; color: #94a3b8; text-decoration: none; transition: all 0.15s; display: flex; align-items: center; gap: 0.4rem; }
         .nav-link:hover { color: white; background: rgba(255,255,255,0.06); }
-        .nav-link.active { color: #fbbf24; background: rgba(251, 191, 36, 0.1); }
+        .nav-link.active { color: #fbbf24; background: rgba(251,191,36,0.1); }
         .nav-version { font-size: 0.7rem; color: #475569; font-family: monospace; margin-left: auto; }
-
-        .header-section {
-            border-bottom: 1px solid rgba(148, 163, 184, 0.1);
-            background: rgba(15, 23, 42, 0.6);
-            padding: 2rem 1.5rem;
-        }
-
+        .header-section { border-bottom: 1px solid rgba(148,163,184,0.1); background: rgba(15,23,42,0.6); padding: 2rem 1.5rem; }
         .header-content { max-width: 80rem; margin: 0 auto; }
         .header-content h1 { font-size: 1.75rem; font-weight: 700; color: white; margin-bottom: 0.35rem; }
         .header-subtitle { color: #64748b; font-size: 0.9rem; }
-
         .main-content { max-width: 80rem; margin: 0 auto; padding: 2.5rem 1.5rem; }
-
-        .search-bar {
-            display: flex;
-            gap: 0.75rem;
-            margin-bottom: 2.5rem;
-        }
-
-        .search-input {
-            flex: 1;
-            padding: 0.75rem 1rem;
-            background: #1e293b;
-            border: 1px solid #334155;
-            border-radius: 0.5rem;
-            color: white;
-            font-size: 0.95rem;
-        }
-
+        .search-bar { display: flex; gap: 0.75rem; margin-bottom: 2.5rem; }
+        .search-input { flex: 1; padding: 0.75rem 1rem; background: #1e293b; border: 1px solid #334155; border-radius: 0.5rem; color: white; font-size: 0.95rem; }
         .search-input:focus { outline: none; border-color: #fbbf24; }
         .search-input::placeholder { color: #475569; }
-
-        .year-select {
-            padding: 0.75rem 1rem;
-            background: #1e293b;
-            border: 1px solid #334155;
-            border-radius: 0.5rem;
-            color: white;
-            font-size: 0.95rem;
-        }
-
-        .search-btn {
-            padding: 0.75rem 1.5rem;
-            background: #fbbf24;
-            color: #0f172a;
-            border: none;
-            border-radius: 0.5rem;
-            font-weight: 700;
-            font-size: 0.95rem;
-            cursor: pointer;
-        }
-
+        .year-select { padding: 0.75rem 1rem; background: #1e293b; border: 1px solid #334155; border-radius: 0.5rem; color: white; font-size: 0.95rem; }
+        .search-btn { padding: 0.75rem 1.5rem; background: #fbbf24; color: #0f172a; border: none; border-radius: 0.5rem; font-weight: 700; font-size: 0.95rem; cursor: pointer; }
         .search-btn:hover:not(:disabled) { background: #f59e0b; }
         .search-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-        /* Profile layout */
-        .profile-header {
-            display: flex;
-            align-items: center;
-            gap: 1.25rem;
-            margin-bottom: 2rem;
-            padding: 1.5rem;
-            background: rgba(30,41,59,0.7);
-            border: 1px solid #334155;
-            border-radius: 0.75rem;
-        }
-
-        .profile-avatar {
-            width: 4rem;
-            height: 4rem;
-            border-radius: 50%;
-            border: 2px solid #fbbf24;
-            object-fit: cover;
-            flex-shrink: 0;
-        }
-
-        .profile-avatar-placeholder {
-            width: 4rem;
-            height: 4rem;
-            border-radius: 50%;
-            border: 2px solid #fbbf24;
-            background: rgba(251,191,36,0.12);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            flex-shrink: 0;
-        }
-
+        .loading-container { text-align: center; padding: 3rem; color: #64748b; }
+        .error-container { padding: 1rem 1.25rem; background: rgba(127,29,29,0.25); border: 1px solid rgba(239,68,68,0.3); border-radius: 0.5rem; color: #fca5a5; font-size: 0.9rem; margin-bottom: 1rem; }
+        .profile-header { display: flex; align-items: center; gap: 1.25rem; margin-bottom: 2rem; padding: 1.5rem; background: rgba(30,41,59,0.7); border: 1px solid #334155; border-radius: 0.75rem; }
+        .profile-avatar { width: 4rem; height: 4rem; border-radius: 50%; border: 2px solid #fbbf24; object-fit: cover; flex-shrink: 0; }
+        .profile-avatar-placeholder { width: 4rem; height: 4rem; border-radius: 50%; border: 2px solid #fbbf24; background: rgba(251,191,36,0.12); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0; }
         .profile-name { font-size: 1.5rem; font-weight: 700; color: white; }
         .profile-meta { color: #64748b; font-size: 0.85rem; margin-top: 0.25rem; }
-
-        /* Insight cards grid */
-        .insights-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-
-        .insight-card {
-            background: #1e293b;
-            border: 1px solid #334155;
-            border-radius: 0.75rem;
-            padding: 1.25rem;
-        }
-
-        .insight-title {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            color: #475569;
-            font-weight: 600;
-            margin-bottom: 0.75rem;
-        }
-
-        .insight-value {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: white;
-        }
-
-        .insight-sub { font-size: 0.8rem; color: #64748b; margin-top: 0.25rem; }
-
-        /* Position tendency bars */
-        .tendency-row {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            margin-bottom: 0.6rem;
-        }
-
-        .tend-label { font-size: 0.8rem; color: #94a3b8; width: 2.5rem; flex-shrink: 0; }
-        .tend-track { flex: 1; height: 6px; background: #0f172a; border-radius: 99px; overflow: hidden; }
-        .tend-fill { height: 100%; border-radius: 99px; }
-        .tend-val { font-size: 0.78rem; color: #64748b; width: 2.5rem; text-align: right; flex-shrink: 0; }
-
-        /* Team bias */
-        .bias-pill {
-            display: inline-block;
-            padding: 0.25rem 0.65rem;
-            background: rgba(251,191,36,0.1);
-            border: 1px solid rgba(251,191,36,0.2);
-            border-radius: 99px;
-            font-size: 0.78rem;
-            color: #fbbf24;
-            margin: 0.2rem;
-        }
-
-        /* Leagues list */
-        .leagues-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-        .leagues-table th { text-align: left; color: #475569; font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; padding: 0.5rem 0.75rem; border-bottom: 1px solid #1e293b; }
-        .leagues-table td { padding: 0.65rem 0.75rem; color: #cbd5e1; border-bottom: 1px solid #0f172a; }
-        .leagues-table tr:last-child td { border-bottom: none; }
-        .leagues-table tr:hover td { background: rgba(255,255,255,0.02); }
-
-        .loading-container { text-align: center; padding: 3rem; color: #64748b; }
-        .error-container { padding: 1rem 1.25rem; background: rgba(127,29,29,0.25); border: 1px solid rgba(239,68,68,0.3); border-radius: 0.5rem; color: #fca5a5; font-size: 0.9rem; }
-
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.75rem; margin-bottom: 2rem; }
+        .stat-card { background: rgba(30,41,59,0.6); border: 1px solid #334155; border-radius: 0.5rem; padding: 1rem; text-align: center; }
+        .stat-value { font-size: 1.75rem; font-weight: 700; color: #fbbf24; }
+        .stat-label { font-size: 0.75rem; color: #64748b; margin-top: 0.25rem; text-transform: uppercase; letter-spacing: 0.05em; }
+        .section-block { margin-bottom: 2rem; }
+        .section-title { font-size: 1rem; font-weight: 700; color: white; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+        .insight-card { background: rgba(30,41,59,0.6); border: 1px solid #334155; border-radius: 0.75rem; padding: 1.25rem; }
+        .tendency-row { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
+        .tend-label { font-size: 0.8rem; color: #94a3b8; width: 3rem; flex-shrink: 0; font-weight: 600; }
+        .tend-track { flex: 1; height: 8px; background: #0f172a; border-radius: 99px; overflow: hidden; }
+        .tend-fill { height: 100%; border-radius: 99px; transition: width 0.6s ease; }
+        .tend-val { font-size: 0.78rem; color: #94a3b8; width: 3.5rem; text-align: right; flex-shrink: 0; }
+        .bias-pill { display: inline-block; padding: 0.25rem 0.75rem; background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.25); border-radius: 99px; font-size: 0.78rem; color: #fbbf24; margin: 0.2rem; }
+        .format-row { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid #1e293b; font-size: 0.85rem; }
+        .format-row:last-child { border-bottom: none; }
+        .format-label { color: #94a3b8; }
+        .format-val { color: white; font-weight: 600; }
+        .format-insight { font-size: 0.75rem; color: #64748b; margin-top: 0.15rem; }
+        .league-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+        .league-table th { text-align: left; color: #475569; font-weight: 600; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; padding: 0.5rem 0.75rem; border-bottom: 1px solid #1e293b; }
+        .league-table td { padding: 0.65rem 0.75rem; color: #cbd5e1; border-bottom: 1px solid #0f172a; }
+        .league-table tr:last-child td { border-bottom: none; }
+        .league-table tr:hover td { background: rgba(255,255,255,0.02); }
+        .tier-pills { display: flex; gap: 0.3rem; flex-wrap: wrap; }
+        .tier-pill { padding: 0.1rem 0.4rem; border-radius: 99px; font-size: 0.7rem; font-weight: 600; }
+        .tp-t1 { background: rgba(251,191,36,0.15); color: #fbbf24; }
+        .tp-t2 { background: rgba(52,211,153,0.12); color: #34d399; }
+        .tp-t3 { background: rgba(148,163,184,0.1); color: #94a3b8; }
         .empty-state { text-align: center; padding: 4rem 2rem; }
         .empty-state-icon { font-size: 3rem; margin-bottom: 1rem; }
         .empty-state-text { font-size: 1rem; color: #475569; }
-
-        .section-title { font-size: 1rem; font-weight: 700; color: white; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
-
-        .section-block { margin-bottom: 2rem; }
-
-        .coming-soon {
-            padding: 1.5rem;
-            background: rgba(251,191,36,0.05);
-            border: 1px dashed rgba(251,191,36,0.2);
-            border-radius: 0.5rem;
-            text-align: center;
-            color: #64748b;
-            font-size: 0.875rem;
-        }
-
-        @media (max-width: 640px) {
-            .main-content { padding: 1.5rem 1rem; }
-            .search-bar { flex-direction: column; }
-            .search-btn, .year-select { width: 100%; }
-            .nav-version { display: none; }
-        }
+        .format-badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600; margin-left: 0.35rem; }
+        .fb-sf { background: rgba(96,165,250,0.15); color: #60a5fa; }
+        .fb-tep { background: rgba(167,139,250,0.15); color: #a78bfa; }
+        .insight-flag { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.75rem; border-radius: 0.375rem; font-size: 0.78rem; font-weight: 600; margin: 0.2rem; }
+        .flag-good { background: rgba(52,211,153,0.12); color: #34d399; border: 1px solid rgba(52,211,153,0.2); }
+        .flag-warn { background: rgba(249,115,22,0.12); color: #f97316; border: 1px solid rgba(249,115,22,0.2); }
+        .flag-neutral { background: rgba(148,163,184,0.1); color: #94a3b8; border: 1px solid rgba(148,163,184,0.15); }
+        @media (max-width: 640px) { .main-content { padding: 1.5rem 1rem; } .search-bar { flex-direction: column; } .search-btn, .year-select { width: 100%; } .nav-version { display: none; } }
     </style>
 </head>
 <body>
-
     <nav class="nav">
         <div class="nav-inner">
             <a href="index.html" class="nav-brand">🏆 Sleeper Manager</a>
@@ -247,29 +86,27 @@
                 <a href="league.html" class="nav-link"><span>🏟️</span> League View</a>
                 <a href="profile.html" class="nav-link active"><span>🔍</span> Manager Profiles</a>
             </div>
-            <span class="nav-version">v1.8.2-beta</span>
+            <span class="nav-version">v1.9.8-beta</span>
         </div>
     </nav>
 
     <div class="header-section">
         <div class="header-content">
             <h1>Manager Profiles</h1>
-            <p class="header-subtitle">Deep intel on any manager — tendencies, biases &amp; trade insights</p>
+            <p class="header-subtitle">Roster tendencies, format biases & trade intel across all leagues</p>
         </div>
     </div>
 
     <div class="main-content">
         <div class="search-bar">
-            <input type="text" id="usernameInput" class="search-input" placeholder="Enter Sleeper username..." />
+            <input type="text" id="usernameInput" class="search-input" placeholder="Enter Sleeper username..." value="ankurdeora" />
             <select id="yearSelect" class="year-select">
-                <option value="2023">2023</option>
                 <option value="2024">2024</option>
                 <option value="2025">2025</option>
                 <option value="2026" selected>2026</option>
             </select>
             <button class="search-btn" id="searchBtn" onclick="loadProfile()">Load Profile</button>
         </div>
-
         <div id="content">
             <div class="empty-state">
                 <div class="empty-state-icon">🔍</div>
@@ -283,16 +120,7 @@
         const usernameInput = document.getElementById('usernameInput');
         const yearSelect = document.getElementById('yearSelect');
         const searchBtn = document.getElementById('searchBtn');
-
         let playerLookupCache = {};
-
-        // Pre-fill from URL param
-        const urlParams = new URLSearchParams(window.location.search);
-        const urlUser = urlParams.get('user');
-        if (urlUser) {
-            usernameInput.value = urlUser;
-            window.addEventListener('load', () => loadProfile());
-        }
 
         async function loadPlayerLookup() {
             if (Object.keys(playerLookupCache).length > 0) return;
@@ -317,70 +145,85 @@
             } catch (e) { console.log('Could not load players.json:', e); }
         }
 
-        const defenseMap = {
-            'ARZ':'Arizona Cardinals Defense','ATL':'Atlanta Falcons Defense','BAL':'Baltimore Ravens Defense',
-            'BUF':'Buffalo Bills Defense','CAR':'Carolina Panthers Defense','CHI':'Chicago Bears Defense',
-            'CIN':'Cincinnati Bengals Defense','CLE':'Cleveland Browns Defense','DAL':'Dallas Cowboys Defense',
-            'DEN':'Denver Broncos Defense','DET':'Detroit Lions Defense','GB':'Green Bay Packers Defense',
-            'HOU':'Houston Texans Defense','IND':'Indianapolis Colts Defense','JAX':'Jacksonville Jaguars Defense',
-            'KC':'Kansas City Chiefs Defense','LAC':'Los Angeles Chargers Defense','LAR':'Los Angeles Rams Defense',
-            'LV':'Las Vegas Raiders Defense','MIA':'Miami Dolphins Defense','MIN':'Minnesota Vikings Defense',
-            'NE':'New England Patriots Defense','NO':'New Orleans Saints Defense','NYG':'New York Giants Defense',
-            'NYJ':'New York Jets Defense','PHI':'Philadelphia Eagles Defense','PIT':'Pittsburgh Steelers Defense',
-            'SF':'San Francisco 49ers Defense','SEA':'Seattle Seahawks Defense','TB':'Tampa Bay Buccaneers Defense',
-            'TEN':'Tennessee Titans Defense','WAS':'Washington Commanders Defense'
-        };
+        const defenseMap = {'ARZ':'Arizona Cardinals Defense','ATL':'Atlanta Falcons Defense','BAL':'Baltimore Ravens Defense','BUF':'Buffalo Bills Defense','CAR':'Carolina Panthers Defense','CHI':'Chicago Bears Defense','CIN':'Cincinnati Bengals Defense','CLE':'Cleveland Browns Defense','DAL':'Dallas Cowboys Defense','DEN':'Denver Broncos Defense','DET':'Detroit Lions Defense','GB':'Green Bay Packers Defense','HOU':'Houston Texans Defense','IND':'Indianapolis Colts Defense','JAX':'Jacksonville Jaguars Defense','KC':'Kansas City Chiefs Defense','LAC':'Los Angeles Chargers Defense','LAR':'Los Angeles Rams Defense','LV':'Las Vegas Raiders Defense','MIA':'Miami Dolphins Defense','MIN':'Minnesota Vikings Defense','NE':'New England Patriots Defense','NO':'New Orleans Saints Defense','NYG':'New York Giants Defense','NYJ':'New York Jets Defense','PHI':'Philadelphia Eagles Defense','PIT':'Pittsburgh Steelers Defense','SF':'San Francisco 49ers Defense','SEA':'Seattle Seahawks Defense','TB':'Tampa Bay Buccaneers Defense','TEN':'Tennessee Titans Defense','WAS':'Washington Commanders Defense'};
 
-        function getPlayerData(sleeperId) {
-            const s = String(sleeperId);
+        function getPlayerData(id) {
+            const s = String(id);
             if (playerLookupCache[s]) return playerLookupCache[s];
-            if (defenseMap[s]) return { playerName: defenseMap[s], position: 'DEF', age: 'N/A', team: s, college: '', depthChartPos: 'DEF', depthChartOrder: 1, yearsExp: 0, posRank: 'DEF_001', defaultRank: 9999 };
-            return { playerName: `Unknown (${s})`, position: 'UNK', age: 'N/A', team: 'N/A', college: '', depthChartPos: 'N/A', depthChartOrder: 0, yearsExp: 0, posRank: 'UNK_000', defaultRank: 9999 };
+            if (defenseMap[s]) return { playerName: defenseMap[s], position: 'DEF', age: 0, team: s, college: '', depthChartPos: 'DEF', depthChartOrder: 1, yearsExp: 0, posRank: 'DEF_001', defaultRank: 9999 };
+            return { playerName: `Unknown (${s})`, position: 'UNK', age: 0, team: 'N/A', college: '', depthChartPos: 'N/A', depthChartOrder: 0, yearsExp: 0, posRank: 'UNK_000', defaultRank: 9999 };
         }
 
-        function analyzeProfile(allLeaguesRosters) {
-            // Aggregate all unique players across all leagues this manager is in
-            const allPlayers = [];
-            const positionCounts = { QB: 0, RB: 0, WR: 0, TE: 0, K: 0, DEF: 0 };
-            const teamCounts = {};
-            const collegeCounts = {};
+        // ── SCORING ENGINE (same as index/league) ──
+        function getPosRankNum(posRank) { if (!posRank) return 9999; const p = posRank.split('_'); return parseInt(p[p.length-1]) || 9999; }
+        function getWRBaseScore(r) { if(r<=12)return 99-((r-1)*(4/11));if(r<=18)return 94-((r-13)*(4/5));if(r<=24)return 88-((r-19)*(4/5));if(r<=36)return 82-((r-25)*(6/11));if(r<=48)return 75-((r-37)*(7/11));if(r<=60)return 67-((r-49)*(7/11));if(r<=78)return 50-((r-61)*(15/17));if(r<=125)return 32-((r-79)*(20/46));return 0; }
+        function getWRMod(exp,depth) { const d=Math.min(depth,4); const m={0:[1.00,1.00,0.90,0.50],1:[1.05,1.00,0.95,0.60],2:[1.00,0.95,0.75,0.40],3:[0.85,0.80,0.60,0.20]}; const t=exp===0?0:exp<=3?1:exp<=7?2:3; return m[t][d-1]||0.20; }
+        function getRBBaseScore(r) { if(r<=6)return 99-((r-1)*(4/5));if(r<=12)return 94-((r-7)*(6/5));if(r<=24)return 87-((r-13)*(9/11));if(r<=36)return 77-((r-25)*(9/11));if(r<=48)return 67-((r-37)*(12/11));if(r<=60)return 54-((r-49)*(12/11));if(r<=85)return 38-((r-61)*(20/24));if(r<=101)return 15-((r-86)*(10/15));return 0; }
+        function getRBMod(exp,depth) { const d=Math.min(depth,4); const m={0:[1.00,1.00,0.90,0.40],1:[1.05,1.00,0.90,0.50],2:[1.00,0.90,0.75,0.25],3:[0.85,0.70,0.40,0.10],4:[0.75,0.40,0.15,0.05]}; const t=exp===0?0:exp<=3?1:exp<=6?2:exp<=8?3:4; return m[t][d-1]||0.05; }
+        function getTEBaseScore(r) { if(r<=6)return 99-((r-1)*(4/5));if(r<=12)return 94-((r-7)*(6/5));if(r<=24)return 87-((r-13)*(15/11));if(r<=36)return 68-((r-25)*(18/11));if(r<=48)return 45-((r-37)*(20/11));return 0; }
+        function getTEMod(exp,depth) { const d=Math.min(depth,4); const m={0:[1.00,0.90,0.60,0.20],1:[1.05,0.85,0.55,0.15],2:[1.00,0.80,0.45,0.10],3:[0.80,0.50,0.20,0.05]}; const t=exp===0?0:exp<=3?1:exp<=9?2:3; return m[t][d-1]||0.05; }
+        function getQBBaseScore(r) { if(r<=6)return 99-((r-1)*(4/5));if(r<=12)return 94-((r-7)*(6/5));if(r<=24)return 87-((r-13)*(12/11));if(r<=36)return 74-((r-25)*(14/11));if(r<=45)return 59-((r-37)*(19/8));if(r<=64)return 39-((r-46)*(34/18));return 0; }
+        function getQBMod(exp,depth) { const d=Math.min(depth,4); const m={0:[1.00,0.95,0.50,0.20],1:[1.10,0.90,0.40,0.15],2:[1.05,0.80,0.30,0.10],3:[0.90,0.60,0.20,0.05],4:[0.70,0.30,0.10,0.02]}; const t=exp===0?0:exp<=3?1:exp<=7?2:exp<=12?3:4; return m[t][d-1]||0.02; }
+        function cleanDepth(depth,exp) { if(!depth||depth===0)return exp===0?3:4; if(depth>=5)return 4; return depth; }
+        function scorePlayer(p) {
+            if(!p)return 0;
+            const pos=p.position, rank=getPosRankNum(p.posRank), exp=p.yearsExp||0, depth=cleanDepth(p.depthChartOrder,exp);
+            let base=0,mod=1.0;
+            if(pos==='WR'){base=getWRBaseScore(rank);mod=getWRMod(exp,depth);}
+            else if(pos==='RB'){base=getRBBaseScore(rank);mod=getRBMod(exp,depth);}
+            else if(pos==='TE'){base=getTEBaseScore(rank);mod=getTEMod(exp,depth);}
+            else if(pos==='QB'){base=getQBBaseScore(rank);mod=getQBMod(exp,depth);}
+            else return 0;
+            return Math.min(99,Math.max(0,Math.round(base*mod)));
+        }
 
-            allLeaguesRosters.forEach(({ roster }) => {
-                (roster.players || []).forEach(id => {
-                    const p = getPlayerData(id);
-                    allPlayers.push(p);
-                    if (positionCounts[p.position] !== undefined) positionCounts[p.position]++;
-                    if (p.team && p.team !== 'N/A' && p.position !== 'DEF') {
-                        teamCounts[p.team] = (teamCounts[p.team] || 0) + 1;
-                    }
-                    if (p.college && p.college !== 'N/A' && p.college !== '') {
-                        collegeCounts[p.college] = (collegeCounts[p.college] || 0) + 1;
-                    }
-                });
+        function getScoringInfo(league) {
+            const s = league.scoring_settings || {};
+            const hasSF = league.roster_positions?.includes('SUPER_FLEX');
+            const bonusTE = parseFloat(s.bonus_rec_te) || 0;
+            const hasTEP = bonusTE > 0;
+            const rec = s.rec;
+            const parts = [];
+            if (hasSF) parts.push('SF');
+            if (rec === 1) parts.push('PPR');
+            else if (rec === 0.5) parts.push('HPPR');
+            else parts.push('STD');
+            if (hasTEP) parts.push(`${rec + bonusTE}TEP`);
+            return { label: parts.join(' '), hasSF, hasTEP, bonusTE };
+        }
+
+        function analyzeLeague(league, roster) {
+            if (!roster || !roster.players) return null;
+            const scoring = getScoringInfo(league);
+            const players = roster.players.map(id => ({ id, data: getPlayerData(id), score: scorePlayer(getPlayerData(id)) }));
+            const skillPlayers = players.filter(p => ['QB','RB','WR','TE'].includes(p.data.position));
+
+            const totalScore = skillPlayers.reduce((s,p) => s+p.score, 0);
+            const t1 = skillPlayers.filter(p => p.score >= 85).length;
+            const t2 = skillPlayers.filter(p => p.score >= 60 && p.score < 85).length;
+            const t3 = skillPlayers.filter(p => p.score >= 35 && p.score < 60).length;
+            const t4 = skillPlayers.filter(p => p.score > 0 && p.score < 35).length;
+
+            // Score by position
+            const posTotals = { QB: 0, RB: 0, WR: 0, TE: 0 };
+            skillPlayers.forEach(p => { if (posTotals[p.data.position] !== undefined) posTotals[p.data.position] += p.score; });
+
+            // Count by position
+            const posCounts = { QB: 0, RB: 0, WR: 0, TE: 0 };
+            skillPlayers.forEach(p => { if (posCounts[p.data.position] !== undefined) posCounts[p.data.position]++; });
+
+            // Team counts
+            const teamCounts = {};
+            skillPlayers.forEach(p => {
+                const team = p.data.team;
+                if (team && team !== 'N/A' && team !== 'FA') teamCounts[team] = (teamCounts[team] || 0) + 1;
             });
 
-            const totalSkill = (positionCounts.QB + positionCounts.RB + positionCounts.WR + positionCounts.TE) || 1;
-            const positionPct = {
-                QB: Math.round((positionCounts.QB / totalSkill) * 100),
-                RB: Math.round((positionCounts.RB / totalSkill) * 100),
-                WR: Math.round((positionCounts.WR / totalSkill) * 100),
-                TE: Math.round((positionCounts.TE / totalSkill) * 100),
-            };
+            // Avg age
+            const agePlayers = skillPlayers.filter(p => p.data.age > 0);
+            const avgAge = agePlayers.length > 0 ? (agePlayers.reduce((s,p) => s + p.data.age, 0) / agePlayers.length) : 0;
 
-            // Top NFL team biases (3+ players from same team)
-            const teamBiases = Object.entries(teamCounts).filter(([,v]) => v >= 2).sort((a,b) => b[1]-a[1]).slice(0, 8).map(([team]) => team);
-
-            // Top college biases
-            const collegeBiases = Object.entries(collegeCounts).filter(([,v]) => v >= 2).sort((a,b) => b[1]-a[1]).slice(0, 6).map(([college]) => college);
-
-            // Average age across all skill players
-            const agePlayers = allPlayers.filter(p => ['QB','RB','WR','TE'].includes(p.position) && typeof p.age === 'number' && p.age > 0);
-            const avgAge = agePlayers.length > 0 ? (agePlayers.reduce((s,p) => s + p.age, 0) / agePlayers.length).toFixed(1) : 'N/A';
-
-            // Stars (top 50 overall)
-            const stars = allPlayers.filter(p => p.defaultRank <= 50).length;
-
-            return { positionPct, teamBiases, collegeBiases, avgAge, stars, totalPlayers: allPlayers.length };
+            return { league, scoring, totalScore, t1, t2, t3, t4, posTotals, posCounts, teamCounts, avgAge, playerCount: skillPlayers.length };
         }
 
         async function loadProfile() {
@@ -395,36 +238,28 @@
             try {
                 await loadPlayerLookup();
 
-                // Fetch user
                 const userRes = await fetch(`https://api.sleeper.app/v1/user/${username}`);
                 if (!userRes.ok) throw new Error('Username not found');
                 const user = await userRes.json();
 
-                // Fetch all their leagues
                 const leaguesRes = await fetch(`https://api.sleeper.app/v1/user/${user.user_id}/leagues/nfl/${year}`);
                 const leagues = await leaguesRes.json();
+                if (!leagues || leagues.length === 0) throw new Error(`No leagues found for ${username} in ${year}`);
 
-                if (!leagues || leagues.length === 0) {
-                    contentDiv.innerHTML = `<div class="error-container">⚠️ No leagues found for ${username} in ${year}.</div>`;
-                    return;
-                }
+                contentDiv.innerHTML = '<div class="loading-container">⏳ Fetching rosters across ' + leagues.length + ' leagues...</div>';
 
-                // Fetch rosters for each league
-                const leagueRosters = await Promise.all(leagues.map(async (league) => {
+                const leagueData = await Promise.all(leagues.map(async (league) => {
                     try {
                         const rostersRes = await fetch(`https://api.sleeper.app/v1/league/${league.league_id}/rosters`);
                         const rosters = await rostersRes.json();
                         const myRoster = rosters.find(r => r.owner_id === user.user_id);
-                        return { league, roster: myRoster || null };
-                    } catch {
-                        return { league, roster: null };
-                    }
+                        return analyzeLeague(league, myRoster);
+                    } catch { return null; }
                 }));
 
-                const validRosters = leagueRosters.filter(r => r.roster);
-                const analysis = analyzeProfile(validRosters);
+                const validData = leagueData.filter(d => d !== null);
+                renderProfile(user, validData, year);
 
-                renderProfile(user, leagues, validRosters, analysis, year);
             } catch (err) {
                 contentDiv.innerHTML = `<div class="error-container">⚠️ ${err.message}</div>`;
             } finally {
@@ -433,132 +268,180 @@
             }
         }
 
-        function renderProfile(user, leagues, leagueRosters, analysis, year) {
+        function renderProfile(user, leagueData, year) {
+            if (leagueData.length === 0) { contentDiv.innerHTML = '<div class="error-container">No league data found.</div>'; return; }
+
+            // ── AGGREGATE ──
+            const totalLeagues = leagueData.length;
+            const sfLeagues = leagueData.filter(d => d.scoring.hasSF);
+            const tepLeagues = leagueData.filter(d => d.scoring.hasTEP);
+            const nonSFLeagues = leagueData.filter(d => !d.scoring.hasSF);
+            const nonTEPLeagues = leagueData.filter(d => !d.scoring.hasTEP);
+
+            const avgDynastyScore = Math.round(leagueData.reduce((s,d) => s + d.totalScore, 0) / totalLeagues);
+            const avgAge = (leagueData.reduce((s,d) => s + d.avgAge, 0) / totalLeagues).toFixed(1);
+            const avgT1 = (leagueData.reduce((s,d) => s + d.t1, 0) / totalLeagues).toFixed(1);
+
+            // Aggregate position score %
+            const allPosTotals = { QB: 0, RB: 0, WR: 0, TE: 0 };
+            leagueData.forEach(d => { Object.keys(allPosTotals).forEach(pos => { allPosTotals[pos] += d.posTotals[pos]; }); });
+            const grandTotal = Object.values(allPosTotals).reduce((s,v) => s+v, 0) || 1;
+            const posPct = {};
+            Object.keys(allPosTotals).forEach(pos => { posPct[pos] = Math.round((allPosTotals[pos] / grandTotal) * 100); });
+
+            // SF QB tendency
+            const sfQBPct = sfLeagues.length > 0 ? Math.round(sfLeagues.reduce((s,d) => s + (d.posTotals.QB / (Object.values(d.posTotals).reduce((a,b)=>a+b,1))), 0) / sfLeagues.length * 100) : null;
+            const nonSFQBPct = nonSFLeagues.length > 0 ? Math.round(nonSFLeagues.reduce((s,d) => s + (d.posTotals.QB / (Object.values(d.posTotals).reduce((a,b)=>a+b,1))), 0) / nonSFLeagues.length * 100) : null;
+
+            // TEP TE tendency
+            const tepTEPct = tepLeagues.length > 0 ? Math.round(tepLeagues.reduce((s,d) => s + (d.posTotals.TE / (Object.values(d.posTotals).reduce((a,b)=>a+b,1))), 0) / tepLeagues.length * 100) : null;
+            const nonTEPTEPct = nonTEPLeagues.length > 0 ? Math.round(nonTEPLeagues.reduce((s,d) => s + (d.posTotals.TE / (Object.values(d.posTotals).reduce((a,b)=>a+b,1))), 0) / nonTEPLeagues.length * 100) : null;
+
+            // Avg TE count SF vs non-SF
+            const sfTEAvg = sfLeagues.length > 0 ? (sfLeagues.reduce((s,d) => s + d.posCounts.TE, 0) / sfLeagues.length).toFixed(1) : null;
+            const nonSFTEAvg = nonSFLeagues.length > 0 ? (nonSFLeagues.reduce((s,d) => s + d.posCounts.TE, 0) / nonSFLeagues.length).toFixed(1) : null;
+            const tepTEAvg = tepLeagues.length > 0 ? (tepLeagues.reduce((s,d) => s + d.posCounts.TE, 0) / tepLeagues.length).toFixed(1) : null;
+            const nonTEPTEAvg = nonTEPLeagues.length > 0 ? (nonTEPLeagues.reduce((s,d) => s + d.posCounts.TE, 0) / nonTEPLeagues.length).toFixed(1) : null;
+            const sfQBAvg = sfLeagues.length > 0 ? (sfLeagues.reduce((s,d) => s + d.posCounts.QB, 0) / sfLeagues.length).toFixed(1) : null;
+            const nonSFQBAvg = nonSFLeagues.length > 0 ? (nonSFLeagues.reduce((s,d) => s + d.posCounts.QB, 0) / nonSFLeagues.length).toFixed(1) : null;
+
+            // NFL team biases across all leagues
+            const allTeamCounts = {};
+            leagueData.forEach(d => { Object.entries(d.teamCounts).forEach(([team, count]) => { allTeamCounts[team] = (allTeamCounts[team] || 0) + count; }); });
+            const teamBiases = Object.entries(allTeamCounts).filter(([,v]) => v >= 3).sort((a,b) => b[1]-a[1]).slice(0, 10);
+
+            // ── RENDER ──
             let html = '';
 
-            // Header
+            // Profile header
             html += `<div class="profile-header">`;
-            if (user.avatar) {
-                html += `<img src="https://sleepercdn.com/avatars/thumbs/${user.avatar}" class="profile-avatar" alt="${user.display_name}" />`;
-            } else {
-                html += `<div class="profile-avatar-placeholder">👤</div>`;
-            }
-            html += `<div>
-                <div class="profile-name">${user.display_name}</div>
-                <div class="profile-meta">@${user.username} · ${leagues.length} league${leagues.length !== 1 ? 's' : ''} in ${year}</div>
-            </div></div>`;
+            if (user.avatar) html += `<img src="https://sleepercdn.com/avatars/thumbs/${user.avatar}" class="profile-avatar" alt="${user.display_name}" />`;
+            else html += `<div class="profile-avatar-placeholder">👤</div>`;
+            html += `<div><div class="profile-name">${user.display_name}</div><div class="profile-meta">@${user.username} · ${totalLeagues} league${totalLeagues !== 1 ? 's' : ''} in ${year} · ${sfLeagues.length} SF · ${tepLeagues.length} TEP</div></div></div>`;
 
             // Summary stats
-            html += `<div class="insights-grid">
-                <div class="insight-card">
-                    <div class="insight-title">Leagues</div>
-                    <div class="insight-value">${leagues.length}</div>
-                    <div class="insight-sub">in ${year} season</div>
-                </div>
-                <div class="insight-card">
-                    <div class="insight-title">Avg Roster Age</div>
-                    <div class="insight-value">${analysis.avgAge}</div>
-                    <div class="insight-sub">across all rosters</div>
-                </div>
-                <div class="insight-card">
-                    <div class="insight-title">Stars Held</div>
-                    <div class="insight-value">${analysis.stars}</div>
-                    <div class="insight-sub">players ranked top 50 overall</div>
-                </div>
+            html += `<div class="stats-grid">
+                <div class="stat-card"><div class="stat-value">${avgDynastyScore}</div><div class="stat-label">Avg Dynasty Score</div></div>
+                <div class="stat-card"><div class="stat-value">${avgT1}</div><div class="stat-label">Avg T1 Players</div></div>
+                <div class="stat-card"><div class="stat-value">${avgAge}</div><div class="stat-label">Avg Roster Age</div></div>
+                <div class="stat-card"><div class="stat-value">${totalLeagues}</div><div class="stat-label">Total Leagues</div></div>
             </div>`;
 
-            // Position tendencies
-            html += `<div class="section-block">
-                <div class="section-title">📊 Position Tendencies</div>
-                <div class="insight-card">
-                    ${tendencyBar('QB', analysis.positionPct.QB, '#60a5fa')}
-                    ${tendencyBar('RB', analysis.positionPct.RB, '#34d399')}
-                    ${tendencyBar('WR', analysis.positionPct.WR, '#fbbf24')}
-                    ${tendencyBar('TE', analysis.positionPct.TE, '#a78bfa')}
-                    <div style="font-size:0.75rem;color:#334155;margin-top:0.75rem;">% of skill position roster spots</div>
-                </div>
-            </div>`;
+            // Position value distribution
+            html += `<div class="section-block"><div class="section-title">📊 Position Value Distribution <span style="font-size:0.75rem;color:#475569;font-weight:400;">(% of total dynasty score)</span></div>
+            <div class="insight-card">
+                ${tendBar('QB', posPct.QB, '#60a5fa')}
+                ${tendBar('RB', posPct.RB, '#34d399')}
+                ${tendBar('WR', posPct.WR, '#fbbf24')}
+                ${tendBar('TE', posPct.TE, '#a78bfa')}
+                <div style="font-size:0.72rem;color:#334155;margin-top:0.75rem;">Aggregated across all ${totalLeagues} leagues</div>
+            </div></div>`;
 
-            // NFL team biases
-            html += `<div class="section-block">
-                <div class="section-title">🏈 NFL Team Biases</div>
-                <div class="insight-card">`;
-            if (analysis.teamBiases.length > 0) {
-                html += analysis.teamBiases.map(t => `<span class="bias-pill">${t}</span>`).join('');
-                html += `<div style="font-size:0.75rem;color:#334155;margin-top:0.75rem;">Teams with 2+ players across this manager's rosters</div>`;
+            // Format tendencies
+            html += `<div class="section-block"><div class="section-title">🏈 Format Tendencies</div><div class="insight-card">`;
+
+            // QB in SF vs 1QB
+            if (sfLeagues.length > 0 && nonSFLeagues.length > 0) {
+                const qbDiff = sfQBAvg - nonSFQBAvg;
+                const qbInsight = qbDiff >= 1.5 ? 'Correctly loads up QBs in SF' : qbDiff >= 0.5 ? 'Slightly QB heavy in SF' : 'Does not adjust QB count for SF format';
+                const qbFlag = qbDiff >= 0.5 ? 'flag-good' : 'flag-warn';
+                html += `<div class="format-row">
+                    <div><div class="format-label">QB count: SF <span class="format-badge fb-sf">SF</span> vs 1QB</div><div class="format-insight">${qbInsight}</div></div>
+                    <div style="text-align:right"><span class="format-val">${sfQBAvg}</span> <span style="color:#475569;font-size:0.75rem;">vs</span> <span class="format-val">${nonSFQBAvg}</span></div>
+                </div>`;
+            } else if (sfLeagues.length > 0) {
+                html += `<div class="format-row"><div class="format-label">QB count in SF <span class="format-badge fb-sf">SF</span></div><div class="format-val">${sfQBAvg} avg QBs</div></div>`;
+            }
+
+            // QB % of score in SF vs non-SF
+            if (sfQBPct !== null && nonSFQBPct !== null) {
+                const pctDiff = sfQBPct - nonSFQBPct;
+                const insight = pctDiff >= 5 ? 'Correctly values QBs higher in SF' : pctDiff >= 0 ? 'Slight QB premium in SF' : 'QB value not adjusted for SF';
+                const flagCls = pctDiff >= 3 ? 'flag-good' : 'flag-warn';
+                html += `<div class="format-row">
+                    <div><div class="format-label">QB % of roster value: SF vs 1QB</div><div class="format-insight">${insight}</div></div>
+                    <div style="text-align:right"><span class="format-val">${sfQBPct}%</span> <span style="color:#475569;font-size:0.75rem;">vs</span> <span class="format-val">${nonSFQBPct}%</span></div>
+                </div>`;
+            }
+
+            // TE in TEP vs non-TEP
+            if (tepLeagues.length > 0 && nonTEPLeagues.length > 0) {
+                const teDiff = tepTEAvg - nonTEPTEAvg;
+                const teInsight = teDiff >= 1 ? 'Correctly hoards TEs in TEP leagues' : teDiff >= 0.3 ? 'Slightly TE heavy in TEP' : 'Does not adjust TE count for TEP format';
+                html += `<div class="format-row">
+                    <div><div class="format-label">TE count: TEP <span class="format-badge fb-tep">TEP</span> vs non-TEP</div><div class="format-insight">${teInsight}</div></div>
+                    <div style="text-align:right"><span class="format-val">${tepTEAvg}</span> <span style="color:#475569;font-size:0.75rem;">vs</span> <span class="format-val">${nonTEPTEAvg}</span></div>
+                </div>`;
+            }
+
+            // TE % of score in TEP vs non-TEP
+            if (tepTEPct !== null && nonTEPTEPct !== null) {
+                const tePctDiff = tepTEPct - nonTEPTEPct;
+                const teInsight2 = tePctDiff >= 5 ? 'Correctly values TEs higher in TEP' : tePctDiff >= 0 ? 'Slight TE premium in TEP' : 'TE value not adjusted for TEP format';
+                html += `<div class="format-row">
+                    <div><div class="format-label">TE % of roster value: TEP vs non-TEP</div><div class="format-insight">${teInsight2}</div></div>
+                    <div style="text-align:right"><span class="format-val">${tepTEPct}%</span> <span style="color:#475569;font-size:0.75rem;">vs</span> <span class="format-val">${nonTEPTEPct}%</span></div>
+                </div>`;
+            }
+
+            if (sfLeagues.length === 0 && tepLeagues.length === 0) {
+                html += `<div style="color:#475569;font-size:0.85rem;">Only one format detected — need both SF and 1QB leagues (or TEP and non-TEP) to compare tendencies.</div>`;
+            }
+
+            html += `</div></div>`;
+
+            // NFL Team biases
+            html += `<div class="section-block"><div class="section-title">🏟️ NFL Team Biases</div><div class="insight-card">`;
+            if (teamBiases.length > 0) {
+                teamBiases.forEach(([team, count]) => {
+                    html += `<span class="bias-pill">${team} <span style="color:#94a3b8;font-size:0.7rem;">×${count}</span></span>`;
+                });
+                html += `<div style="font-size:0.72rem;color:#334155;margin-top:0.75rem;">Teams with 3+ players across all rosters</div>`;
             } else {
-                html += `<div style="color:#334155;font-size:0.85rem;">No strong team biases detected</div>`;
+                html += `<div style="color:#475569;font-size:0.85rem;">No strong team biases detected (no team with 3+ players across all rosters)</div>`;
             }
             html += `</div></div>`;
 
-            // College biases
-            html += `<div class="section-block">
-                <div class="section-title">🎓 College Biases</div>
-                <div class="insight-card">`;
-            if (analysis.collegeBiases.length > 0) {
-                html += analysis.collegeBiases.map(c => `<span class="bias-pill" style="border-color:rgba(96,165,250,0.3);color:#60a5fa;background:rgba(96,165,250,0.08);">${c}</span>`).join('');
-                html += `<div style="font-size:0.75rem;color:#334155;margin-top:0.75rem;">Colleges with 2+ players rostered</div>`;
-            } else {
-                html += `<div style="color:#334155;font-size:0.85rem;">No strong college biases detected yet — more data needed</div>`;
-            }
-            html += `</div></div>`;
+            // League by league breakdown
+            html += `<div class="section-block"><div class="section-title">🏆 League Breakdown (${year})</div>
+            <div class="insight-card" style="padding:0;overflow:hidden;">
+            <table class="league-table"><thead><tr>
+                <th>League</th><th>Format</th><th>Score</th><th>Tiers</th><th>QB%</th><th>TE%</th><th>Avg Age</th>
+            </tr></thead><tbody>`;
 
-            // All leagues table
-            html += `<div class="section-block">
-                <div class="section-title">🏆 All Leagues (${year})</div>
-                <div class="insight-card" style="padding:0;overflow:hidden;">
-                <table class="leagues-table">
-                    <thead><tr>
-                        <th>League</th>
-                        <th>Scoring</th>
-                        <th>Teams</th>
-                        <th>Roster</th>
-                    </tr></thead>
-                    <tbody>`;
-
-            leagueRosters.forEach(({ league, roster }) => {
-                const s = league.scoring_settings || {};
-                const parts = [];
-                if (league.roster_positions?.includes('SUPER_FLEX')) parts.push('SF');
-                const rec = s.rec;
-                if (rec === 1) parts.push('PPR');
-                else if (rec === 0.5) parts.push('HPPR');
-                else if (rec === 0) parts.push('STD');
-                else parts.push('PPR');
-                if (s.bonus_rec_te > 0) parts.push(`${rec + s.bonus_rec_te}TEP`);
-                const scoring = parts.join(' ');
-                const playerCount = roster?.players?.length || 0;
-
+            leagueData.sort((a,b) => b.totalScore - a.totalScore).forEach(d => {
+                const tot = Object.values(d.posTotals).reduce((s,v) => s+v, 1);
+                const qbPct = Math.round((d.posTotals.QB / tot) * 100);
+                const tePct = Math.round((d.posTotals.TE / tot) * 100);
                 html += `<tr>
-                    <td>
-                        <a href="league.html?id=${league.league_id}" style="color:#fbbf24;text-decoration:none;">${league.name}</a>
-                    </td>
-                    <td style="color:#94a3b8;">${scoring}</td>
-                    <td style="color:#64748b;">${league.total_rosters}</td>
-                    <td style="color:#64748b;">${playerCount} players</td>
+                    <td><a href="league.html?id=${d.league.league_id}" style="color:#fbbf24;text-decoration:none;">${d.league.name}</a></td>
+                    <td style="color:#64748b;font-size:0.75rem;">${d.scoring.label}</td>
+                    <td style="font-weight:600;color:#fbbf24;">${d.totalScore}</td>
+                    <td><div class="tier-pills">
+                        ${d.t1>0?`<span class="tier-pill tp-t1">T1×${d.t1}</span>`:''}
+                        ${d.t2>0?`<span class="tier-pill tp-t2">T2×${d.t2}</span>`:''}
+                        ${d.t3>0?`<span class="tier-pill tp-t3">T3×${d.t3}</span>`:''}
+                    </div></td>
+                    <td style="color:${d.scoring.hasSF?'#60a5fa':'#64748b'}">${qbPct}%</td>
+                    <td style="color:${d.scoring.hasTEP?'#a78bfa':'#64748b'}">${tePct}%</td>
+                    <td style="color:#64748b;">${d.avgAge.toFixed(1)}</td>
                 </tr>`;
             });
 
             html += `</tbody></table></div></div>`;
-
-            // Trade intel — coming soon
-            html += `<div class="section-block">
-                <div class="section-title">🔀 Trade Intel</div>
-                <div class="coming-soon">
-                    Trade history analysis coming soon — will surface what this manager overpays for and undervalues
-                </div>
-            </div>`;
-
             contentDiv.innerHTML = html;
         }
 
-        function tendencyBar(label, value, color) {
+        function tendBar(label, value, color) {
             return `<div class="tendency-row">
                 <span class="tend-label">${label}</span>
                 <div class="tend-track"><div class="tend-fill" style="width:${value}%;background:${color};"></div></div>
                 <span class="tend-val">${value}%</span>
             </div>`;
         }
+
+        // Auto-load on page open
+        window.addEventListener('load', () => loadProfile());
     </script>
 </body>
 </html>
