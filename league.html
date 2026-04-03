@@ -404,41 +404,23 @@
             return { playerName: `Unknown (${s})`, position: 'UNK', age: 'N/A', team: 'N/A', depthChartPos: 'N/A', depthChartOrder: 0, yearsExp: 0, posRank: 'UNK_000', defaultRank: 9999 };
         }
 
-        function gradeRoster(roster) {
-            if (!roster.players || roster.players.length === 0) return { label: 'Oblivious', score: 0, starPower: 0, depth: 0, ageCurve: 0, balance: 0 };
-
-            const players = roster.players.map(id => getPlayerData(id)).filter(p => p && p.position !== 'DEF' && p.position !== 'K' && p.position !== 'UNK');
-
-            // Star power: players ranked in top 50 overall
-            const stars = players.filter(p => p.defaultRank <= 50).length;
-            const starPower = Math.min(100, stars * 20);
-
-            // Depth: average rank of top 15 skill players
-            const top15 = players.sort((a,b) => a.defaultRank - b.defaultRank).slice(0, 15);
-            const avgRank = top15.length > 0 ? top15.reduce((sum, p) => sum + (p.defaultRank < 9999 ? p.defaultRank : 300), 0) / top15.length : 300;
-            const depth = Math.max(0, Math.min(100, Math.round(100 - (avgRank / 3))));
-
-            // Age curve: prefer players under 27
-            const agePlayers = players.filter(p => typeof p.age === 'number' && p.age > 0);
-            const avgAge = agePlayers.length > 0 ? agePlayers.reduce((s, p) => s + p.age, 0) / agePlayers.length : 28;
-            const ageCurve = Math.max(0, Math.min(100, Math.round(100 - ((avgAge - 23) * 8))));
-
-            // Positional balance: have starters at QB, RB, WR, TE
-            let balance = 0;
-            const positions = players.map(p => p.position);
-            if (positions.includes('QB')) balance += 25;
-            if (positions.filter(p => p === 'RB').length >= 2) balance += 25;
-            if (positions.filter(p => p === 'WR').length >= 3) balance += 25;
-            if (positions.includes('TE')) balance += 25;
-
-            const score = Math.round((starPower * 0.35) + (depth * 0.35) + (ageCurve * 0.15) + (balance * 0.15));
-
-            let label = 'Oblivious';
-            if (score >= 72) label = 'Contender';
-            else if (score >= 52) label = 'Middling';
-            else if (score >= 35) label = 'Rebuilding';
-
-            return { label, score, starPower, depth, ageCurve, balance };
+        function dynastyGrade(roster) {
+            if (!roster.players || roster.players.length === 0) {
+                return { label: 'Oblivious', totalScore: 0, t1: 0, t2: 0, t3: 0, t4: 0 };
+            }
+            let totalScore = 0, t1 = 0, t2 = 0, t3 = 0, t4 = 0;
+            roster.players.forEach(id => {
+                const p = getPlayerData(id);
+                if (!p || ['DEF','K','UNK'].includes(p.position)) return;
+                const s = scorePlayer(p);
+                totalScore += s;
+                if (s >= 85) t1++;
+                else if (s >= 60) t2++;
+                else if (s >= 35) t3++;
+                else if (s > 0) t4++;
+            });
+            totalScore = Math.round(totalScore);
+            return { totalScore, t1, t2, t3, t4 };
         }
 
         function getScoringLabel(league) {
@@ -660,9 +642,9 @@
             // Grade all rosters and sort by score desc
             const gradedRosters = rosters.map(roster => {
                 const user = userMap[roster.owner_id] || {};
-                const grade = gradeRoster(roster);
+                const grade = dynastyGrade(roster);
                 return { roster, user, grade };
-            }).sort((a,b) => b.grade.score - a.grade.score);
+            }).sort((a,b) => b.grade.totalScore - a.grade.totalScore);
 
             html += `<div class="teams-grid">`;
 
@@ -674,8 +656,7 @@
                 const losses = roster.settings?.losses || 0;
                 const pf = roster.settings?.fpts ? parseFloat(roster.settings.fpts).toFixed(1) : '—';
 
-                const gradeCls = grade.label.toLowerCase();
-                const gradeEmoji = grade.label === 'Contender' ? '🔥' : grade.label === 'Middling' ? '⚖️' : grade.label === 'Rebuilding' ? '🔧' : '🤷';
+
 
                 // Top players
                 const topPlayers = (roster.players || [])
@@ -700,17 +681,17 @@
                                 <div class="team-record">${wins}–${losses} · ${pf} pts</div>
                             </div>
                         </div>
-                        <div>
-                            <div class="grade-badge grade-${gradeCls}">${gradeEmoji} ${grade.label}</div>
-                            <div style="text-align:right;font-size:1.1rem;font-weight:700;color:white;margin-top:0.35rem;">${grade.score}</div>
+                        <div style="text-align:right;flex-shrink:0;">
+                            <div style="font-size:1.5rem;font-weight:700;color:#fbbf24;">${grade.totalScore}</div>
+                            <div style="font-size:0.72rem;color:#475569;margin-top:0.15rem;">dynasty pts</div>
                         </div>
                     </div>
 
-                    <div class="team-score-bar">
-                        ${scoreBar('Stars', grade.starPower, '#fbbf24')}
-                        ${scoreBar('Depth', grade.depth, '#34d399')}
-                        ${scoreBar('Age', grade.ageCurve, '#60a5fa')}
-                        ${scoreBar('Balance', grade.balance, '#a78bfa')}
+                    <div style="padding:0.5rem 1.25rem 0.75rem;display:flex;gap:0.5rem;flex-wrap:wrap;">
+                        ${grade.t1 > 0 ? `<span style="background:rgba(251,191,36,0.15);color:#fbbf24;border:1px solid rgba(251,191,36,0.3);padding:0.2rem 0.6rem;border-radius:99px;font-size:0.75rem;font-weight:600;">T1 ×${grade.t1}</span>` : ''}
+                        ${grade.t2 > 0 ? `<span style="background:rgba(52,211,153,0.12);color:#34d399;border:1px solid rgba(52,211,153,0.25);padding:0.2rem 0.6rem;border-radius:99px;font-size:0.75rem;font-weight:600;">T2 ×${grade.t2}</span>` : ''}
+                        ${grade.t3 > 0 ? `<span style="background:rgba(148,163,184,0.1);color:#94a3b8;border:1px solid rgba(148,163,184,0.2);padding:0.2rem 0.6rem;border-radius:99px;font-size:0.75rem;font-weight:600;">T3 ×${grade.t3}</span>` : ''}
+                        ${grade.t4 > 0 ? `<span style="background:rgba(71,85,105,0.1);color:#64748b;border:1px solid rgba(71,85,105,0.2);padding:0.2rem 0.6rem;border-radius:99px;font-size:0.75rem;font-weight:600;">T4 ×${grade.t4}</span>` : ''}
                     </div>
 
                     <div class="team-top-players">
