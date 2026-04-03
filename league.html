@@ -321,7 +321,7 @@
                     <span>🔍</span> Manager Profiles
                 </a>
             </div>
-            <span class="nav-version">v1.9.6-beta</span>
+            <span class="nav-version">v1.9.7-beta</span>
         </div>
     </nav>
 
@@ -719,12 +719,13 @@
 
 
 
-                // Top players
-                const topPlayers = (roster.players || [])
-                    .map(id => ({ id, data: getPlayerData(id) }))
-                    .filter(p => p.data.position !== 'DEF' && p.data.position !== 'K' && p.data.position !== 'UNK')
-                    .sort((a,b) => (a.data.defaultRank || 9999) - (b.data.defaultRank || 9999))
-                    .slice(0, 5);
+                // T1 players (dynasty score >= 85) sorted by score desc
+                const allScoredPlayers = (roster.players || [])
+                    .map(id => ({ id, data: getPlayerData(id), score: scorePlayer(getPlayerData(id)) }))
+                    .filter(p => !['DEF','K','UNK'].includes(p.data.position));
+                const t1Players = allScoredPlayers
+                    .filter(p => p.score >= 85)
+                    .sort((a,b) => b.score - a.score);
 
                 html += `<div class="team-card" id="team-card-${idx}">
                     <div class="team-card-header">
@@ -756,8 +757,9 @@
                     </div>
 
                     <div class="team-top-players">
-                        <div class="top-player-label">Top players</div>
-                        ${topPlayers.map(p => `<span class="top-player-pill">${p.data.playerName?.split(' ').pop() || '?'} <span style="color:#64748b;">#${p.data.defaultRank < 9999 ? p.data.defaultRank : '—'}</span></span>`).join('')}
+                        <div class="top-player-label">T1 players (${t1Players.length})</div>
+                        ${t1Players.map(p => `<span class="top-player-pill" style="border-left:2px solid #fbbf24;">${p.data.playerName?.split(' ').pop() || '?'} <span style="color:#fbbf24;font-weight:600;">${p.score}</span></span>`).join('')}
+                        ${t1Players.length === 0 ? '<span style="color:#475569;font-size:0.78rem;">No T1 players</span>' : ''}
                     </div>
                     <div style="padding:0 1.25rem 0.75rem;border-top:1px solid #0f172a;margin-top:0.5rem;padding-top:0.75rem;">
                         <div class="top-player-label" style="margin-bottom:0.5rem;">Draft picks</div>
@@ -804,12 +806,15 @@
                     const isIR = roster.reserve?.includes(id);
                     const isTaxi = roster.taxi?.includes(id);
                     const flag = isIR ? ' 💔' : isTaxi ? ' 🚕' : '';
+                    const dynScore = scorePlayer(data);
+                    const scoreCol = dynScore >= 85 ? '#fbbf24' : dynScore >= 60 ? '#34d399' : dynScore >= 35 ? '#94a3b8' : '#475569';
+                    const scoreDisplay = dynScore > 0 ? dynScore : (data.defaultRank < 9999 ? 'OVR #' + data.defaultRank : '—');
                     html += `<div class="player-row">
                         <div>
                             <div class="player-row-name">${data.playerName || id}${flag}</div>
                             <div class="player-row-meta">${data.team || ''} · Age ${data.age || '?'}</div>
                         </div>
-                        <div class="player-row-rank">OVR #${data.defaultRank < 9999 ? data.defaultRank : '—'}</div>
+                        <div class="player-row-rank" style="color:${scoreCol}">${scoreDisplay}</div>
                     </div>`;
                 });
                 html += `</div>`;
