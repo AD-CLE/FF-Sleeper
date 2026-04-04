@@ -349,7 +349,7 @@
                     <span class="nav-icon">🔍</span> Manager Profiles
                 </a>
             </div>
-            <span class="nav-version">v1.9.6-beta</span>
+            <span class="nav-version">v1.9.13-beta</span>
         </div>
     </nav>
 
@@ -822,7 +822,7 @@
             } else {
                 html += `<div class="user-avatar-placeholder">👤</div>`;
             }
-            html += `<div><h2 class="user-name">${user.display_name}</h2><p class="user-meta">@${user.username} • ID: ${user.user_id}</p><p class="user-meta">${leagues.length} league${leagues.length !== 1 ? 's' : ''} in ${yearSelect.value}</p></div></div>`;
+            html += `<div><h2 class="user-name">${user.display_name}</h2><p class="user-meta">@${user.username} • ID: ${user.user_id}</p><p class="user-meta">${leagues.length} league${leagues.length !== 1 ? 's' : ''} in ${yearSelect.value}</p><p class="user-meta" style="margin-top:0.4rem;"><a href="profile.html?user=${user.username}" style="color:#fbbf24;text-decoration:none;font-size:0.8rem;">View My Profile →</a></p></div></div>`;
 
             html += `<div class="leagues-section">`;
             html += `<h3 class="leagues-title">🏆 Your Leagues <span style="font-size:0.85rem;font-weight:400;color:#475569;">(${leagues.length})</span></h3>`;
