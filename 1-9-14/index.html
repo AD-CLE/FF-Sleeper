@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏆</text></svg>">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sleeper Manager - My Rosters</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ── NAV ── */
+        .nav {
+            background: rgba(10, 16, 30, 0.95);
+            border-bottom: 1px solid rgba(251, 191, 36, 0.2);
+            backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-inner {
+            max-width: 80rem;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0;
+            height: 56px;
+        }
+
+        .nav-brand {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #fbbf24;
+            text-decoration: none;
+            letter-spacing: -0.02em;
+            margin-right: 2rem;
+            flex-shrink: 0;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            flex: 1;
+        }
+
+        .nav-link {
+            padding: 0.4rem 1rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #94a3b8;
+            text-decoration: none;
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .nav-link:hover {
+            color: white;
+            background: rgba(255,255,255,0.06);
+        }
+
+        .nav-link.active {
+            color: #fbbf24;
+            background: rgba(251, 191, 36, 0.1);
+        }
+
+        .nav-link .nav-icon { font-size: 0.95rem; }
+
+        .nav-version {
+            font-size: 0.7rem;
+            color: #475569;
+            font-family: monospace;
+            margin-left: auto;
+        }
+
+        /* ── HEADER ── */
+        .header-section {
+            border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+            background: rgba(15, 23, 42, 0.6);
+            padding: 2rem 1.5rem;
+        }
+
+        .header-content {
+            max-width: 80rem;
+            margin: 0 auto;
+        }
+
+        .header-content h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 0.35rem;
+        }
+
+        .header-subtitle {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        /* ── MAIN ── */
+        .main-content {
+            max-width: 80rem;
+            margin: 0 auto;
+            padding: 2.5rem 1.5rem;
+        }
+
+        .search-form {
+            margin-bottom: 2.5rem;
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .search-container { position: relative; flex: 1; }
+
+        .search-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 0.5rem;
+            color: white;
+            font-size: 0.95rem;
+            transition: border-color 0.2s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #fbbf24;
+        }
+
+        .search-input::placeholder { color: #475569; }
+
+        .year-select {
+            padding: 0.75rem 1rem;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 0.5rem;
+            color: white;
+            font-size: 0.95rem;
+            cursor: pointer;
+        }
+
+        .search-button {
+            padding: 0.75rem 1.5rem;
+            background: #fbbf24;
+            color: #0f172a;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .search-button:hover:not(:disabled) { background: #f59e0b; }
+        .search-button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .loading-container {
+            text-align: center;
+            padding: 3rem;
+            color: #64748b;
+        }
+
+        .error-container {
+            margin-bottom: 2rem;
+            padding: 1rem 1.25rem;
+            background: rgba(127, 29, 29, 0.25);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 0.5rem;
+            color: #fca5a5;
+            font-size: 0.9rem;
+        }
+
+        .user-card {
+            margin-bottom: 2.5rem;
+            padding: 1.25rem 1.5rem;
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid #334155;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-avatar {
+            width: 3.5rem;
+            height: 3.5rem;
+            border-radius: 50%;
+            border: 2px solid #fbbf24;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        .user-avatar-placeholder {
+            width: 3.5rem;
+            height: 3.5rem;
+            border-radius: 50%;
+            border: 2px solid #fbbf24;
+            background: rgba(251,191,36,0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .user-name { font-size: 1.35rem; font-weight: 700; color: white; margin: 0; }
+        .user-meta { color: #64748b; font-size: 0.825rem; margin-top: 0.2rem; }
+
+        .leagues-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .legend {
+            margin-bottom: 1.5rem;
+            padding: 0.75rem 1rem;
+            background: rgba(15,23,42,0.5);
+            border: 1px solid #1e293b;
+            border-radius: 0.5rem;
+            color: #94a3b8;
+            font-size: 0.82rem;
+        }
+
+        .league-card {
+            border: 1px solid #334155;
+            border-radius: 0.5rem;
+            margin-bottom: 0.75rem;
+            overflow: hidden;
+        }
+
+        .league-header {
+            width: 100%;
+            padding: 1.25rem 1.5rem;
+            background: #1e293b;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+            transition: background 0.15s;
+        }
+
+        .league-header > div:first-child { flex: 1; text-align: left; }
+        .league-header:hover { background: #162032; }
+
+        .league-name { font-size: 1rem; font-weight: 700; color: white; }
+        .league-meta { font-size: 0.825rem; color: #64748b; margin-top: 0.2rem; user-select: text; -webkit-user-select: text; }
+        .league-scoring { font-size: 0.825rem; color: #fbbf24; margin-top: 0.35rem; }
+
+        .league-chevron {
+            font-size: 1.1rem;
+            color: #fbbf24;
+            transition: transform 0.2s;
+            margin-top: 0.2rem;
+            flex-shrink: 0;
+        }
+
+        .league-card.expanded .league-chevron { transform: rotate(180deg); }
+
+        .rosters-container {
+            background: rgba(10, 16, 30, 0.5);
+            border-top: 1px solid #1e293b;
+            padding: 1.5rem;
+        }
+
+        .rosters-container.hidden { display: none; }
+
+        .roster-info {
+            margin-bottom: 1.25rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #1e293b;
+        }
+
+        .roster-info-title { color: #fbbf24; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.35rem; }
+        .roster-info-text { color: #94a3b8; font-size: 0.82rem; }
+
+        .position-group { margin-bottom: 1.25rem; }
+
+        .position-header {
+            color: #475569;
+            font-weight: 600;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 0.5rem;
+            padding-bottom: 0.4rem;
+            border-bottom: 1px solid #1e293b;
+        }
+
+        .player-item {
+            padding: 0.65rem 0.875rem;
+            margin-bottom: 0.375rem;
+            background: rgba(30, 41, 59, 0.6);
+            border-left: 3px solid #334155;
+            border-radius: 0.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .player-info { flex: 1; }
+        .player-name { color: white; font-weight: 600; font-size: 0.9rem; }
+        .player-meta { color: #475569; font-size: 0.78rem; margin-top: 0.2rem; }
+
+        .player-ranks { text-align: right; flex-shrink: 0; margin-left: 1rem; }
+        .player-ovr { font-weight: 600; font-size: 0.875rem; }
+        .player-pos { color: #475569; font-size: 0.75rem; margin-top: 0.15rem; }
+
+        @media (max-width: 640px) {
+            .main-content { padding: 1.5rem 1rem; }
+            .search-form { flex-direction: column; }
+            .search-button, .year-select { width: 100%; }
+            .nav-version { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ── GLOBAL NAV ── -->
+    <nav class="nav">
+        <div class="nav-inner">
+            <a href="index.html" class="nav-brand">🏆 Sleeper Manager</a>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link active">
+                    <span class="nav-icon">👤</span> My Rosters
+                </a>
+                <a href="league.html" class="nav-link">
+                    <span class="nav-icon">🏟️</span> League View
+                </a>
+                <a href="profile.html" class="nav-link">
+                    <span class="nav-icon">🔍</span> Manager Profiles
+                </a>
+            </div>
+            <span class="nav-version">v1.9.14-beta</span>
+        </div>
+    </nav>
+
+    <div class="header-section">
+        <div class="header-content">
+            <h1>My Rosters</h1>
+            <p class="header-subtitle">Your leagues, roster allocation &amp; player grading</p>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <form class="search-form" id="searchForm">
+            <div class="search-container">
+                <input type="text" id="username" class="search-input" placeholder="Enter your Sleeper username..." value="ankurdeora">
+            </div>
+            <select id="year" class="year-select">
+                <option value="2023">2023</option>
+                <option value="2024">2024</option>
+                <option value="2025">2025</option>
+                <option value="2026" selected>2026</option>
+                <option value="2027">2027</option>
+            </select>
+            <button type="submit" class="search-button" id="searchBtn">Search</button>
+        </form>
+
+        <div id="content"></div>
+    </div>
+
+    <script>
+        const contentDiv = document.getElementById('content');
+        const searchForm = document.getElementById('searchForm');
+        const usernameInput = document.getElementById('username');
+        const yearSelect = document.getElementById('year');
+        const searchBtn = document.getElementById('searchBtn');
+
+        let playerLookupCache = {};
+        let positionStarters = {};
+
+        async function loadPlayerLookup() {
+            if (Object.keys(playerLookupCache).length > 0) return;
+            try {
+                const response = await fetch('players.json');
+                if (!response.ok) throw new Error('players.json not found');
+                const data = await response.json();
+                const players = data.players || data;
+                players.forEach(row => {
+                    const sleeperId = String(row['SLEEPER_ID']);
+                    playerLookupCache[sleeperId] = {
+                        playerName: row['PLAYER_NAME'],
+                        position: row['POSITION'],
+                        age: parseInt(row['AGE']) || 0,
+                        team: row['TEAM'],
+                        depthChartPos: row['DEPTH_CHART_POS'],
+                        depthChartOrder: parseInt(row['DEPTH_CHART_ORDER']) || 0,
+                        yearsExp: parseInt(row['YEARS_EXP']) || 0,
+                        posRank: row['POS_RANK'],
+                        defaultRank: parseInt(row['Default_Rank']) || 9999
+                    };
+                });
+                console.log('players.json loaded:', Object.keys(playerLookupCache).length, 'players');
+            } catch (e) {
+                console.log('Could not load players.json:', e);
+            }
+        }
+
+        const defenseMap = {
+            'ARZ':'Arizona Cardinals Defense','ATL':'Atlanta Falcons Defense','BAL':'Baltimore Ravens Defense',
+            'BUF':'Buffalo Bills Defense','CAR':'Carolina Panthers Defense','CHI':'Chicago Bears Defense',
+            'CIN':'Cincinnati Bengals Defense','CLE':'Cleveland Browns Defense','DAL':'Dallas Cowboys Defense',
+            'DEN':'Denver Broncos Defense','DET':'Detroit Lions Defense','GB':'Green Bay Packers Defense',
+            'HOU':'Houston Texans Defense','IND':'Indianapolis Colts Defense','JAX':'Jacksonville Jaguars Defense',
+            'KC':'Kansas City Chiefs Defense','LAC':'Los Angeles Chargers Defense','LAR':'Los Angeles Rams Defense',
+            'LV':'Las Vegas Raiders Defense','MIA':'Miami Dolphins Defense','MIN':'Minnesota Vikings Defense',
+            'NE':'New England Patriots Defense','NO':'New Orleans Saints Defense','NYG':'New York Giants Defense',
+            'NYJ':'New York Jets Defense','PHI':'Philadelphia Eagles Defense','PIT':'Pittsburgh Steelers Defense',
+            'SF':'San Francisco 49ers Defense','SEA':'Seattle Seahawks Defense','TB':'Tampa Bay Buccaneers Defense',
+            'TEN':'Tennessee Titans Defense','WAS':'Washington Commanders Defense'
+        };
+
+        function getPlayerData(sleeperId) {
+            const s = String(sleeperId);
+            if (playerLookupCache[s]) return playerLookupCache[s];
+            if (defenseMap[s]) return { sleeperId, playerName: defenseMap[s], position: 'DEF', age: 'N/A', team: s, depthChartPos: 'DEF', depthChartOrder: 1, yearsExp: 0, posRank: 'DEF_001', defaultRank: 9999 };
+            return { sleeperId, playerName: `Unknown (${sleeperId})`, position: 'UNK', age: 'N/A', team: 'N/A', depthChartPos: 'N/A', depthChartOrder: 0, yearsExp: 0, posRank: 'UNK_000', defaultRank: 9999 };
+        }
+
+        function getStatusIcon(status) {
+            if (status === 'Star' || status.startsWith('⭐')) return '⭐';
+            if (status.includes('Starter') || status.includes('FLEX')) return '🎯';
+            if (status === 'Bench') return '🪑';
+            if (status === 'Trade') return '🔀';
+            if (status === 'Cut') return '🗑️';
+            return '';
+        }
+
+        function allocateRoster(userRoster, league, tepTier) {
+            if (!userRoster.players || userRoster.players.length === 0) return {};
+            const rosterSlots = {};
+            league.roster_positions?.forEach(pos => { rosterSlots[pos] = (rosterSlots[pos] || 0) + 1; });
+            positionStarters = {
+                'QB': (rosterSlots['QB'] || 0) + (rosterSlots['SUPER_FLEX'] || 0),
+                'RB': rosterSlots['RB'] || 0, 'WR': rosterSlots['WR'] || 0,
+                'TE': rosterSlots['TE'] || 0, 'K': rosterSlots['K'] || 0,
+                'DEF': rosterSlots['DEF'] || 0, 'FLEX': rosterSlots['FLEX'] || 0,
+                'SUPER_FLEX': rosterSlots['SUPER_FLEX'] || 0
+            };
+            const classified = {'KEEP': [], 'Trade': [], 'Cut': []};
+            const allocation = {};
+
+            userRoster.players.forEach(playerId => {
+                const playerObj = getPlayerData(playerId);
+                if (!playerObj) return;
+                const position = playerObj.position;
+                const defaultRank = playerObj.defaultRank;
+                const posRank = playerObj.posRank || '';
+                const yearsExp = playerObj.yearsExp;
+                const depthChartOrder = playerObj.depthChartOrder;
+                const posRankNum = posRank ? parseInt(posRank.split('_')[1]) : 9999;
+                let classification = 'Trade';
+
+                if (position === 'UNK') { classification = 'KEEP'; }
+                else if (position === 'QB') {
+                    if (positionStarters['QB'] === 1) {
+                        const allQBs = userRoster.players.map(id => ({ id, rank: getPlayerData(id)?.defaultRank || 9999, yearsExp: getPlayerData(id)?.yearsExp || 0 })).filter(q => getPlayerData(q.id)?.position === 'QB').sort((a, b) => a.rank - b.rank);
+                        const qbRankIndex = allQBs.findIndex(q => q.id === playerId);
+                        if (qbRankIndex <= 2) { classification = 'KEEP'; }
+                        else { classification = allQBs[qbRankIndex].yearsExp < 2 ? 'Trade' : 'Cut'; }
+                    } else {
+                        if (depthChartOrder === 1) classification = 'KEEP';
+                        else if (depthChartOrder === 2) classification = 'Trade';
+                        else if (depthChartOrder >= 3) classification = yearsExp < 4 ? 'Trade' : 'Cut';
+                        else classification = yearsExp === 0 ? 'Trade' : 'Cut';
+                    }
+                } else if (position === 'RB' || position === 'TE') {
+                    if (depthChartOrder === 1) classification = 'KEEP';
+                    else if (depthChartOrder === 2) classification = yearsExp < 4 ? 'KEEP' : 'Trade';
+                    else if (depthChartOrder >= 3) { if (yearsExp < 2) classification = 'KEEP'; else if (defaultRank <= 300) classification = 'Trade'; else classification = 'Cut'; }
+                    else classification = yearsExp === 0 ? 'Trade' : 'Cut';
+                    if (position === 'TE' && tepTier === 'Off') {
+                        if (depthChartOrder === 1) { classification = 'KEEP'; }
+                        else { classification = posRankNum <= 2 ? 'KEEP' : (defaultRank <= 200 || yearsExp === 0 ? 'Trade' : 'Cut'); }
+                    }
+                } else if (position === 'WR') {
+                    classification = (defaultRank > 120 && yearsExp > 4 && depthChartOrder > 3) ? 'Cut' : 'KEEP';
+                } else if (position === 'K' || position === 'DEF') {
+                    if (depthChartOrder === 1) { classification = 'KEEP'; }
+                    else { classification = posRankNum <= 6 ? 'Bench' : 'Cut'; }
+                }
+                allocation[playerId] = { position, classification, defaultRank, posRank, yearsExp, depthChartOrder, finalStatus: null };
+                classified[classification] = classified[classification] || [];
+                classified[classification].push(playerId);
+            });
+
+            Object.keys(classified).forEach(c => { classified[c].sort((a, b) => (getPlayerData(a)?.defaultRank || 9999) - (getPlayerData(b)?.defaultRank || 9999)); });
+
+            const assigned = new Set();
+            const positions = ['QB', 'RB', 'WR', 'TE', 'K', 'DEF'];
+
+            positions.forEach(pos => {
+                const slots = positionStarters[pos] || 0;
+                for (let i = 0; i < slots; i++) {
+                    const keepPlayer = classified['KEEP'].find(id => getPlayerData(id)?.position === pos && !assigned.has(id));
+                    if (keepPlayer) { allocation[keepPlayer].finalStatus = 'Starter'; assigned.add(keepPlayer); continue; }
+                    const tradePlayer = classified['Trade'].find(id => getPlayerData(id)?.position === pos && !assigned.has(id));
+                    if (tradePlayer) { allocation[tradePlayer].finalStatus = 'Starter'; assigned.add(tradePlayer); }
+                }
+            });
+
+            const flexSlots = positionStarters['FLEX'] || 0;
+            for (let i = 0; i < flexSlots; i++) {
+                const flexEligible = ['RB', 'WR', 'TE'];
+                const fp = classified['KEEP'].find(id => flexEligible.includes(getPlayerData(id)?.position) && !assigned.has(id));
+                if (fp) { allocation[fp].finalStatus = 'FLEX'; assigned.add(fp); }
+                else {
+                    const ft = classified['Trade'].find(id => flexEligible.includes(getPlayerData(id)?.position) && !assigned.has(id));
+                    if (ft) { allocation[ft].finalStatus = 'FLEX'; assigned.add(ft); }
+                }
+            }
+
+            const totalRosterSlots = league.roster_positions?.length || 22;
+            const benchSlots = Math.max(0, totalRosterSlots - assigned.size);
+            for (let i = 0; i < benchSlots; i++) {
+                const bk = classified['KEEP'].find(id => !assigned.has(id));
+                if (bk) { allocation[bk].finalStatus = 'Bench'; assigned.add(bk); continue; }
+                const bt = classified['Trade'].find(id => !assigned.has(id));
+                if (bt) { allocation[bt].finalStatus = 'Bench'; assigned.add(bt); }
+            }
+
+            userRoster.players.forEach(playerId => {
+                if (!assigned.has(playerId)) {
+                    const record = allocation[playerId];
+                    record.finalStatus = record.classification === 'Cut' ? 'Cut' : 'Trade';
+                }
+            });
+
+            Object.keys(allocation).forEach(playerId => {
+                const record = allocation[playerId];
+                const posRankNum = record.posRank ? parseInt(record.posRank.split('_')[1]) : 9999;
+                let isStars = false;
+                if (record.position === 'QB') isStars = positionStarters['QB'] === 1 ? posRankNum <= 6 : posRankNum <= 12;
+                else if (record.position === 'RB' || record.position === 'WR') isStars = posRankNum <= 12;
+                else if (record.position === 'TE') isStars = tepTier === 'Off' ? posRankNum <= 6 : posRankNum <= 12;
+                if (isStars && (record.finalStatus === 'Starter' || record.finalStatus === 'FLEX')) record.finalStatus = '⭐ ' + record.finalStatus;
+            });
+
+            return allocation;
+        }
+
+
+
+        // ── PLAYER SCORING ENGINE ──
+        function getPosRankNum(posRank) {
+            if (!posRank) return 9999;
+            const parts = posRank.split('_');
+            return parseInt(parts[parts.length - 1]) || 9999;
+        }
+
+        function getWRBaseScore(rank) {
+            if (rank <= 12) return 99 - ((rank - 1) * (4/11));
+            if (rank <= 18) return 94 - ((rank - 13) * (4/5));
+            if (rank <= 24) return 88 - ((rank - 19) * (4/5));
+            if (rank <= 36) return 82 - ((rank - 25) * (6/11));
+            if (rank <= 48) return 75 - ((rank - 37) * (7/11));
+            if (rank <= 60) return 67 - ((rank - 49) * (7/11));
+            if (rank <= 78) return 50 - ((rank - 61) * (15/17));
+            if (rank <= 125) return 32 - ((rank - 79) * (20/46));
+            return 0;
+        }
+
+        function getWRExpDepthModifier(exp, depth) {
+            const d = depth >= 4 ? 4 : depth;
+            const matrix = {
+                0: [1.00, 1.00, 0.90, 0.50],
+                1: [1.05, 1.00, 0.95, 0.60],
+                2: [1.00, 0.95, 0.75, 0.40],
+                3: [0.85, 0.80, 0.60, 0.20]
+            };
+            let tier;
+            if (exp === 0) tier = 0;
+            else if (exp <= 3) tier = 1;
+            else if (exp <= 7) tier = 2;
+            else tier = 3;
+            return matrix[tier][d - 1] || 0.20;
+        }
+
+        function getRBBaseScore(rank) {
+            if (rank <= 6)   return 99 - ((rank - 1) * (4/5));
+            if (rank <= 12)  return 94 - ((rank - 7) * (6/5));
+            if (rank <= 24)  return 87 - ((rank - 13) * (9/11));
+            if (rank <= 36)  return 77 - ((rank - 25) * (9/11));
+            if (rank <= 48)  return 67 - ((rank - 37) * (12/11));
+            if (rank <= 60)  return 54 - ((rank - 49) * (12/11));
+            if (rank <= 85)  return 38 - ((rank - 61) * (20/24));
+            if (rank <= 101) return 15 - ((rank - 86) * (10/15));
+            return 0;
+        }
+
+        function getRBExpDepthModifier(exp, depth) {
+            const d = depth >= 4 ? 4 : depth;
+            const matrix = {
+                0: [1.00, 1.00, 0.90, 0.40],
+                1: [1.05, 1.00, 0.90, 0.50],
+                2: [1.00, 0.90, 0.75, 0.25],
+                3: [0.85, 0.70, 0.40, 0.10],
+                4: [0.75, 0.40, 0.15, 0.05]
+            };
+            let tier;
+            if (exp === 0) tier = 0;
+            else if (exp <= 3) tier = 1;
+            else if (exp <= 6) tier = 2;
+            else if (exp <= 8) tier = 3;
+            else tier = 4;
+            return matrix[tier][d - 1] || 0.05;
+        }
+
+        function cleanDepth(depth, exp, position) {
+            if (depth === 0 || depth === null || isNaN(depth)) return exp === 0 ? 3 : 4;
+            if (depth >= 5) return 4;
+            return depth;
+        }
+
+
+        function getTEBaseScore(rank) {
+            if (rank <= 6)   return 99 - ((rank - 1) * (4/5));
+            if (rank <= 12)  return 94 - ((rank - 7) * (6/5));
+            if (rank <= 24)  return 87 - ((rank - 13) * (15/11));
+            if (rank <= 36)  return 68 - ((rank - 25) * (18/11));
+            if (rank <= 48)  return 45 - ((rank - 37) * (20/11));
+            return 0;
+        }
+
+        function getTEExpDepthModifier(exp, depth) {
+            const d = depth >= 4 ? 4 : depth;
+            const matrix = {
+                0: [1.00, 0.90, 0.60, 0.20],
+                1: [1.05, 0.85, 0.55, 0.15],
+                2: [1.00, 0.80, 0.45, 0.10],
+                3: [0.80, 0.50, 0.20, 0.05]
+            };
+            let tier;
+            if (exp === 0) tier = 0;
+            else if (exp <= 3) tier = 1;
+            else if (exp <= 9) tier = 2;
+            else tier = 3;
+            return matrix[tier][d - 1] || 0.05;
+        }
+
+        function getQBBaseScore(rank) {
+            if (rank === 1)  return 99;
+            if (rank <= 12)  return Math.round(99 - ((rank - 1) * (14/11)));
+            if (rank <= 18)  return Math.round(85 - ((rank - 12) * (5/6)));
+            if (rank <= 24)  return Math.round(80 - ((rank - 18) * (10/6)));
+            if (rank <= 36)  return Math.round(70 - ((rank - 24) * (10/12)));
+            if (rank <= 64)  return Math.round(60 - ((rank - 36) * (55/28)));
+            return 0;
+        }
+
+        function getQBExpDepthModifier(exp, depth) {
+            const d = depth >= 4 ? 4 : depth;
+            const matrix = {
+                0: [1.00, 0.95, 0.50, 0.20],
+                1: [1.02, 0.90, 0.40, 0.15],
+                2: [1.00, 0.80, 0.30, 0.10],
+                3: [0.97, 0.60, 0.20, 0.05],
+                4: [0.85, 0.30, 0.10, 0.02]
+            };
+            let tier;
+            if (exp === 0) tier = 0;
+            else if (exp <= 3) tier = 1;
+            else if (exp <= 7) tier = 2;
+            else if (exp <= 12) tier = 3;
+            else tier = 4;
+            return matrix[tier][d - 1] || 0.02;
+        }
+
+
+        function scorePlayer(playerData) {
+            if (!playerData) return 0;
+            const position = playerData.position;
+            const posRank = getPosRankNum(playerData.posRank);
+            const exp = playerData.yearsExp || 0;
+            const rawDepth = playerData.depthChartOrder || 0;
+            const depth = cleanDepth(rawDepth, exp, position);
+
+            let base = 0;
+            let modifier = 1.0;
+
+            if (position === 'WR') {
+                base = getWRBaseScore(posRank);
+                modifier = getWRExpDepthModifier(exp, depth);
+            } else if (position === 'RB') {
+                base = getRBBaseScore(posRank);
+                modifier = getRBExpDepthModifier(exp, depth);
+            } else if (position === 'TE') {
+                base = getTEBaseScore(posRank);
+                modifier = getTEExpDepthModifier(exp, depth);
+            } else if (position === 'QB') {
+                base = getQBBaseScore(posRank);
+                modifier = getQBExpDepthModifier(exp, depth);
+            } else {
+                return 0;
+            }
+
+            const score = Math.round(base * modifier);
+            return Math.min(99, Math.max(0, score));
+        }
+
+
+        function buildPickInventory(myRosterId, tradedPicks, rosterMap, totalTeams) {
+            const years = ['2026','2027','2028'];
+            const rounds = [1,2,3,4];
+            const owned = {};
+            for (let i = 1; i <= totalTeams; i++) {
+                owned[i] = [];
+                years.forEach(y => rounds.forEach(r => { owned[i].push({season:y, round:r, originalRosterId:i, pickSlot:null}); }));
+            }
+            tradedPicks.forEach(tp => {
+                if (parseInt(tp.season) < 2026) return;
+                const origId = tp.roster_id;
+                const newOwner = tp.owner_id;
+                Object.keys(owned).forEach(rid => {
+                    owned[rid] = owned[rid].filter(p => !(p.season === tp.season && p.round === tp.round && p.originalRosterId === origId));
+                });
+                if (!owned[newOwner]) owned[newOwner] = [];
+                owned[newOwner].push({season: tp.season, round: tp.round, originalRosterId: origId, pickSlot: tp.pick_no || null});
+            });
+            return owned[myRosterId] || [];
+        }
+
+        function getTeamShortName(rosterId, rosterMap, userMap) {
+            const roster = rosterMap[rosterId];
+            if (!roster) return 'Team ' + rosterId;
+            const user = userMap[roster.owner_id] || {};
+            const n = (roster.metadata && roster.metadata.team_name) || (user.metadata && user.metadata.team_name) || user.display_name || ('Team ' + rosterId);
+            return n.length > 14 ? n.split(' ')[0] : n;
+        }
+
+        function renderPickInventory(myRosterId, tradedPicks, rosterMap, userMap) {
+            const total = Object.keys(rosterMap).length || 12;
+            const picks = buildPickInventory(myRosterId, tradedPicks, rosterMap, total);
+            const byYear = {'2026':[], '2027':[], '2028':[]};
+            picks.forEach(p => { if (byYear[p.season]) byYear[p.season].push(p); });
+            const rl = r => r===1?'1st':r===2?'2nd':r===3?'3rd':'4th';
+            let html = '';
+            ['2026','2027','2028'].forEach(yr => {
+                const yp = byYear[yr];
+                if (yp.length === 0) {
+                    html += '<div style="margin-bottom:0.4rem"><span style="color:#fbbf24;font-weight:600">' + yr + ':</span> <span style="color:#ef4444;font-size:0.8rem">No picks</span></div>';
+                    return;
+                }
+                yp.sort((a,b) => a.round !== b.round ? a.round-b.round : (a.pickSlot||99)-(b.pickSlot||99));
+                const parts = yp.map(p => {
+                    const own = p.originalRosterId === myRosterId;
+                    const lbl = (yr==='2026' && p.pickSlot) ? (p.round+'.'+String(p.pickSlot).padStart(2,'0')) : rl(p.round);
+                    const sfx = own ? '' : ' <span style="color:#64748b;font-size:0.75rem">('+getTeamShortName(p.originalRosterId, rosterMap, userMap)+')</span>';
+                    const col = p.round===1?'#fbbf24':p.round===2?'#94a3b8':'#475569';
+                    return '<span style="color:'+col+'">'+lbl+'</span>'+sfx;
+                }).join(' <span style="color:#334155">&middot;</span> ');
+                html += '<div style="margin-bottom:0.4rem;line-height:1.8"><span style="color:#fbbf24;font-weight:600">'+yr+':</span> '+parts+'</div>';
+            });
+            return html || '<span style="color:#475569">No future picks</span>';
+        }
+
+        async function fetchSleeperData(username, year) {
+            try {
+                searchBtn.disabled = true;
+                searchBtn.textContent = 'Loading...';
+                contentDiv.innerHTML = '<div class="loading-container">⏳ Fetching your data...</div>';
+                await loadPlayerLookup();
+                const userRes = await fetch(`https://api.sleeper.app/v1/user/${username}`);
+                if (!userRes.ok) throw new Error('Username not found');
+                const user = await userRes.json();
+                const leaguesRes = await fetch(`https://api.sleeper.app/v1/user/${user.user_id}/leagues/nfl/${year}`);
+                if (!leaguesRes.ok) throw new Error('Could not fetch leagues');
+                const leagues = await leaguesRes.json();
+                const leaguesWithRosters = await Promise.all(leagues.map(async (league) => {
+                    try {
+                        const [rostersRes, tradedPicksRes, usersRes] = await Promise.all([
+                            fetch(`https://api.sleeper.app/v1/league/${league.league_id}/rosters`),
+                            fetch(`https://api.sleeper.app/v1/league/${league.league_id}/traded_picks`),
+                            fetch(`https://api.sleeper.app/v1/league/${league.league_id}/users`)
+                        ]);
+                        const rosters = await rostersRes.json();
+                        const tradedPicks = await tradedPicksRes.json();
+                        const users = await usersRes.json();
+                        const userMap = {};
+                        users.forEach(u => { userMap[u.user_id] = u; });
+                        const rosterMap = {};
+                        rosters.forEach(r => { rosterMap[r.roster_id] = r; });
+                        return {...league, rosters: rosters.sort((a, b) => (b.wins || 0) - (a.wins || 0)), tradedPicks, userMap, rosterMap};
+                    } catch { return {...league, rosters: [], tradedPicks: [], userMap: {}, rosterMap: {}}; }
+                }));
+                renderUI(user, leaguesWithRosters);
+            } catch (err) {
+                contentDiv.innerHTML = `<div class="error-container">⚠️ ${err.message}</div>`;
+            } finally {
+                searchBtn.disabled = false;
+                searchBtn.textContent = 'Search';
+            }
+        }
+
+        function renderUI(user, leagues) {
+            // Store username for cross-page linking
+            localStorage.setItem('sleeperUsername', user.username);
+            localStorage.setItem('sleeperUserId', user.user_id);
+
+            let html = `<div class="user-card">`;
+            if (user.avatar) {
+                html += `<img src="https://sleepercdn.com/avatars/thumbs/${user.avatar}" alt="${user.username}" class="user-avatar" />`;
+            } else {
+                html += `<div class="user-avatar-placeholder">👤</div>`;
+            }
+            html += `<div><h2 class="user-name">${user.display_name}</h2><p class="user-meta">@${user.username} • ID: ${user.user_id}</p><p class="user-meta">${leagues.length} league${leagues.length !== 1 ? 's' : ''} in ${yearSelect.value}</p><p class="user-meta" style="margin-top:0.4rem;"><a href="profile.html?user=${user.username}" style="color:#fbbf24;text-decoration:none;font-size:0.8rem;">View My Profile →</a></p></div></div>`;
+
+            html += `<div class="leagues-section">`;
+            html += `<h3 class="leagues-title">🏆 Your Leagues <span style="font-size:0.85rem;font-weight:400;color:#475569;">(${leagues.length})</span></h3>`;
+            html += `<div class="legend">⭐ Star &nbsp;|&nbsp; 🎯 Starter / FLEX &nbsp;|&nbsp; 🪑 Bench &nbsp;|&nbsp; 🔀 Trade &nbsp;|&nbsp; 🗑️ Cut &nbsp;|&nbsp; 💔 IR &nbsp;|&nbsp; 🚕 Taxi</div>`;
+
+            leagues.forEach((league, leagueIdx) => {
+                const userRoster = league.rosters?.find(r => r.owner_id === user.user_id);
+                const scoringSettings = league.scoring_settings || {};
+                const bonusRecTe = parseFloat(scoringSettings.bonus_rec_te) || 0;
+                const tepTier = bonusRecTe === 0 ? 'Off' : (bonusRecTe <= 1 ? 'TEP' : 'TEP+');
+                const scoringParts = [];
+                if (league.roster_positions?.includes('SUPER_FLEX')) scoringParts.push('SF');
+                const recValue = scoringSettings.rec;
+                if (recValue === 1) scoringParts.push('PPR');
+                else if (recValue === 0.5) scoringParts.push('HPPR');
+                else if (recValue === 0) scoringParts.push('STD');
+                else scoringParts.push('PPR');
+                if (bonusRecTe > 0) scoringParts.push(`${recValue + bonusRecTe}TEP`);
+                if (league.settings?.best_ball === 1) scoringParts.push('Best Ball');
+
+                html += `<div class="league-card" id="league-${leagueIdx}">
+                    <button class="league-header" onclick="toggleLeague(${leagueIdx})">
+                        <div>
+                            <div class="league-name">${league.name}</div>
+                            <div class="league-meta">${league.total_rosters} teams • Season ${league.season} • ID: ${league.league_id}</div>
+                            <div class="league-scoring">${scoringParts.join(' ')} &nbsp;·&nbsp; <a href="league.html?id=${league.league_id}" onclick="event.stopPropagation()" style="color:#fbbf24;text-decoration:underline;font-size:0.78rem;">View League →</a></div>
+                        </div>
+                        <span class="league-chevron">▼</span>
+                    </button>`;
+
+                html += `<div class="rosters-container hidden" id="rosters-${leagueIdx}">`;
+
+                if (userRoster) {
+                    const allocation = allocateRoster(userRoster, league, tepTier);
+                    const rosterReqs = {};
+                    league.roster_positions?.forEach(pos => { rosterReqs[pos] = (rosterReqs[pos] || 0) + 1; });
+                    const posOrder = ['QB','RB','WR','TE','FLEX','SUPER_FLEX','K','DEF','IR','TAXI','BN'];
+                    const reqSummary = posOrder.filter(pos => rosterReqs[pos]).map(pos => `${rosterReqs[pos]} ${pos === 'SUPER_FLEX' ? 'SF' : pos}`).join(', ');
+
+                    html += `<div class="roster-info"><div class="roster-info-title">Roster Requirements (${league.roster_positions.length} players)</div><div class="roster-info-text">${reqSummary}</div></div>`;
+                    html += `<div class="roster-info"><div class="roster-info-title">Your Roster Summary</div><div class="roster-info-text">Total Players: ${userRoster.players?.length || 0}</div></div>`;
+                    html += `<div class="roster-info"><div class="roster-info-title">Draft Picks</div><div class="roster-info-text">${renderPickInventory(userRoster.roster_id, league.tradedPicks || [], league.rosterMap || {}, league.userMap || {}, league.season)}</div></div>`;
+
+                    const playersByPosition = {};
+                    userRoster.players?.forEach(playerId => {
+                        const pos = getPlayerData(playerId)?.position || 'N/A';
+                        if (!playersByPosition[pos]) playersByPosition[pos] = [];
+                        playersByPosition[pos].push(playerId);
+                    });
+
+                    const positionOrder = ['QB','RB','WR','TE','K','DEF'];
+                    const mainPositions = positionOrder.filter(pos => playersByPosition[pos] && !['K','DEF'].includes(pos));
+                    const dkPositions = positionOrder.filter(pos => playersByPosition[pos] && ['K','DEF'].includes(pos));
+
+                    mainPositions.forEach(position => {
+                        html += `<div class="position-group"><div class="position-header">${position}</div>`;
+                        playersByPosition[position].sort((a, b) => (getPlayerData(a)?.defaultRank || 9999) - (getPlayerData(b)?.defaultRank || 9999)).forEach(playerId => {
+                            html += renderPlayerItem(playerId, position, allocation, userRoster);
+                        });
+                        html += `</div>`;
+                    });
+
+                    if (dkPositions.length > 0) {
+                        html += `<div style="margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid #1e293b;"><p style="color:#fbbf24;font-weight:600;font-size:0.82rem;margin-bottom:0.75rem;text-transform:uppercase;letter-spacing:0.05em;">Defense / Kicker</p>`;
+                        dkPositions.forEach(position => {
+                            html += `<div class="position-group"><div class="position-header">${position}</div>`;
+                            playersByPosition[position].sort((a, b) => (getPlayerData(a)?.defaultRank || 9999) - (getPlayerData(b)?.defaultRank || 9999)).forEach(playerId => {
+                                html += renderPlayerItem(playerId, position, allocation, userRoster);
+                            });
+                            html += `</div>`;
+                        });
+                        html += `</div>`;
+                    }
+                } else {
+                    html += `<p style="color:#475569;font-size:0.875rem;">You are not in this league.</p>`;
+                }
+
+                html += `</div></div>`;
+            });
+
+            html += `</div>`;
+            contentDiv.innerHTML = html;
+        }
+
+        function renderPlayerItem(playerId, position, allocation, userRoster) {
+            const playerObj = getPlayerData(playerId);
+            const alloc = allocation[playerId];
+            const name = playerObj?.playerName || 'Unknown';
+            const team = playerObj?.team || 'N/A';
+            const ovrRank = playerObj?.defaultRank < 9999 ? playerObj.defaultRank : 'Unranked';
+            const posRank = playerObj?.posRank || '';
+            const posNum = posRank ? posRank.split('_')[1] : '';
+            const status = alloc?.finalStatus || 'Unknown';
+
+            // Calculate dynasty score first — drives star flag
+            const dynastyScore = scorePlayer(playerObj);
+            const hasDynastyScore = ['WR','RB','TE','QB'].includes(position) && dynastyScore > 0;
+
+            // Star = T1 (score >= 90), independent of old allocation logic
+            const isStar = dynastyScore >= 90;
+            const slotIcon = getStatusIcon(status.replace('⭐ ', '').trim());
+            const displayIcon = isStar ? `⭐ ${slotIcon}` : slotIcon;
+
+            const isOnIR = userRoster.reserve?.includes(playerId);
+            const isOnTaxi = userRoster.taxi?.includes(playerId);
+            const slotFlag = isOnIR ? ' 💔' : (isOnTaxi ? ' 🚕' : '');
+
+            const statusColor = (status.includes('Starter') || status.includes('FLEX')) ? '#34d399'
+                : status === 'Bench' ? '#94a3b8'
+                : status === 'Trade' ? '#f97316'
+                : status === 'Cut' ? '#ef4444'
+                : '#94a3b8';
+
+            const borderColor = (status.includes('Starter') || status.includes('FLEX')) ? '#34d399'
+                : status === 'Bench' ? '#334155'
+                : status === 'Trade' ? '#f97316'
+                : status === 'Cut' ? '#ef4444'
+                : '#334155';
+
+            const scoreColor = dynastyScore >= 90 ? '#fbbf24'
+                : dynastyScore >= 60 ? '#34d399'
+                : dynastyScore >= 35 ? '#94a3b8'
+                : dynastyScore > 0 ? '#f97316'
+                : '#ef4444';
+
+            // Border color — use score color for scored positions, status color for others
+            const finalBorderColor = hasDynastyScore ? scoreColor : borderColor;
+
+            return `<div class="player-item" style="border-left-color:${finalBorderColor};">
+                <div class="player-info">
+                    <div class="player-name">${displayIcon}${slotFlag} ${name} <span style="color:#475569;font-weight:400;">(${team})</span></div>
+                    <div class="player-meta">Age: ${playerObj?.age || 'N/A'} · Exp: ${playerObj?.yearsExp ?? 'N/A'} yrs · Depth #${playerObj?.depthChartOrder || 'N/A'} ${playerObj?.depthChartPos ? `(${playerObj.depthChartPos})` : ''}</div>
+                </div>
+                <div class="player-ranks">
+                    ${hasDynastyScore
+                        ? `<div class="player-ovr" style="color:${scoreColor};font-size:1.1rem;font-weight:700;">${dynastyScore}</div>
+                           <div class="player-pos" style="color:#475569;">${position} #${posNum || ovrRank}</div>`
+                        : `<div class="player-ovr" style="color:${statusColor};">OVR #${ovrRank}</div>
+                           ${posNum ? `<div class="player-pos">${position} #${posNum}</div>` : ''}`
+                    }
+                </div>
+            </div>`;
+        }
+
+        function toggleLeague(idx) {
+            const rosters = document.getElementById(`rosters-${idx}`);
+            const card = document.getElementById(`league-${idx}`);
+            rosters.classList.toggle('hidden');
+            card.classList.toggle('expanded');
+        }
+
+        searchForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const username = usernameInput.value.trim();
+            if (username) fetchSleeperData(username, yearSelect.value);
+        });
+
+        window.addEventListener('load', () => {
+            fetchSleeperData(usernameInput.value, yearSelect.value);
+        });
+    </script>
+</body>
+</html>
