@@ -321,7 +321,7 @@
                     <span>🔍</span> Manager Profiles
                 </a>
             </div>
-            <span class="nav-version">v1.9.12-beta</span>
+            <span class="nav-version">v1.9.14-beta</span>
         </div>
     </nav>
 
@@ -575,12 +575,12 @@
         }
 
         function getQBBaseScore(rank) {
-            if (rank <= 6)   return 99 - ((rank - 1) * (4/5));
-            if (rank <= 12)  return 94 - ((rank - 7) * (6/5));
-            if (rank <= 24)  return 87 - ((rank - 13) * (12/11));
-            if (rank <= 36)  return 74 - ((rank - 25) * (14/11));
-            if (rank <= 45)  return 59 - ((rank - 37) * (19/8));
-            if (rank <= 64)  return 39 - ((rank - 46) * (34/18));
+            if (rank === 1)  return 99;
+            if (rank <= 12)  return Math.round(99 - ((rank - 1) * (14/11)));
+            if (rank <= 18)  return Math.round(85 - ((rank - 12) * (5/6)));
+            if (rank <= 24)  return Math.round(80 - ((rank - 18) * (10/6)));
+            if (rank <= 36)  return Math.round(70 - ((rank - 24) * (10/12)));
+            if (rank <= 64)  return Math.round(60 - ((rank - 36) * (55/28)));
             return 0;
         }
 
@@ -588,10 +588,10 @@
             const d = depth >= 4 ? 4 : depth;
             const matrix = {
                 0: [1.00, 0.95, 0.50, 0.20],
-                1: [1.10, 0.90, 0.40, 0.15],
-                2: [1.05, 0.80, 0.30, 0.10],
-                3: [0.90, 0.60, 0.20, 0.05],
-                4: [0.70, 0.30, 0.10, 0.02]
+                1: [1.02, 0.90, 0.40, 0.15],
+                2: [1.00, 0.80, 0.30, 0.10],
+                3: [0.97, 0.60, 0.20, 0.05],
+                4: [0.85, 0.30, 0.10, 0.02]
             };
             let tier;
             if (exp === 0) tier = 0;
