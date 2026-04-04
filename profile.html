@@ -74,6 +74,18 @@
         .flag-good { background: rgba(52,211,153,0.12); color: #34d399; border: 1px solid rgba(52,211,153,0.2); }
         .flag-warn { background: rgba(249,115,22,0.12); color: #f97316; border: 1px solid rgba(249,115,22,0.2); }
         .flag-neutral { background: rgba(148,163,184,0.1); color: #94a3b8; border: 1px solid rgba(148,163,184,0.15); }
+        .league-selector { background: rgba(30,41,59,0.6); border: 1px solid #334155; border-radius: 0.75rem; padding: 1.25rem; margin-bottom: 2rem; }
+        .league-selector-title { font-size: 0.85rem; font-weight: 700; color: white; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; }
+        .league-check-row { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0; border-bottom: 1px solid #0f172a; cursor: pointer; }
+        .league-check-row:last-of-type { border-bottom: none; }
+        .league-check-row:hover { background: rgba(255,255,255,0.02); border-radius: 4px; }
+        .league-check-row input[type=checkbox] { width: 16px; height: 16px; cursor: pointer; accent-color: #fbbf24; flex-shrink: 0; }
+        .league-check-name { font-size: 0.875rem; color: white; flex: 1; }
+        .league-check-meta { font-size: 0.75rem; color: #475569; }
+        .analyze-btn { width: 100%; margin-top: 1rem; padding: 0.75rem; background: #fbbf24; color: #0f172a; border: none; border-radius: 0.5rem; font-weight: 700; font-size: 0.95rem; cursor: pointer; }
+        .analyze-btn:hover { background: #f59e0b; }
+        .toggle-all { font-size: 0.75rem; color: #64748b; cursor: pointer; text-decoration: underline; }
+        .toggle-all:hover { color: #94a3b8; }
         @media (max-width: 640px) { .main-content { padding: 1.5rem 1rem; } .search-bar { flex-direction: column; } .search-btn, .year-select { width: 100%; } .nav-version { display: none; } }
     </style>
 </head>
@@ -86,7 +98,7 @@
                 <a href="league.html" class="nav-link"><span>🏟️</span> League View</a>
                 <a href="profile.html" class="nav-link active"><span>🔍</span> Manager Profiles</a>
             </div>
-            <span class="nav-version">v1.9.8-beta</span>
+            <span class="nav-version">v1.9.9-beta</span>
         </div>
     </nav>
 
@@ -226,6 +238,9 @@
             return { league, scoring, totalScore, t1, t2, t3, t4, posTotals, posCounts, teamCounts, avgAge, playerCount: skillPlayers.length };
         }
 
+        let allLeagueData = [];
+        let currentUser = null;
+
         async function loadProfile() {
             const username = usernameInput.value.trim();
             const year = yearSelect.value;
@@ -258,7 +273,9 @@
                 }));
 
                 const validData = leagueData.filter(d => d !== null);
-                renderProfile(user, validData, year);
+                allLeagueData = validData;
+                currentUser = user;
+                showLeagueSelector(user, validData, year);
 
             } catch (err) {
                 contentDiv.innerHTML = `<div class="error-container">⚠️ ${err.message}</div>`;
@@ -266,6 +283,55 @@
                 searchBtn.disabled = false;
                 searchBtn.textContent = 'Load Profile';
             }
+        }
+
+        function showLeagueSelector(user, leagueData, year) {
+            let html = '';
+
+            // Profile header
+            html += `<div class="profile-header">`;
+            if (user.avatar) html += `<img src="https://sleepercdn.com/avatars/thumbs/${user.avatar}" class="profile-avatar" alt="${user.display_name}" />`;
+            else html += `<div class="profile-avatar-placeholder">👤</div>`;
+            html += `<div><div class="profile-name">${user.display_name}</div><div class="profile-meta">@${user.username} · ${leagueData.length} league${leagueData.length !== 1 ? 's' : ''} in ${year}</div></div></div>`;
+
+            // League selector
+            html += `<div class="league-selector">
+                <div class="league-selector-title">
+                    <span>🏆 Select Leagues to Analyze (${leagueData.length})</span>
+                    <span class="toggle-all" onclick="toggleAll()">Toggle all</span>
+                </div>`;
+
+            leagueData.forEach((d, idx) => {
+                const sfBadge = d.scoring.hasSF ? '<span style="background:rgba(96,165,250,0.15);color:#60a5fa;padding:0.1rem 0.4rem;border-radius:3px;font-size:0.68rem;font-weight:600;margin-left:0.3rem;">SF</span>' : '';
+                const tepBadge = d.scoring.hasTEP ? '<span style="background:rgba(167,139,250,0.15);color:#a78bfa;padding:0.1rem 0.4rem;border-radius:3px;font-size:0.68rem;font-weight:600;margin-left:0.3rem;">TEP</span>' : '';
+                html += `<label class="league-check-row">
+                    <input type="checkbox" id="league-cb-${idx}" checked />
+                    <div style="flex:1;">
+                        <div class="league-check-name">${d.league.name}${sfBadge}${tepBadge}</div>
+                        <div class="league-check-meta">${d.league.total_rosters} teams · ${d.scoring.label} · Score: ${d.totalScore}</div>
+                    </div>
+                </label>`;
+            });
+
+            html += `<button class="analyze-btn" onclick="analyzeSelected()">Analyze Selected Leagues →</button>
+            </div>`;
+
+            contentDiv.innerHTML = html;
+        }
+
+        function toggleAll() {
+            const checkboxes = document.querySelectorAll('[id^="league-cb-"]');
+            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+            checkboxes.forEach(cb => { cb.checked = !allChecked; });
+        }
+
+        function analyzeSelected() {
+            const checkboxes = document.querySelectorAll('[id^="league-cb-"]');
+            const selected = [];
+            checkboxes.forEach((cb, idx) => { if (cb.checked) selected.push(allLeagueData[idx]); });
+            if (selected.length === 0) { alert('Please select at least one league.'); return; }
+            const year = yearSelect.value;
+            renderProfile(currentUser, selected, year);
         }
 
         function renderProfile(user, leagueData, year) {
@@ -314,10 +380,11 @@
             let html = '';
 
             // Profile header
+            html += `<div style="margin-bottom:1rem;"><button onclick="showLeagueSelector(currentUser, allLeagueData, '${year}')" style="background:transparent;border:1px solid #334155;color:#94a3b8;padding:0.4rem 0.875rem;border-radius:0.375rem;cursor:pointer;font-size:0.825rem;">← Back to league selection</button></div>`;
             html += `<div class="profile-header">`;
             if (user.avatar) html += `<img src="https://sleepercdn.com/avatars/thumbs/${user.avatar}" class="profile-avatar" alt="${user.display_name}" />`;
             else html += `<div class="profile-avatar-placeholder">👤</div>`;
-            html += `<div><div class="profile-name">${user.display_name}</div><div class="profile-meta">@${user.username} · ${totalLeagues} league${totalLeagues !== 1 ? 's' : ''} in ${year} · ${sfLeagues.length} SF · ${tepLeagues.length} TEP</div></div></div>`;
+            html += `<div><div class="profile-name">${user.display_name}</div><div class="profile-meta">@${user.username} · Analyzing ${totalLeagues} of ${allLeagueData.length} league${allLeagueData.length !== 1 ? 's' : ''} in ${year} · ${sfLeagues.length} SF · ${tepLeagues.length} TEP</div></div></div>`;
 
             // Summary stats
             html += `<div class="stats-grid">
@@ -403,7 +470,7 @@
             html += `</div></div>`;
 
             // League by league breakdown
-            html += `<div class="section-block"><div class="section-title">🏆 League Breakdown (${year})</div>
+            html += `<div class="section-block"><div class="section-title">🏆 Selected Leagues Breakdown</div>
             <div class="insight-card" style="padding:0;overflow:hidden;">
             <table class="league-table"><thead><tr>
                 <th>League</th><th>Format</th><th>Score</th><th>Tiers</th><th>QB%</th><th>TE%</th><th>Avg Age</th>
