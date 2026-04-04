@@ -917,11 +917,14 @@
             const posNum = posRank ? posRank.split('_')[1] : '';
             const status = alloc?.finalStatus || 'Unknown';
 
-            let displayIcon = getStatusIcon(status);
-            if (status.includes('⭐')) {
-                const baseStatus = status.replace('⭐ ', '').trim();
-                displayIcon = `⭐ ${getStatusIcon(baseStatus)}`;
-            }
+            // Calculate dynasty score first — drives star flag
+            const dynastyScore = scorePlayer(playerObj);
+            const hasDynastyScore = ['WR','RB','TE','QB'].includes(position) && dynastyScore > 0;
+
+            // Star = T1 (score >= 90), independent of old allocation logic
+            const isStar = dynastyScore >= 90;
+            const slotIcon = getStatusIcon(status.replace('⭐ ', '').trim());
+            const displayIcon = isStar ? `⭐ ${slotIcon}` : slotIcon;
 
             const isOnIR = userRoster.reserve?.includes(playerId);
             const isOnTaxi = userRoster.taxi?.includes(playerId);
@@ -939,13 +942,10 @@
                 : status === 'Cut' ? '#ef4444'
                 : '#334155';
 
-            // Calculate dynasty score
-            const dynastyScore = scorePlayer(playerObj);
-            const hasDynastyScore = ['WR','RB','TE','QB'].includes(position) && dynastyScore > 0;
             const scoreColor = dynastyScore >= 90 ? '#fbbf24'
-                : dynastyScore >= 75 ? '#34d399'
-                : dynastyScore >= 50 ? '#94a3b8'
-                : dynastyScore >= 25 ? '#f97316'
+                : dynastyScore >= 60 ? '#34d399'
+                : dynastyScore >= 35 ? '#94a3b8'
+                : dynastyScore > 0 ? '#f97316'
                 : '#ef4444';
 
             // Border color — use score color for scored positions, status color for others
