@@ -98,7 +98,7 @@
                 <a href="league.html" class="nav-link"><span>🏟️</span> League View</a>
                 <a href="profile.html" class="nav-link active"><span>🔍</span> Manager Profiles</a>
             </div>
-            <span class="nav-version">v1.9.9-beta</span>
+            <span class="nav-version">v1.9.10-beta</span>
         </div>
     </nav>
 
@@ -376,6 +376,19 @@
             leagueData.forEach(d => { Object.entries(d.teamCounts).forEach(([team, count]) => { allTeamCounts[team] = (allTeamCounts[team] || 0) + count; }); });
             const teamBiases = Object.entries(allTeamCounts).filter(([,v]) => v >= 3).sort((a,b) => b[1]-a[1]).slice(0, 10);
 
+            // Tier distribution across all leagues
+            const totalT1 = leagueData.reduce((s,d) => s + d.t1, 0);
+            const totalT2 = leagueData.reduce((s,d) => s + d.t2, 0);
+            const totalT3 = leagueData.reduce((s,d) => s + d.t3, 0);
+            const totalT4 = leagueData.reduce((s,d) => s + d.t4, 0);
+            const totalTiers = totalT1 + totalT2 + totalT3 + totalT4 || 1;
+            const tierPct = {
+                T1: Math.round((totalT1 / totalTiers) * 100),
+                T2: Math.round((totalT2 / totalTiers) * 100),
+                T3: Math.round((totalT3 / totalTiers) * 100),
+                T4: Math.round((totalT4 / totalTiers) * 100)
+            };
+
             // ── RENDER ──
             let html = '';
 
@@ -394,15 +407,27 @@
                 <div class="stat-card"><div class="stat-value">${totalLeagues}</div><div class="stat-label">Total Leagues</div></div>
             </div>`;
 
-            // Position value distribution
-            html += `<div class="section-block"><div class="section-title">📊 Position Value Distribution <span style="font-size:0.75rem;color:#475569;font-weight:400;">(% of total dynasty score)</span></div>
-            <div class="insight-card">
-                ${tendBar('QB', posPct.QB, '#60a5fa')}
-                ${tendBar('RB', posPct.RB, '#34d399')}
-                ${tendBar('WR', posPct.WR, '#fbbf24')}
-                ${tendBar('TE', posPct.TE, '#a78bfa')}
-                <div style="font-size:0.72rem;color:#334155;margin-top:0.75rem;">Aggregated across all ${totalLeagues} leagues</div>
-            </div></div>`;
+            // Position value distribution - side by side
+            html += `<div class="section-block">
+                <div class="section-title">📊 Roster Profile</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                    <div class="insight-card">
+                        <div style="font-size:0.72rem;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.75rem;">By Position (% of score)</div>
+                        ${tendBar('QB', posPct.QB, '#60a5fa')}
+                        ${tendBar('RB', posPct.RB, '#34d399')}
+                        ${tendBar('WR', posPct.WR, '#fbbf24')}
+                        ${tendBar('TE', posPct.TE, '#a78bfa')}
+                    </div>
+                    <div class="insight-card">
+                        <div style="font-size:0.72rem;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.75rem;">By Tier (% of players)</div>
+                        ${tendBar('T1', tierPct.T1, '#fbbf24')}
+                        ${tendBar('T2', tierPct.T2, '#34d399')}
+                        ${tendBar('T3', tierPct.T3, '#94a3b8')}
+                        ${tendBar('T4', tierPct.T4, '#475569')}
+                    </div>
+                </div>
+                <div style="font-size:0.72rem;color:#334155;margin-top:0.5rem;">Aggregated across ${totalLeagues} selected leagues · T1=85+ · T2=60-84 · T3=35-59 · T4=1-34</div>
+            </div>`;
 
             // Format tendencies
             html += `<div class="section-block"><div class="section-title">🏈 Format Tendencies</div><div class="insight-card">`;
