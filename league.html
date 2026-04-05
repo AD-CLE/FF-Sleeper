@@ -321,7 +321,7 @@
                     <span>🔍</span> Manager Profiles
                 </a>
             </div>
-            <span class="nav-version">v1.10.3-beta</span>
+            <span class="nav-version">v1.10.4-beta</span>
         </div>
     </nav>
 
@@ -415,6 +415,13 @@
 
 
 
+        function getDynastyGrade(score) {
+            if (score >= 1500) return { label: 'Elite', color: '#fbbf24' };
+            if (score >= 1300) return { label: 'Contender', color: '#34d399' };
+            if (score >= 1000) return { label: 'Middling', color: '#94a3b8' };
+            return { label: 'Rebuilding', color: '#ef4444' };
+        }
+
         function renderLeague(league, rosters, userMap, tradedPicks, rosterMap) {
             const scoring = getScoringLabel(league);
             const bonusRecTe = parseFloat(league.scoring_settings?.bonus_rec_te) || 0;
@@ -466,13 +473,14 @@
                                 <div class="team-record">${wins}–${losses} · ${pf} pts</div>
                                 <div style="font-size:0.68rem;color:#475569;font-family:monospace;margin-top:0.2rem;line-height:1.6;">
                                     ${user.username ? `<span style="user-select:text;">${user.username}</span>` : ''}
-                                    ${user.user_id ? `<span style="user-select:text;${user.username ? 'margin-left:0.5rem;' : ''}">${user.user_id}</span>` : ''}
                                 </div>
                             </div>
                         </div>
                         <div style="text-align:right;flex-shrink:0;">
-                            <div style="font-size:1.5rem;font-weight:700;color:#fbbf24;">${grade.totalScore}</div>
-                            <div style="font-size:0.72rem;color:#475569;margin-top:0.15rem;">dynasty pts</div>
+                            ${(() => { const g = getDynastyGrade(grade.totalScore); return `
+                            <div style="font-size:1.5rem;font-weight:700;color:${g.color};">${grade.totalScore}</div>
+                            <div style="margin-top:0.25rem;"><span style="background:rgba(0,0,0,0.2);color:${g.color};border:1px solid ${g.color}40;padding:0.1rem 0.5rem;border-radius:99px;font-size:0.68rem;font-weight:600;">${g.label}</span></div>
+                            `; })()}
                         </div>
                     </div>
 
@@ -526,12 +534,32 @@
                 byPos[pos].push({ id, data: p });
             });
 
+            const statusOrder = s => {
+                const c = s.replace('⭐ ','').trim();
+                if (c.includes('Starter') || c === 'FLEX') return 0;
+                if (c === 'Bench') return 1;
+                if (c === 'Trade') return 2;
+                if (c === 'Cut') return 3;
+                return 4;
+            };
+
             const order = ['QB','RB','WR','TE','K','DEF','UNK'];
             let html = '';
             order.forEach(pos => {
                 if (!byPos[pos]) return;
                 html += `<div class="pos-group"><div class="pos-label">${pos}</div>`;
-                byPos[pos].sort((a,b) => (a.data.defaultRank||9999)-(b.data.defaultRank||9999)).forEach(({id, data}) => {
+                byPos[pos]
+                    .sort((a,b) => {
+                        const aAlloc = allocation[a.id];
+                        const bAlloc = allocation[b.id];
+                        const aStatus = aAlloc?.finalStatus || '';
+                        const bStatus = bAlloc?.finalStatus || '';
+                        const aScore = aAlloc?.score ?? scorePlayer(a.data);
+                        const bScore = bAlloc?.score ?? scorePlayer(b.data);
+                        const statusDiff = statusOrder(aStatus) - statusOrder(bStatus);
+                        return statusDiff !== 0 ? statusDiff : bScore - aScore;
+                    })
+                    .forEach(({id, data}) => {
                     const isIR = roster.reserve?.includes(id);
                     const isTaxi = roster.taxi?.includes(id);
                     const slotFlag = isIR ? ' 💔' : isTaxi ? ' 🚕' : '';
@@ -541,7 +569,7 @@
 
                     // Score color
                     const scoreCol = score >= 90 ? '#fbbf24' : score >= 60 ? '#34d399' : score >= 35 ? '#94a3b8' : score > 0 ? '#64748b' : '#475569';
-                    const scoreDisplay = score > 0 ? score : (data.defaultRank < 9999 ? 'OVR #' + data.defaultRank : '—');
+                    const scoreDisplay = score > 0 ? score : 0;
 
                     // Status icon
                     const isStar = score >= 90;

@@ -98,7 +98,7 @@
                 <a href="league.html" class="nav-link"><span>🏟️</span> League View</a>
                 <a href="profile.html" class="nav-link active"><span>🔍</span> Manager Profiles</a>
             </div>
-            <span class="nav-version">v1.10.3-beta</span>
+            <span class="nav-version">v1.10.4-beta</span>
         </div>
     </nav>
 
@@ -433,9 +433,16 @@
             else html += `<div class="profile-avatar-placeholder">👤</div>`;
             html += `<div><div class="profile-name">${user.display_name}</div><div class="profile-meta">@${user.username} · Analyzing ${totalLeagues} of ${allLeagueData.length} league${allLeagueData.length !== 1 ? 's' : ''} in ${year} · ${sfLeagues.length} SF · ${tepLeagues.length} TEP</div><div style="margin-top:0.4rem;"><a href="index.html?user=${user.username}" style="color:#fbbf24;text-decoration:none;font-size:0.8rem;">View Rosters →</a></div></div></div>`;
 
+            // Grade helper
+            const getDynastyGrade = s => s >= 1500 ? { label: 'Elite', color: '#fbbf24' }
+                : s >= 1300 ? { label: 'Contender', color: '#34d399' }
+                : s >= 1000 ? { label: 'Middling', color: '#94a3b8' }
+                : { label: 'Rebuilding', color: '#ef4444' };
+            const grade = getDynastyGrade(avgDynastyScore);
+
             // Summary stats
             html += `<div class="stats-grid">
-                <div class="stat-card"><div class="stat-value">${avgDynastyScore}</div><div class="stat-label">Avg Dynasty Score</div></div>
+                <div class="stat-card"><div class="stat-value" style="color:${grade.color};">${avgDynastyScore}</div><div class="stat-label">Avg Dynasty Score</div><div style="margin-top:0.3rem;"><span style="color:${grade.color};font-size:0.72rem;font-weight:600;">${grade.label}</span></div></div>
                 <div class="stat-card"><div class="stat-value">${avgT1}</div><div class="stat-label">Avg T1 Players</div></div>
                 <div class="stat-card"><div class="stat-value">${avgAge}</div><div class="stat-label">Avg Roster Age</div></div>
                 <div class="stat-card"><div class="stat-value">${totalLeagues}</div><div class="stat-label">Total Leagues</div></div>
