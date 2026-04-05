@@ -1,4 +1,4 @@
-// ── FF-Sleeper Engine v1.10.1-beta ──
+// ── FF-Sleeper Engine v1.10.2-beta ──
 // Shared scoring, allocation, and pick logic
 // Used by index.html, league.html, profile.html
 
@@ -445,7 +445,7 @@ function renderPickInventory(myRosterId, tradedPicks, rosterMap, userMap) {
     ['2026', '2027', '2028'].forEach(yr => {
         const yp = byYear[yr];
         if (yp.length === 0) {
-            html += `<div style="margin-bottom:0.4rem"><span style="color:#fbbf24;font-weight:600">${yr}:</span> <span style="color:#ef4444;font-size:0.8rem">No picks</span></div>`;
+            html += `<div style="margin-bottom:0.4rem"><span style="color:#e2e8f0;font-weight:600">${yr}:</span> <span style="color:#ef4444;font-size:0.8rem">No picks</span></div>`;
             return;
         }
         yp.sort((a, b) => a.round !== b.round ? a.round - b.round : (a.pickSlot || 99) - (b.pickSlot || 99));
@@ -456,7 +456,7 @@ function renderPickInventory(myRosterId, tradedPicks, rosterMap, userMap) {
             const col = p.round === 1 ? '#fbbf24' : p.round === 2 ? '#94a3b8' : '#475569';
             return `<span style="color:${col}">${lbl}</span>${sfx}`;
         }).join(' <span style="color:#334155">&middot;</span> ');
-        html += `<div style="margin-bottom:0.4rem"><span style="color:#fbbf24;font-weight:600">${yr}:</span> ${parts}</div>`;
+        html += `<div style="margin-bottom:0.4rem"><span style="color:#e2e8f0;font-weight:600">${yr}:</span> ${parts}</div>`;
     });
     return html;
 }

@@ -321,7 +321,7 @@
                     <span>🔍</span> Manager Profiles
                 </a>
             </div>
-            <span class="nav-version">v1.10.1-beta</span>
+            <span class="nav-version">v1.10.2-beta</span>
         </div>
     </nav>
 
@@ -417,6 +417,10 @@
 
         function renderLeague(league, rosters, userMap, tradedPicks, rosterMap) {
             const scoring = getScoringLabel(league);
+            const bonusRecTe = parseFloat(league.scoring_settings?.bonus_rec_te) || 0;
+            const tepTier = bonusRecTe === 0 ? 'Off' : (bonusRecTe <= 1 ? 'TEP' : 'TEP+');
+            const positionStarters = computePositionStarters(league);
+
             let html = `<div class="league-info-bar">
                 <div>
                     <div class="league-info-name">${league.name}</div>
@@ -442,15 +446,8 @@
                 const losses = roster.settings?.losses || 0;
                 const pf = roster.settings?.fpts ? parseFloat(roster.settings.fpts).toFixed(1) : '—';
 
-
-
-                // T1 players (dynasty score >= 85) sorted by score desc
-                const allScoredPlayers = (roster.players || [])
-                    .map(id => ({ id, data: getPlayerData(id), score: scorePlayer(getPlayerData(id)) }))
-                    .filter(p => !['DEF','K','UNK'].includes(p.data.position));
-                const t1Players = allScoredPlayers
-                    .filter(p => p.score >= 85)
-                    .sort((a,b) => b.score - a.score);
+                // Use grade.players (already scored) for T1 list — no double scoring
+                const t1Players = (grade.players || []).filter(p => p.score >= 90);
 
                 html += `<div class="team-card" id="team-card-${idx}">
                     <div class="team-card-header">
@@ -462,11 +459,15 @@
                     html += `<div class="team-avatar-placeholder">👤</div>`;
                 }
 
-                const username = user.display_name ? user.username || '' : '';
+                const profileLink = user.username || user.user_id || '';
                 html += `<div class="team-info">
                                 <div class="team-name">${teamName}</div>
-                                <div class="team-manager"><a href="profile.html?user=${user.username || ''}" style="color:#94a3b8;text-decoration:none;" onmouseover="this.style.color='#fbbf24'" onmouseout="this.style.color='#94a3b8'">@${managerName} →</a></div>
+                                <div class="team-manager"><a href="profile.html?user=${profileLink}" style="color:#94a3b8;text-decoration:none;" onmouseover="this.style.color='#fbbf24'" onmouseout="this.style.color='#94a3b8'">@${managerName}${user.user_id ? ` (${user.user_id})` : ''}</a></div>
                                 <div class="team-record">${wins}–${losses} · ${pf} pts</div>
+                                <div style="font-size:0.68rem;color:#475569;font-family:monospace;margin-top:0.2rem;line-height:1.6;">
+                                    ${user.username ? `<span style="user-select:text;">${user.username}</span>` : ''}
+                                    ${user.user_id ? `<span style="user-select:text;${user.username ? 'margin-left:0.5rem;' : ''}">${user.user_id}</span>` : ''}
+                                </div>
                             </div>
                         </div>
                         <div style="text-align:right;flex-shrink:0;">
@@ -495,7 +496,7 @@
                     <button class="expand-btn" onclick="toggleRoster(${idx})">▼ Full roster</button>
 
                     <div class="roster-detail hidden" id="roster-detail-${idx}">
-                        ${renderRosterDetail(roster)}
+                        ${renderRosterDetail(roster, league, tepTier, positionStarters)}
                     </div>
                 </div>`;
             });
@@ -512,8 +513,10 @@
             </div>`;
         }
 
-        function renderRosterDetail(roster) {
+        function renderRosterDetail(roster, league, tepTier, positionStarters) {
             if (!roster.players || roster.players.length === 0) return '<p style="color:#475569;font-size:0.82rem;">No players found.</p>';
+
+            const allocation = allocateRoster(roster, league, tepTier, positionStarters);
 
             const byPos = {};
             roster.players.forEach(id => {
@@ -531,14 +534,35 @@
                 byPos[pos].sort((a,b) => (a.data.defaultRank||9999)-(b.data.defaultRank||9999)).forEach(({id, data}) => {
                     const isIR = roster.reserve?.includes(id);
                     const isTaxi = roster.taxi?.includes(id);
-                    const flag = isIR ? ' 💔' : isTaxi ? ' 🚕' : '';
-                    const dynScore = scorePlayer(data);
-                    const scoreCol = dynScore >= 85 ? '#fbbf24' : dynScore >= 60 ? '#34d399' : dynScore >= 35 ? '#94a3b8' : '#475569';
-                    const scoreDisplay = dynScore > 0 ? dynScore : (data.defaultRank < 9999 ? 'OVR #' + data.defaultRank : '—');
-                    html += `<div class="player-row">
+                    const slotFlag = isIR ? ' 💔' : isTaxi ? ' 🚕' : '';
+                    const alloc = allocation[id];
+                    const finalStatus = alloc?.finalStatus || '';
+                    const score = alloc?.score ?? scorePlayer(data);
+
+                    // Score color
+                    const scoreCol = score >= 90 ? '#fbbf24' : score >= 60 ? '#34d399' : score >= 35 ? '#94a3b8' : score > 0 ? '#64748b' : '#475569';
+                    const scoreDisplay = score > 0 ? score : (data.defaultRank < 9999 ? 'OVR #' + data.defaultRank : '—');
+
+                    // Status icon
+                    const isStar = score >= 90;
+                    const cleanStatus = finalStatus.replace('⭐ ', '').trim();
+                    const slotIcon = cleanStatus.includes('Starter') || cleanStatus === 'FLEX' ? '🎯'
+                        : cleanStatus === 'Bench' ? '🪑'
+                        : cleanStatus === 'Trade' ? '🔀'
+                        : cleanStatus === 'Cut' ? '🗑️' : '';
+                    const displayIcon = isStar ? `⭐${slotIcon}` : slotIcon;
+
+                    // Border color driven by status
+                    const borderCol = cleanStatus.includes('Starter') || cleanStatus === 'FLEX' ? '#34d399'
+                        : cleanStatus === 'Bench' ? '#334155'
+                        : cleanStatus === 'Trade' ? '#f97316'
+                        : cleanStatus === 'Cut' ? '#ef4444'
+                        : '#1e293b';
+
+                    html += `<div class="player-row" style="border-left:2px solid ${borderCol};padding-left:0.5rem;">
                         <div>
-                            <div class="player-row-name">${data.playerName || id}${flag}</div>
-                            <div class="player-row-meta">${data.team || ''} · Age ${data.age || '?'}</div>
+                            <div class="player-row-name">${displayIcon ? displayIcon + ' ' : ''}${data.playerName || id}${slotFlag}</div>
+                            <div class="player-row-meta">${data.team || ''} · Age ${data.age || '?'} · Depth #${data.depthChartOrder || '?'}</div>
                         </div>
                         <div class="player-row-rank" style="color:${scoreCol}">${scoreDisplay}</div>
                     </div>`;
