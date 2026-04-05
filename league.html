@@ -321,7 +321,7 @@
                     <span>🔍</span> Manager Profiles
                 </a>
             </div>
-            <span class="nav-version">v1.10.0-beta</span>
+            <span class="nav-version">v1.10.1-beta</span>
         </div>
     </nav>
 
@@ -428,7 +428,7 @@
             // Grade all rosters and sort by score desc
             const gradedRosters = rosters.map(roster => {
                 const user = userMap[roster.owner_id] || {};
-                const grade = dynastyGrade(roster);
+                const grade = dynastyGrade(roster, tradedPicks, rosterMap);
                 return { roster, user, grade };
             }).sort((a,b) => b.grade.totalScore - a.grade.totalScore);
 

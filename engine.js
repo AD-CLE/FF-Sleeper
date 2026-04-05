@@ -1,4 +1,4 @@
-// ── FF-Sleeper Engine v1.9.15-beta ──
+// ── FF-Sleeper Engine v1.10.1-beta ──
 // Shared scoring, allocation, and pick logic
 // Used by index.html, league.html, profile.html
 
@@ -353,9 +353,9 @@ function allocateRoster(userRoster, league, tepTier, positionStarters) {
 // ── DYNASTY GRADE (per team) ──
 // Returns tier counts + full scored player array for reuse — no double scoring
 
-function dynastyGrade(roster, league, positionStarters) {
+function dynastyGrade(roster, tradedPicks, rosterMap) {
     if (!roster.players || roster.players.length === 0) {
-        return { totalScore: 0, t1: 0, t2: 0, t3: 0, t4: 0, players: [] };
+        return { totalScore: 0, t1: 0, t2: 0, t3: 0, t4: 0, players: [], pickScore: 0 };
     }
 
     let totalScore = 0, t1 = 0, t2 = 0, t3 = 0, t4 = 0;
@@ -376,7 +376,16 @@ function dynastyGrade(roster, league, positionStarters) {
 
     players.sort((a, b) => b.score - a.score);
 
-    return { totalScore: Math.round(totalScore), t1, t2, t3, t4, players };
+    // Pick scoring — optional, only if tradedPicks + rosterMap provided
+    let pickScore = 0;
+    if (tradedPicks && rosterMap) {
+        const totalTeams = Object.keys(rosterMap).length || 12;
+        const picks = buildPickInventory(roster.roster_id, tradedPicks, rosterMap, totalTeams);
+        pickScore = scorePickInventory(picks);
+        totalScore += pickScore;
+    }
+
+    return { totalScore: Math.round(totalScore), t1, t2, t3, t4, players, pickScore };
 }
 
 
@@ -450,4 +459,58 @@ function renderPickInventory(myRosterId, tradedPicks, rosterMap, userMap) {
         html += `<div style="margin-bottom:0.4rem"><span style="color:#fbbf24;font-weight:600">${yr}:</span> ${parts}</div>`;
     });
     return html;
+}
+
+
+// ── PICK SCORING ──
+// 2026 draft order: rosterId → slot (1=weakest/earliest pick, 12=strongest/latest)
+const DRAFT_ORDER_2026 = {
+    7: 1, 8: 2, 11: 3, 12: 4, 10: 5, 5: 6, 9: 7, 6: 8, 18: 9, 3: 10, 2: 11, 4: 12
+};
+
+function getPickTier(originalRosterId) {
+    const slot = DRAFT_ORDER_2026[originalRosterId];
+    if (!slot) return 'mid'; // unknown team → mid
+    if (slot <= 4)  return 'top';  // weak teams, valuable picks
+    if (slot <= 8)  return 'mid';
+    return 'low';                  // strong teams, less valuable picks
+}
+
+function scorePick(pick) {
+    const { season, round, originalRosterId, pickSlot } = pick;
+    const yr = parseInt(season);
+
+    if (yr === 2026) {
+        if (round === 1) {
+            const slot = pickSlot || DRAFT_ORDER_2026[originalRosterId] || 6;
+            if (slot === 1)          return 20;
+            if (slot <= 5)           return 15;
+            if (slot <= 9)           return 10;
+            return 4;
+        }
+        if (round === 2) return 3;
+        if (round <= 4)  return 1;
+    }
+
+    if (yr === 2027) {
+        if (round === 1) {
+            const tier = getPickTier(originalRosterId);
+            if (tier === 'top') return 15;
+            if (tier === 'mid') return 10;
+            return 6;
+        }
+        if (round === 2) return 4;
+        return 0;
+    }
+
+    if (yr === 2028) {
+        if (round === 1) return 10;
+        return 0;
+    }
+
+    return 0;
+}
+
+function scorePickInventory(picks) {
+    return picks.reduce((total, pick) => total + scorePick(pick), 0);
 }

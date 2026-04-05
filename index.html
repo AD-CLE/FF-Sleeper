@@ -349,7 +349,7 @@
                     <span class="nav-icon">🔍</span> Manager Profiles
                 </a>
             </div>
-            <span class="nav-version">v1.10.0-beta</span>
+            <span class="nav-version">v1.10.1-beta</span>
         </div>
     </nav>
 
@@ -596,6 +596,9 @@
         });
 
         window.addEventListener('load', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlUser = urlParams.get('user');
+            if (urlUser) usernameInput.value = urlUser;
             fetchSleeperData(usernameInput.value, yearSelect.value);
         });
     </script>
