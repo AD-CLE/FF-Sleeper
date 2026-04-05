@@ -98,7 +98,7 @@
                 <a href="league.html" class="nav-link"><span>🏟️</span> League View</a>
                 <a href="profile.html" class="nav-link active"><span>🔍</span> Manager Profiles</a>
             </div>
-            <span class="nav-version">v1.10.1-beta</span>
+            <span class="nav-version">v1.10.2-beta</span>
         </div>
     </nav>
 
@@ -466,7 +466,7 @@
             // Format tendencies
             html += `<div class="section-block"><div class="section-title">🏈 Format Tendencies</div><div class="insight-card">`;
 
-            // QB in SF vs 1QB
+            // QB count
             if (sfLeagues.length > 0 && nonSFLeagues.length > 0) {
                 const qbDiff = sfQBAvg - nonSFQBAvg;
                 const qbInsight = qbDiff >= 1.5 ? 'Correctly loads up QBs in SF' : qbDiff >= 0.5 ? 'Slightly QB heavy in SF' : 'Does not adjust QB count for SF format';
@@ -475,31 +475,20 @@
                     <div style="text-align:right"><span class="format-val">${sfQBAvg}</span> <span style="color:#475569;font-size:0.75rem;">vs</span> <span class="format-val">${nonSFQBAvg}</span></div>
                 </div>`;
             } else if (sfLeagues.length > 0) {
-                html += `<div class="format-row"><div class="format-label">QB count in SF <span class="format-badge fb-sf">SF</span></div><div class="format-val">${sfQBAvg} avg QBs</div></div>`;
-            } else if (nonSFLeagues.length > 0) {
-                html += `<div class="format-row"><div class="format-label">QB count (1QB)</div><div class="format-val">${nonSFQBAvg} avg QBs</div></div>`;
+                html += `<div class="format-row"><div class="format-label">QB count <span class="format-badge fb-sf">SF</span></div><div class="format-val">${sfQBAvg} avg</div></div>`;
+            } else {
+                html += `<div class="format-row"><div class="format-label">QB count (1QB)</div><div class="format-val">${nonSFQBAvg} avg</div></div>`;
             }
 
-            // RB avg count
+            // RB count
             const rbAvg = (leagueData.reduce((s,d) => s + d.posCounts.RB, 0) / totalLeagues).toFixed(1);
-            html += `<div class="format-row"><div class="format-label">RB count (avg across leagues)</div><div class="format-val">${rbAvg} avg RBs</div></div>`;
+            html += `<div class="format-row"><div class="format-label">RB count (avg)</div><div class="format-val">${rbAvg} avg</div></div>`;
 
-            // WR avg count
+            // WR count
             const wrAvg = (leagueData.reduce((s,d) => s + d.posCounts.WR, 0) / totalLeagues).toFixed(1);
-            html += `<div class="format-row"><div class="format-label">WR count (avg across leagues)</div><div class="format-val">${wrAvg} avg WRs</div></div>`;
+            html += `<div class="format-row"><div class="format-label">WR count (avg)</div><div class="format-val">${wrAvg} avg</div></div>`;
 
-            // QB % of score in SF vs non-SF
-            if (sfQBPct !== null && nonSFQBPct !== null) {
-                const pctDiff = sfQBPct - nonSFQBPct;
-                const insight = pctDiff >= 5 ? 'Correctly values QBs higher in SF' : pctDiff >= 0 ? 'Slight QB premium in SF' : 'QB value not adjusted for SF';
-                const flagCls = pctDiff >= 3 ? 'flag-good' : 'flag-warn';
-                html += `<div class="format-row">
-                    <div><div class="format-label">QB % of roster value: SF vs 1QB</div><div class="format-insight">${insight}</div></div>
-                    <div style="text-align:right"><span class="format-val">${sfQBPct}%</span> <span style="color:#475569;font-size:0.75rem;">vs</span> <span class="format-val">${nonSFQBPct}%</span></div>
-                </div>`;
-            }
-
-            // TE in TEP vs non-TEP
+            // TE count
             if (tepLeagues.length > 0 && nonTEPLeagues.length > 0) {
                 const teDiff = tepTEAvg - nonTEPTEAvg;
                 const teInsight = teDiff >= 1 ? 'Correctly hoards TEs in TEP leagues' : teDiff >= 0.3 ? 'Slightly TE heavy in TEP' : 'Does not adjust TE count for TEP format';
@@ -507,9 +496,27 @@
                     <div><div class="format-label">TE count: TEP <span class="format-badge fb-tep">TEP</span> vs non-TEP</div><div class="format-insight">${teInsight}</div></div>
                     <div style="text-align:right"><span class="format-val">${tepTEAvg}</span> <span style="color:#475569;font-size:0.75rem;">vs</span> <span class="format-val">${nonTEPTEAvg}</span></div>
                 </div>`;
+            } else if (tepLeagues.length > 0) {
+                html += `<div class="format-row"><div class="format-label">TE count <span class="format-badge fb-tep">TEP</span></div><div class="format-val">${tepTEAvg} avg</div></div>`;
+            } else {
+                html += `<div class="format-row"><div class="format-label">TE count (non-TEP)</div><div class="format-val">${nonTEPTEAvg} avg</div></div>`;
             }
 
-            // TE % of score in TEP vs non-TEP
+            // QB % of score
+            if (sfQBPct !== null && nonSFQBPct !== null) {
+                const pctDiff = sfQBPct - nonSFQBPct;
+                const insight = pctDiff >= 5 ? 'Correctly values QBs higher in SF' : pctDiff >= 0 ? 'Slight QB premium in SF' : 'QB value not adjusted for SF';
+                html += `<div class="format-row">
+                    <div><div class="format-label">QB % of roster value: SF vs 1QB</div><div class="format-insight">${insight}</div></div>
+                    <div style="text-align:right"><span class="format-val">${sfQBPct}%</span> <span style="color:#475569;font-size:0.75rem;">vs</span> <span class="format-val">${nonSFQBPct}%</span></div>
+                </div>`;
+            } else if (sfQBPct !== null) {
+                html += `<div class="format-row"><div class="format-label">QB % of roster value <span class="format-badge fb-sf">SF</span></div><div class="format-val">${sfQBPct}%</div></div>`;
+            } else if (nonSFQBPct !== null) {
+                html += `<div class="format-row"><div class="format-label">QB % of roster value (1QB)</div><div class="format-val">${nonSFQBPct}%</div></div>`;
+            }
+
+            // TE % of score
             if (tepTEPct !== null && nonTEPTEPct !== null) {
                 const tePctDiff = tepTEPct - nonTEPTEPct;
                 const teInsight2 = tePctDiff >= 5 ? 'Correctly values TEs higher in TEP' : tePctDiff >= 0 ? 'Slight TE premium in TEP' : 'TE value not adjusted for TEP format';
@@ -517,10 +524,10 @@
                     <div><div class="format-label">TE % of roster value: TEP vs non-TEP</div><div class="format-insight">${teInsight2}</div></div>
                     <div style="text-align:right"><span class="format-val">${tepTEPct}%</span> <span style="color:#475569;font-size:0.75rem;">vs</span> <span class="format-val">${nonTEPTEPct}%</span></div>
                 </div>`;
-            }
-
-            if (sfLeagues.length === 0 && tepLeagues.length === 0) {
-                html += `<div style="color:#475569;font-size:0.85rem;">Only one format detected — need both SF and 1QB leagues (or TEP and non-TEP) to compare tendencies.</div>`;
+            } else if (tepTEPct !== null) {
+                html += `<div class="format-row"><div class="format-label">TE % of roster value <span class="format-badge fb-tep">TEP</span></div><div class="format-val">${tepTEPct}%</div></div>`;
+            } else if (nonTEPTEPct !== null) {
+                html += `<div class="format-row"><div class="format-label">TE % of roster value (non-TEP)</div><div class="format-val">${nonTEPTEPct}%</div></div>`;
             }
 
             html += `</div></div>`;
