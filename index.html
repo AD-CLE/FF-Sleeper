@@ -349,7 +349,7 @@
                     <span class="nav-icon">🔍</span> Manager Profiles
                 </a>
             </div>
-            <span class="nav-version">v1.10.1-beta</span>
+            <span class="nav-version">v1.10.3-beta</span>
         </div>
     </nav>
 
@@ -528,8 +528,8 @@
             const name = playerObj?.playerName || 'Unknown';
             const team = playerObj?.team || 'N/A';
             const ovrRank = playerObj?.defaultRank < 9999 ? playerObj.defaultRank : 'Unranked';
-            const posRank = playerObj?.posRank || '';
-            const posNum = posRank ? posRank.split('_')[1] : '';
+            const posRank = playerObj?.posRank || 0;
+            const posNum = posRank && posRank < 9999 ? posRank : '';
             const status = alloc?.finalStatus || 'Unknown';
 
             // Calculate dynasty score first — drives star flag

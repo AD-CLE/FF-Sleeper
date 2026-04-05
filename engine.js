@@ -1,4 +1,4 @@
-// ── FF-Sleeper Engine v1.10.2-beta ──
+// ── FF-Sleeper Engine v1.10.3-beta ──
 // Shared scoring, allocation, and pick logic
 // Used by index.html, league.html, profile.html
 
@@ -30,15 +30,20 @@ async function loadPlayerLookup() {
         players.forEach(row => {
             const sleeperId = String(row['SLEEPER_ID']);
             playerLookupCache[sleeperId] = {
-                playerName: row['PLAYER_NAME'],
-                position: row['POSITION'],
-                age: parseInt(row['AGE']) || 0,
-                team: row['TEAM'],
-                depthChartPos: row['DEPTH_CHART_POS'],
-                depthChartOrder: parseInt(row['DEPTH_CHART_ORDER']) || 0,
-                yearsExp: parseInt(row['YEARS_EXP']) || 0,
-                posRank: row['POS_RANK'],
-                defaultRank: parseInt(row['Default_Rank']) || 9999
+                playerName:       row['PLAYER_NAME'],
+                position:         row['POSITION'],
+                age:              parseInt(row['AGE']) || 0,
+                team:             row['TEAM'] || 'FA',
+                college:          row['COLLEGE'] || '',
+                depthChartPos:    row['DEPTH_CHART_POS'],
+                depthChartOrder:  parseInt(row['DEPTH_CHART_ORDER']) || 0,
+                yearsExp:         parseInt(row['YEARS_EXP']) || 0,
+                fantasyPositions: row['FANTASY_POSITIONS'] || '',
+                posRank:          parseInt(row['POS_RANK']) || 9999,
+                defaultRank:      parseInt(row['DEFAULT_RANK']) || 9999,
+                dnRank:           parseInt(row['DynastyNerds_SFTEP_Rk']) || null,
+                dnValue:          parseInt(row['DynastyNerds_SFTEP_Value']) || null,
+                fpRank:           parseInt(row['FantasyPros_Dynasty_Rk']) || null,
             };
         });
         console.log('players.json loaded:', Object.keys(playerLookupCache).length, 'players');
@@ -58,9 +63,8 @@ function getPlayerData(sleeperId) {
 // ── SCORING ENGINE ──
 
 function getPosRankNum(posRank) {
-    if (!posRank) return 9999;
-    const parts = posRank.split('_');
-    return parseInt(parts[parts.length - 1]) || 9999;
+    if (!posRank || posRank >= 9999) return 9999;
+    return posRank;
 }
 
 function cleanDepth(depth, exp, position) {
@@ -248,7 +252,7 @@ function allocateRoster(userRoster, league, tepTier, positionStarters) {
         const playerObj = getPlayerData(playerId);
         if (!playerObj) return;
         const { position, defaultRank, posRank, yearsExp: exp, depthChartOrder } = playerObj;
-        const posRankNum = posRank ? parseInt(posRank.split('_')[1]) : 9999;
+        const posRankNum = posRank && posRank < 9999 ? posRank : 9999;
         let classification = 'Trade';
 
         if (position === 'UNK') {
