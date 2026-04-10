@@ -98,7 +98,7 @@
                 <a href="league.html" class="nav-link"><span>🏟️</span> League View</a>
                 <a href="profile.html" class="nav-link active"><span>🔍</span> Manager Profiles</a>
             </div>
-            <span class="nav-version">v1.10.4-beta</span>
+            <span class="nav-version">v1.9.14-beta</span>
         </div>
     </nav>
 
@@ -111,7 +111,7 @@
 
     <div class="main-content">
         <div class="search-bar">
-            <input type="text" id="usernameInput" class="search-input" placeholder="Enter Sleeper username..." value="ankurdeora" />
+            <input type="text" id="usernameInput" class="search-input" placeholder="Enter Sleeper username..." />
             <select id="yearSelect" class="year-select">
                 <option value="2024">2024</option>
                 <option value="2025">2025</option>
@@ -151,7 +151,7 @@
                         depthChartOrder: parseInt(row['DEPTH_CHART_ORDER']) || 0,
                         yearsExp: parseInt(row['YEARS_EXP']) || 0,
                         posRank: row['POS_RANK'],
-                        defaultRank: parseInt(row['DEFAULT_RANK']) || 9999
+                        defaultRank: parseInt(row['Default_Rank']) || 9999
                     };
                 });
             } catch (e) { console.log('Could not load players.json:', e); }
@@ -167,7 +167,7 @@
         }
 
         // ── SCORING ENGINE (same as index/league) ──
-        function getPosRankNum(posRank) { if (!posRank || posRank >= 9999) return 9999; return posRank; }
+        function getPosRankNum(posRank) { if (!posRank) return 9999; const p = posRank.split('_'); return parseInt(p[p.length-1]) || 9999; }
         function getWRBaseScore(r) { if(r<=12)return 99-((r-1)*(4/11));if(r<=18)return 94-((r-13)*(4/5));if(r<=24)return 88-((r-19)*(4/5));if(r<=36)return 82-((r-25)*(6/11));if(r<=48)return 75-((r-37)*(7/11));if(r<=60)return 67-((r-49)*(7/11));if(r<=78)return 50-((r-61)*(15/17));if(r<=125)return 32-((r-79)*(20/46));return 0; }
         function getWRMod(exp,depth) { const d=Math.min(depth,4); const m={0:[1.00,1.00,0.90,0.50],1:[1.05,1.00,0.95,0.60],2:[1.00,0.95,0.75,0.40],3:[0.85,0.80,0.60,0.20]}; const t=exp===0?0:exp<=3?1:exp<=7?2:3; return m[t][d-1]||0.20; }
         function getRBBaseScore(r) { if(r<=6)return 99-((r-1)*(4/5));if(r<=12)return 94-((r-7)*(6/5));if(r<=24)return 87-((r-13)*(9/11));if(r<=36)return 77-((r-25)*(9/11));if(r<=48)return 67-((r-37)*(12/11));if(r<=60)return 54-((r-49)*(12/11));if(r<=85)return 38-((r-61)*(20/24));if(r<=101)return 15-((r-86)*(10/15));return 0; }
@@ -211,8 +211,8 @@
             const skillPlayers = players.filter(p => ['QB','RB','WR','TE'].includes(p.data.position));
 
             const totalScore = skillPlayers.reduce((s,p) => s+p.score, 0);
-            const t1 = skillPlayers.filter(p => p.score >= 90).length;
-            const t2 = skillPlayers.filter(p => p.score >= 60 && p.score < 90).length;
+            const t1 = skillPlayers.filter(p => p.score >= 85).length;
+            const t2 = skillPlayers.filter(p => p.score >= 60 && p.score < 85).length;
             const t3 = skillPlayers.filter(p => p.score >= 35 && p.score < 60).length;
             const t4 = skillPlayers.filter(p => p.score > 0 && p.score < 35).length;
 
@@ -224,28 +224,18 @@
             const posCounts = { QB: 0, RB: 0, WR: 0, TE: 0 };
             skillPlayers.forEach(p => { if (posCounts[p.data.position] !== undefined) posCounts[p.data.position]++; });
 
-            // Team counts + position breakdown per team
+            // Team counts
             const teamCounts = {};
-            const teamPosCounts = {};
-            const teamScores = {};
             skillPlayers.forEach(p => {
                 const team = p.data.team;
-                if (team && team !== 'N/A' && team !== 'FA') {
-                    teamCounts[team] = (teamCounts[team] || 0) + 1;
-                    if (!teamPosCounts[team]) teamPosCounts[team] = {};
-                    teamPosCounts[team][p.data.position] = (teamPosCounts[team][p.data.position] || 0) + 1;
-                    if (!teamScores[team]) teamScores[team] = [];
-                    teamScores[team].push(p.score);
-                }
+                if (team && team !== 'N/A' && team !== 'FA') teamCounts[team] = (teamCounts[team] || 0) + 1;
             });
-
-            const playerIds = skillPlayers.map(p => p.id);
 
             // Avg age
             const agePlayers = skillPlayers.filter(p => p.data.age > 0);
             const avgAge = agePlayers.length > 0 ? (agePlayers.reduce((s,p) => s + p.data.age, 0) / agePlayers.length) : 0;
 
-            return { league, scoring, totalScore, t1, t2, t3, t4, posTotals, posCounts, teamCounts, teamPosCounts, teamScores, playerIds, avgAge, playerCount: skillPlayers.length };
+            return { league, scoring, totalScore, t1, t2, t3, t4, posTotals, posCounts, teamCounts, avgAge, playerCount: skillPlayers.length };
         }
 
         let allLeagueData = [];
@@ -329,6 +319,185 @@
             contentDiv.innerHTML = html;
         }
 
+        function toggleAll() {
+            const checkboxes = document.querySelectorAll('[id^="league-cb-"]');
+            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+            checkboxes.forEach(cb => { cb.checked = !allChecked; });
+        }
+
+        function analyzeSelected() {
+            const checkboxes = document.querySelectorAll('[id^="league-cb-"]');
+            const selected = [];
+            checkboxes.forEach((cb, idx) => { if (cb.checked) selected.push(allLeagueData[idx]); });
+            if (selected.length === 0) { alert('Please select at least one league.'); return; }
+            const year = yearSelect.value;
+            renderProfile(currentUser, selected, year);
+        }
+
+        function renderProfile(user, leagueData, year) {
+            if (leagueData.length === 0) { contentDiv.innerHTML = '<div class="error-container">No league data found.</div>'; return; }
+
+            // ── AGGREGATE ──
+            const totalLeagues = leagueData.length;
+            const sfLeagues = leagueData.filter(d => d.scoring.hasSF);
+            const tepLeagues = leagueData.filter(d => d.scoring.hasTEP);
+            const nonSFLeagues = leagueData.filter(d => !d.scoring.hasSF);
+            const nonTEPLeagues = leagueData.filter(d => !d.scoring.hasTEP);
+
+            const avgDynastyScore = Math.round(leagueData.reduce((s,d) => s + d.totalScore, 0) / totalLeagues);
+            const avgAge = (leagueData.reduce((s,d) => s + d.avgAge, 0) / totalLeagues).toFixed(1);
+            const avgT1 = (leagueData.reduce((s,d) => s + d.t1, 0) / totalLeagues).toFixed(1);
+
+            // Aggregate position score %
+            const allPosTotals = { QB: 0, RB: 0, WR: 0, TE: 0 };
+            leagueData.forEach(d => { Object.keys(allPosTotals).forEach(pos => { allPosTotals[pos] += d.posTotals[pos]; }); });
+            const grandTotal = Object.values(allPosTotals).reduce((s,v) => s+v, 0) || 1;
+            const posPct = {};
+            Object.keys(allPosTotals).forEach(pos => { posPct[pos] = Math.round((allPosTotals[pos] / grandTotal) * 100); });
+
+            // SF QB tendency
+            const sfQBPct = sfLeagues.length > 0 ? Math.round(sfLeagues.reduce((s,d) => s + (d.posTotals.QB / (Object.values(d.posTotals).reduce((a,b)=>a+b,1))), 0) / sfLeagues.length * 100) : null;
+            const nonSFQBPct = nonSFLeagues.length > 0 ? Math.round(nonSFLeagues.reduce((s,d) => s + (d.posTotals.QB / (Object.values(d.posTotals).reduce((a,b)=>a+b,1))), 0) / nonSFLeagues.length * 100) : null;
+
+            // TEP TE tendency
+            const tepTEPct = tepLeagues.length > 0 ? Math.round(tepLeagues.reduce((s,d) => s + (d.posTotals.TE / (Object.values(d.posTotals).reduce((a,b)=>a+b,1))), 0) / tepLeagues.length * 100) : null;
+            const nonTEPTEPct = nonTEPLeagues.length > 0 ? Math.round(nonTEPLeagues.reduce((s,d) => s + (d.posTotals.TE / (Object.values(d.posTotals).reduce((a,b)=>a+b,1))), 0) / nonTEPLeagues.length * 100) : null;
+
+            // Avg TE count SF vs non-SF
+            const sfTEAvg = sfLeagues.length > 0 ? (sfLeagues.reduce((s,d) => s + d.posCounts.TE, 0) / sfLeagues.length).toFixed(1) : null;
+            const nonSFTEAvg = nonSFLeagues.length > 0 ? (nonSFLeagues.reduce((s,d) => s + d.posCounts.TE, 0) / nonSFLeagues.length).toFixed(1) : null;
+            const tepTEAvg = tepLeagues.length > 0 ? (tepLeagues.reduce((s,d) => s + d.posCounts.TE, 0) / tepLeagues.length).toFixed(1) : null;
+            const nonTEPTEAvg = nonTEPLeagues.length > 0 ? (nonTEPLeagues.reduce((s,d) => s + d.posCounts.TE, 0) / nonTEPLeagues.length).toFixed(1) : null;
+            const sfQBAvg = sfLeagues.length > 0 ? (sfLeagues.reduce((s,d) => s + d.posCounts.QB, 0) / sfLeagues.length).toFixed(1) : null;
+            const nonSFQBAvg = nonSFLeagues.length > 0 ? (nonSFLeagues.reduce((s,d) => s + d.posCounts.QB, 0) / nonSFLeagues.length).toFixed(1) : null;
+
+            // NFL team biases across all leagues
+            const allTeamCounts = {};
+            leagueData.forEach(d => { Object.entries(d.teamCounts).forEach(([team, count]) => { allTeamCounts[team] = (allTeamCounts[team] || 0) + count; }); });
+            const teamBiases = Object.entries(allTeamCounts).filter(([,v]) => v >= 3).sort((a,b) => b[1]-a[1]).slice(0, 10);
+
+            // Tier distribution across all leagues
+            const totalT1 = leagueData.reduce((s,d) => s + d.t1, 0);
+            const totalT2 = leagueData.reduce((s,d) => s + d.t2, 0);
+            const totalT3 = leagueData.reduce((s,d) => s + d.t3, 0);
+            const totalT4 = leagueData.reduce((s,d) => s + d.t4, 0);
+            const totalTiers = totalT1 + totalT2 + totalT3 + totalT4 || 1;
+            const tierPct = {
+                T1: Math.round((totalT1 / totalTiers) * 100),
+                T2: Math.round((totalT2 / totalTiers) * 100),
+                T3: Math.round((totalT3 / totalTiers) * 100),
+                T4: Math.round((totalT4 / totalTiers) * 100)
+            };
+
+            // ── RENDER ──
+            let html = '';
+
+            // Profile header
+            html += `<div style="margin-bottom:1rem;"><button onclick="showLeagueSelector(currentUser, allLeagueData, '${year}')" style="background:transparent;border:1px solid #334155;color:#94a3b8;padding:0.4rem 0.875rem;border-radius:0.375rem;cursor:pointer;font-size:0.825rem;">← Back to league selection</button></div>`;
+            html += `<div class="profile-header">`;
+            if (user.avatar) html += `<img src="https://sleepercdn.com/avatars/thumbs/${user.avatar}" class="profile-avatar" alt="${user.display_name}" />`;
+            else html += `<div class="profile-avatar-placeholder">👤</div>`;
+            html += `<div><div class="profile-name">${user.display_name}</div><div class="profile-meta">@${user.username} · Analyzing ${totalLeagues} of ${allLeagueData.length} league${allLeagueData.length !== 1 ? 's' : ''} in ${year} · ${sfLeagues.length} SF · ${tepLeagues.length} TEP</div></div></div>`;
+
+            // Summary stats
+            html += `<div class="stats-grid">
+                <div class="stat-card"><div class="stat-value">${avgDynastyScore}</div><div class="stat-label">Avg Dynasty Score</div></div>
+                <div class="stat-card"><div class="stat-value">${avgT1}</div><div class="stat-label">Avg T1 Players</div></div>
+                <div class="stat-card"><div class="stat-value">${avgAge}</div><div class="stat-label">Avg Roster Age</div></div>
+                <div class="stat-card"><div class="stat-value">${totalLeagues}</div><div class="stat-label">Total Leagues</div></div>
+            </div>`;
+
+
+
+            // Position value distribution - side by side
+            html += `<div class="section-block">
+                <div class="section-title">📊 Roster Profile</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                    <div class="insight-card">
+                        <div style="font-size:0.72rem;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.75rem;">By Position (% of score)</div>
+                        ${tendBar('QB', posPct.QB, '#60a5fa')}
+                        ${tendBar('RB', posPct.RB, '#34d399')}
+                        ${tendBar('WR', posPct.WR, '#fbbf24')}
+                        ${tendBar('TE', posPct.TE, '#a78bfa')}
+                    </div>
+                    <div class="insight-card">
+                        <div style="font-size:0.72rem;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.75rem;">By Tier (% of players)</div>
+                        ${tendBar('T1', tierPct.T1, '#fbbf24')}
+                        ${tendBar('T2', tierPct.T2, '#34d399')}
+                        ${tendBar('T3', tierPct.T3, '#94a3b8')}
+                        ${tendBar('T4', tierPct.T4, '#475569')}
+                    </div>
+                </div>
+                <div style="font-size:0.72rem;color:#334155;margin-top:0.5rem;">Aggregated across ${totalLeagues} selected leagues · T1=85+ · T2=60-84 · T3=35-59 · T4=1-34</div>
+            </div>`;
+
+            // Format tendencies
+            html += `<div class="section-block"><div class="section-title">🏈 Format Tendencies</div><div class="insight-card">`;
+
+            // QB in SF vs 1QB
+            if (sfLeagues.length > 0 && nonSFLeagues.length > 0) {
+                const qbDiff = sfQBAvg - nonSFQBAvg;
+                const qbInsight = qbDiff >= 1.5 ? 'Correctly loads up QBs in SF' : qbDiff >= 0.5 ? 'Slightly QB heavy in SF' : 'Does not adjust QB count for SF format';
+                const qbFlag = qbDiff >= 0.5 ? 'flag-good' : 'flag-warn';
+                html += `<div class="format-row">
+                    <div><div class="format-label">QB count: SF <span class="format-badge fb-sf">SF</span> vs 1QB</div><div class="format-insight">${qbInsight}</div></div>
+                    <div style="text-align:right"><span class="format-val">${sfQBAvg}</span> <span style="color:#475569;font-size:0.75rem;">vs</span> <span class="format-val">${nonSFQBAvg}</span></div>
+                </div>`;
+            } else if (sfLeagues.length > 0) {
+                html += `<div class="format-row"><div class="format-label">QB count in SF <span class="format-badge fb-sf">SF</span></div><div class="format-val">${sfQBAvg} avg QBs</div></div>`;
+            }
+
+            // QB % of score in SF vs non-SF
+            if (sfQBPct !== null && nonSFQBPct !== null) {
+                const pctDiff = sfQBPct - nonSFQBPct;
+                const insight = pctDiff >= 5 ? 'Correctly values QBs higher in SF' : pctDiff >= 0 ? 'Slight QB premium in SF' : 'QB value not adjusted for SF';
+                const flagCls = pctDiff >= 3 ? 'flag-good' : 'flag-warn';
+                html += `<div class="format-row">
+                    <div><div class="format-label">QB % of roster value: SF vs 1QB</div><div class="format-insight">${insight}</div></div>
+                    <div style="text-align:right"><span class="format-val">${sfQBPct}%</span> <span style="color:#475569;font-size:0.75rem;">vs</span> <span class="format-val">${nonSFQBPct}%</span></div>
+                </div>`;
+            }
+
+            // TE in TEP vs non-TEP
+            if (tepLeagues.length > 0 && nonTEPLeagues.length > 0) {
+                const teDiff = tepTEAvg - nonTEPTEAvg;
+                const teInsight = teDiff >= 1 ? 'Correctly hoards TEs in TEP leagues' : teDiff >= 0.3 ? 'Slightly TE heavy in TEP' : 'Does not adjust TE count for TEP format';
+                html += `<div class="format-row">
+                    <div><div class="format-label">TE count: TEP <span class="format-badge fb-tep">TEP</span> vs non-TEP</div><div class="format-insight">${teInsight}</div></div>
+                    <div style="text-align:right"><span class="format-val">${tepTEAvg}</span> <span style="color:#475569;font-size:0.75rem;">vs</span> <span class="format-val">${nonTEPTEAvg}</span></div>
+                </div>`;
+            }
+
+            // TE % of score in TEP vs non-TEP
+            if (tepTEPct !== null && nonTEPTEPct !== null) {
+                const tePctDiff = tepTEPct - nonTEPTEPct;
+                const teInsight2 = tePctDiff >= 5 ? 'Correctly values TEs higher in TEP' : tePctDiff >= 0 ? 'Slight TE premium in TEP' : 'TE value not adjusted for TEP format';
+                html += `<div class="format-row">
+                    <div><div class="format-label">TE % of roster value: TEP vs non-TEP</div><div class="format-insight">${teInsight2}</div></div>
+                    <div style="text-align:right"><span class="format-val">${tepTEPct}%</span> <span style="color:#475569;font-size:0.75rem;">vs</span> <span class="format-val">${nonTEPTEPct}%</span></div>
+                </div>`;
+            }
+
+            if (sfLeagues.length === 0 && tepLeagues.length === 0) {
+                html += `<div style="color:#475569;font-size:0.85rem;">Only one format detected — need both SF and 1QB leagues (or TEP and non-TEP) to compare tendencies.</div>`;
+            }
+
+            html += `</div></div>`;
+
+            // NFL Team biases
+            html += `<div class="section-block"><div class="section-title">🏟️ NFL Team Biases</div><div class="insight-card">`;
+            if (teamBiases.length > 0) {
+                teamBiases.forEach(([team, count]) => {
+                    html += `<span class="bias-pill">${team} <span style="color:#94a3b8;font-size:0.7rem;">×${count}</span></span>`;
+                });
+                html += `<div style="font-size:0.72rem;color:#334155;margin-top:0.75rem;">Teams with 3+ players across all rosters</div>`;
+            } else {
+                html += `<div style="color:#475569;font-size:0.85rem;">No strong team biases detected (no team with 3+ players across all rosters)</div>`;
+            }
+            html += `</div></div>`;
+
+
+        }
 
         function toggleAll() {
             const checkboxes = document.querySelectorAll('[id^="league-cb-"]');
@@ -382,33 +551,10 @@
             const sfQBAvg = sfLeagues.length > 0 ? (sfLeagues.reduce((s,d) => s + d.posCounts.QB, 0) / sfLeagues.length).toFixed(1) : null;
             const nonSFQBAvg = nonSFLeagues.length > 0 ? (nonSFLeagues.reduce((s,d) => s + d.posCounts.QB, 0) / nonSFLeagues.length).toFixed(1) : null;
 
-            // NFL team biases — with pos breakdown and avg score
+            // NFL team biases across all leagues
             const allTeamCounts = {};
-            const allTeamPosCounts = {};
-            const allTeamScores = {};
-            leagueData.forEach(d => {
-                Object.entries(d.teamCounts).forEach(([team, count]) => { allTeamCounts[team] = (allTeamCounts[team] || 0) + count; });
-                Object.entries(d.teamPosCounts || {}).forEach(([team, pos]) => {
-                    if (!allTeamPosCounts[team]) allTeamPosCounts[team] = {};
-                    Object.entries(pos).forEach(([p, c]) => { allTeamPosCounts[team][p] = (allTeamPosCounts[team][p] || 0) + c; });
-                });
-                Object.entries(d.teamScores || {}).forEach(([team, scores]) => {
-                    if (!allTeamScores[team]) allTeamScores[team] = [];
-                    allTeamScores[team].push(...scores);
-                });
-            });
+            leagueData.forEach(d => { Object.entries(d.teamCounts).forEach(([team, count]) => { allTeamCounts[team] = (allTeamCounts[team] || 0) + count; }); });
             const teamBiases = Object.entries(allTeamCounts).filter(([,v]) => v >= 3).sort((a,b) => b[1]-a[1]).slice(0, 10);
-
-            // Player bias — players owned in 2+ leagues
-            const playerLeagueCounts = {};
-            leagueData.forEach(d => {
-                (d.playerIds || []).forEach(id => { playerLeagueCounts[id] = (playerLeagueCounts[id] || 0) + 1; });
-            });
-            const playerBiases = Object.entries(playerLeagueCounts)
-                .filter(([,c]) => c >= 2)
-                .map(([id, count]) => ({ id, count, data: getPlayerData(id), score: scorePlayer(getPlayerData(id)) }))
-                .sort((a,b) => b.count !== a.count ? b.count - a.count : b.score - a.score)
-                .slice(0, 15);
 
             // Tier distribution across all leagues
             const totalT1 = leagueData.reduce((s,d) => s + d.t1, 0);
@@ -431,18 +577,11 @@
             html += `<div class="profile-header">`;
             if (user.avatar) html += `<img src="https://sleepercdn.com/avatars/thumbs/${user.avatar}" class="profile-avatar" alt="${user.display_name}" />`;
             else html += `<div class="profile-avatar-placeholder">👤</div>`;
-            html += `<div><div class="profile-name">${user.display_name}</div><div class="profile-meta">@${user.username} · Analyzing ${totalLeagues} of ${allLeagueData.length} league${allLeagueData.length !== 1 ? 's' : ''} in ${year} · ${sfLeagues.length} SF · ${tepLeagues.length} TEP</div><div style="margin-top:0.4rem;"><a href="index.html?user=${user.username}" style="color:#fbbf24;text-decoration:none;font-size:0.8rem;">View Rosters →</a></div></div></div>`;
-
-            // Grade helper
-            const getDynastyGrade = s => s >= 1500 ? { label: 'Elite', color: '#fbbf24' }
-                : s >= 1300 ? { label: 'Contender', color: '#34d399' }
-                : s >= 1000 ? { label: 'Middling', color: '#94a3b8' }
-                : { label: 'Rebuilding', color: '#ef4444' };
-            const grade = getDynastyGrade(avgDynastyScore);
+            html += `<div><div class="profile-name">${user.display_name}</div><div class="profile-meta">@${user.username} · Analyzing ${totalLeagues} of ${allLeagueData.length} league${allLeagueData.length !== 1 ? 's' : ''} in ${year} · ${sfLeagues.length} SF · ${tepLeagues.length} TEP</div></div></div>`;
 
             // Summary stats
             html += `<div class="stats-grid">
-                <div class="stat-card"><div class="stat-value" style="color:${grade.color};">${avgDynastyScore}</div><div class="stat-label">Avg Dynasty Score</div><div style="margin-top:0.3rem;"><span style="color:${grade.color};font-size:0.72rem;font-weight:600;">${grade.label}</span></div></div>
+                <div class="stat-card"><div class="stat-value">${avgDynastyScore}</div><div class="stat-label">Avg Dynasty Score</div></div>
                 <div class="stat-card"><div class="stat-value">${avgT1}</div><div class="stat-label">Avg T1 Players</div></div>
                 <div class="stat-card"><div class="stat-value">${avgAge}</div><div class="stat-label">Avg Roster Age</div></div>
                 <div class="stat-card"><div class="stat-value">${totalLeagues}</div><div class="stat-label">Total Leagues</div></div>
@@ -467,35 +606,37 @@
                         ${tendBar('T4', tierPct.T4, '#475569')}
                     </div>
                 </div>
-                <div style="font-size:0.72rem;color:#334155;margin-top:0.5rem;">Aggregated across ${totalLeagues} selected leagues · T1=90+ · T2=60-89 · T3=35-59 · T4=1-34</div>
+                <div style="font-size:0.72rem;color:#334155;margin-top:0.5rem;">Aggregated across ${totalLeagues} selected leagues · T1=85+ · T2=60-84 · T3=35-59 · T4=1-34</div>
             </div>`;
 
             // Format tendencies
             html += `<div class="section-block"><div class="section-title">🏈 Format Tendencies</div><div class="insight-card">`;
 
-            // QB count
+            // QB in SF vs 1QB
             if (sfLeagues.length > 0 && nonSFLeagues.length > 0) {
                 const qbDiff = sfQBAvg - nonSFQBAvg;
                 const qbInsight = qbDiff >= 1.5 ? 'Correctly loads up QBs in SF' : qbDiff >= 0.5 ? 'Slightly QB heavy in SF' : 'Does not adjust QB count for SF format';
+                const qbFlag = qbDiff >= 0.5 ? 'flag-good' : 'flag-warn';
                 html += `<div class="format-row">
                     <div><div class="format-label">QB count: SF <span class="format-badge fb-sf">SF</span> vs 1QB</div><div class="format-insight">${qbInsight}</div></div>
                     <div style="text-align:right"><span class="format-val">${sfQBAvg}</span> <span style="color:#475569;font-size:0.75rem;">vs</span> <span class="format-val">${nonSFQBAvg}</span></div>
                 </div>`;
             } else if (sfLeagues.length > 0) {
-                html += `<div class="format-row"><div class="format-label">QB count <span class="format-badge fb-sf">SF</span></div><div class="format-val">${sfQBAvg} avg</div></div>`;
-            } else {
-                html += `<div class="format-row"><div class="format-label">QB count (1QB)</div><div class="format-val">${nonSFQBAvg} avg</div></div>`;
+                html += `<div class="format-row"><div class="format-label">QB count in SF <span class="format-badge fb-sf">SF</span></div><div class="format-val">${sfQBAvg} avg QBs</div></div>`;
             }
 
-            // RB count
-            const rbAvg = (leagueData.reduce((s,d) => s + d.posCounts.RB, 0) / totalLeagues).toFixed(1);
-            html += `<div class="format-row"><div class="format-label">RB count (avg)</div><div class="format-val">${rbAvg} avg</div></div>`;
+            // QB % of score in SF vs non-SF
+            if (sfQBPct !== null && nonSFQBPct !== null) {
+                const pctDiff = sfQBPct - nonSFQBPct;
+                const insight = pctDiff >= 5 ? 'Correctly values QBs higher in SF' : pctDiff >= 0 ? 'Slight QB premium in SF' : 'QB value not adjusted for SF';
+                const flagCls = pctDiff >= 3 ? 'flag-good' : 'flag-warn';
+                html += `<div class="format-row">
+                    <div><div class="format-label">QB % of roster value: SF vs 1QB</div><div class="format-insight">${insight}</div></div>
+                    <div style="text-align:right"><span class="format-val">${sfQBPct}%</span> <span style="color:#475569;font-size:0.75rem;">vs</span> <span class="format-val">${nonSFQBPct}%</span></div>
+                </div>`;
+            }
 
-            // WR count
-            const wrAvg = (leagueData.reduce((s,d) => s + d.posCounts.WR, 0) / totalLeagues).toFixed(1);
-            html += `<div class="format-row"><div class="format-label">WR count (avg)</div><div class="format-val">${wrAvg} avg</div></div>`;
-
-            // TE count
+            // TE in TEP vs non-TEP
             if (tepLeagues.length > 0 && nonTEPLeagues.length > 0) {
                 const teDiff = tepTEAvg - nonTEPTEAvg;
                 const teInsight = teDiff >= 1 ? 'Correctly hoards TEs in TEP leagues' : teDiff >= 0.3 ? 'Slightly TE heavy in TEP' : 'Does not adjust TE count for TEP format';
@@ -503,27 +644,9 @@
                     <div><div class="format-label">TE count: TEP <span class="format-badge fb-tep">TEP</span> vs non-TEP</div><div class="format-insight">${teInsight}</div></div>
                     <div style="text-align:right"><span class="format-val">${tepTEAvg}</span> <span style="color:#475569;font-size:0.75rem;">vs</span> <span class="format-val">${nonTEPTEAvg}</span></div>
                 </div>`;
-            } else if (tepLeagues.length > 0) {
-                html += `<div class="format-row"><div class="format-label">TE count <span class="format-badge fb-tep">TEP</span></div><div class="format-val">${tepTEAvg} avg</div></div>`;
-            } else {
-                html += `<div class="format-row"><div class="format-label">TE count (non-TEP)</div><div class="format-val">${nonTEPTEAvg} avg</div></div>`;
             }
 
-            // QB % of score
-            if (sfQBPct !== null && nonSFQBPct !== null) {
-                const pctDiff = sfQBPct - nonSFQBPct;
-                const insight = pctDiff >= 5 ? 'Correctly values QBs higher in SF' : pctDiff >= 0 ? 'Slight QB premium in SF' : 'QB value not adjusted for SF';
-                html += `<div class="format-row">
-                    <div><div class="format-label">QB % of roster value: SF vs 1QB</div><div class="format-insight">${insight}</div></div>
-                    <div style="text-align:right"><span class="format-val">${sfQBPct}%</span> <span style="color:#475569;font-size:0.75rem;">vs</span> <span class="format-val">${nonSFQBPct}%</span></div>
-                </div>`;
-            } else if (sfQBPct !== null) {
-                html += `<div class="format-row"><div class="format-label">QB % of roster value <span class="format-badge fb-sf">SF</span></div><div class="format-val">${sfQBPct}%</div></div>`;
-            } else if (nonSFQBPct !== null) {
-                html += `<div class="format-row"><div class="format-label">QB % of roster value (1QB)</div><div class="format-val">${nonSFQBPct}%</div></div>`;
-            }
-
-            // TE % of score
+            // TE % of score in TEP vs non-TEP
             if (tepTEPct !== null && nonTEPTEPct !== null) {
                 const tePctDiff = tepTEPct - nonTEPTEPct;
                 const teInsight2 = tePctDiff >= 5 ? 'Correctly values TEs higher in TEP' : tePctDiff >= 0 ? 'Slight TE premium in TEP' : 'TE value not adjusted for TEP format';
@@ -531,10 +654,10 @@
                     <div><div class="format-label">TE % of roster value: TEP vs non-TEP</div><div class="format-insight">${teInsight2}</div></div>
                     <div style="text-align:right"><span class="format-val">${tepTEPct}%</span> <span style="color:#475569;font-size:0.75rem;">vs</span> <span class="format-val">${nonTEPTEPct}%</span></div>
                 </div>`;
-            } else if (tepTEPct !== null) {
-                html += `<div class="format-row"><div class="format-label">TE % of roster value <span class="format-badge fb-tep">TEP</span></div><div class="format-val">${tepTEPct}%</div></div>`;
-            } else if (nonTEPTEPct !== null) {
-                html += `<div class="format-row"><div class="format-label">TE % of roster value (non-TEP)</div><div class="format-val">${nonTEPTEPct}%</div></div>`;
+            }
+
+            if (sfLeagues.length === 0 && tepLeagues.length === 0) {
+                html += `<div style="color:#475569;font-size:0.85rem;">Only one format detected — need both SF and 1QB leagues (or TEP and non-TEP) to compare tendencies.</div>`;
             }
 
             html += `</div></div>`;
@@ -543,45 +666,11 @@
             html += `<div class="section-block"><div class="section-title">🏟️ NFL Team Biases</div><div class="insight-card">`;
             if (teamBiases.length > 0) {
                 teamBiases.forEach(([team, count]) => {
-                    const posBreak = allTeamPosCounts[team] || {};
-                    const posSummary = ['QB','RB','WR','TE'].filter(p => posBreak[p]).map(p => `${p}×${posBreak[p]}`).join(' ');
-                    const scores = allTeamScores[team] || [];
-                    const avgScore = scores.length > 0 ? Math.round(scores.reduce((s,v) => s+v, 0) / scores.length) : 0;
-                    const scoreColor = avgScore >= 90 ? '#fbbf24' : avgScore >= 60 ? '#34d399' : avgScore >= 35 ? '#94a3b8' : '#64748b';
-                    html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:0.4rem 0;border-bottom:1px solid #1e293b;">
-                        <div>
-                            <span style="color:#e2e8f0;font-weight:600;font-size:0.85rem;">${team}</span>
-                            <span style="color:#475569;font-size:0.75rem;margin-left:0.5rem;">×${count} players</span>
-                            <span style="color:#475569;font-size:0.72rem;margin-left:0.5rem;">${posSummary}</span>
-                        </div>
-                        <span style="color:${scoreColor};font-weight:600;font-size:0.82rem;">avg ${avgScore}</span>
-                    </div>`;
+                    html += `<span class="bias-pill">${team} <span style="color:#94a3b8;font-size:0.7rem;">×${count}</span></span>`;
                 });
                 html += `<div style="font-size:0.72rem;color:#334155;margin-top:0.75rem;">Teams with 3+ players across all rosters</div>`;
             } else {
                 html += `<div style="color:#475569;font-size:0.85rem;">No strong team biases detected (no team with 3+ players across all rosters)</div>`;
-            }
-            html += `</div></div>`;
-
-            // Player biases
-            html += `<div class="section-block"><div class="section-title">🎯 Player Conviction</div><div class="insight-card">`;
-            if (playerBiases.length > 0) {
-                playerBiases.forEach(({ data, count, score }) => {
-                    const scoreColor = score >= 90 ? '#fbbf24' : score >= 60 ? '#34d399' : score >= 35 ? '#94a3b8' : '#64748b';
-                    html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:0.35rem 0;border-bottom:1px solid #1e293b;">
-                        <div>
-                            <span style="color:#e2e8f0;font-size:0.85rem;">${data.playerName || 'Unknown'}</span>
-                            <span style="color:#475569;font-size:0.72rem;margin-left:0.4rem;">${data.position} · ${data.team || 'FA'}</span>
-                        </div>
-                        <div style="text-align:right">
-                            <span style="color:#94a3b8;font-size:0.75rem;">${count} leagues</span>
-                            <span style="color:${scoreColor};font-weight:600;font-size:0.82rem;margin-left:0.5rem;">${score}</span>
-                        </div>
-                    </div>`;
-                });
-                html += `<div style="font-size:0.72rem;color:#334155;margin-top:0.75rem;">Players rostered in 2+ selected leagues</div>`;
-            } else {
-                html += `<div style="color:#475569;font-size:0.85rem;">No players rostered in multiple leagues</div>`;
             }
             html += `</div></div>`;
 
@@ -627,12 +716,8 @@
         window.addEventListener('load', () => {
             const urlParams = new URLSearchParams(window.location.search);
             const urlUser = urlParams.get('user');
-            if (urlUser) {
-                usernameInput.value = urlUser;
-                loadProfile();
-            } else {
-                loadProfile(); // default to ankurdeora (hardcoded in input value)
-            }
+            if (urlUser) usernameInput.value = urlUser;
+            loadProfile();
         });
     </script>
 </body>

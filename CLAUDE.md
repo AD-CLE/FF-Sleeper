@@ -7,7 +7,7 @@ No frameworks, no build tools — vanilla everything.
 
 **Live URL:** https://ad-cle.github.io/FF-Sleeper/
 **Repo:** https://github.com/ad-cle/FF-Sleeper
-**Current Version: v1.9.14-beta**
+**Current Version: v1.9.15-beta**
 
 ---
 
@@ -269,6 +269,18 @@ Notes:
 
 ---
 
+## Sell Now Analysis — LOCKED (league.html only, v1.9.15-beta)
+
+**Framework:**
+- **Identification:** Players age 27+, exp 5–10, score 55–84, D1–2 depth on rebuilding teams (score <70)
+- **Display:** 📉 icon in roster detail + "Sell Now Candidates" section at bottom of league page, sorted by score descending
+- **Signal:** HIGH (age 27-29, exp 5-7) or CRITICAL (age 30+, exp 8+)
+- **Use case:** Rebuilders identify aging vets with peak trade value to contenders; contenders see who to target
+
+**Status:** ✅ Implemented in league.html
+
+---
+
 ## Scoring Backlog (agreed, not yet built)
 - Pick capital scoring (framework locked, not yet in grade)
 - 1QB league QB curve flattening
@@ -284,22 +296,53 @@ Notes:
 
 ---
 
-## Pick Scoring Framework — LOCKED (not yet in grade logic)
-| Pick | Points |
-|------|--------|
-| 2026 1.01 | 20 |
-| 2026 1.02-1.05 | 15 |
-| 2026 1.06-1.09 | 10 |
-| 2026 1.10-1.12 | 4 |
-| 2026 Rd 2 | 3 |
-| 2026 Rd 3-4 | 1 |
-| 2027 1st top tier (orig picks 1.01-1.04) | 15 |
-| 2027 1st mid tier (orig picks 1.05-1.08) | 10 |
-| 2027 1st low tier (orig picks 1.09-1.12) | 6 |
-| 2027 Rd 2 | 4 |
+## Pick Scoring Framework — LOCKED (0-99 scale, manual override expected)
+
+### 2026 Draft Picks (12-team league)
+
+**Round 1 (granular):**
+| Slot | Score |
+|------|-------|
+| 1.01 | 90 |
+| 1.02 | 78 |
+| 1.03 | 76 |
+| 1.04 | 74 |
+| 1.05 | 72 |
+| 1.06 | 70 |
+| 1.07 | 68 |
+| 1.08 | 66 |
+| 1.09 | 64 |
+| 1.10 | 62 |
+| 1.11 | 60 |
+| 1.12 | 58 |
+
+**Round 2 (split by half):**
+| Half | Score |
+|------|-------|
+| Picks 2.01-2.06 (first half) | 45 |
+| Picks 2.07-2.12 (second half) | 40 |
+
+**Round 3-4 (flat by round):**
+| Round | Score |
+|-------|-------|
+| Rd 3 (all picks) | 30 |
+| Rd 4 (all picks) | 20 |
+
+### 2027-2028 (tiered framework)
+
+| Pick | Score |
+|------|-------|
+| 2027 1st (orig 1.01-1.04) | 75 |
+| 2027 1st (orig 1.05-1.12) | 60 |
+| 2027 Rd 2 | 45 |
 | 2027 Rd 3-4 | 0 |
-| 2028 any 1st | 10 |
+| 2028 any 1st | 60 |
 | 2028 Rd 2+ | 0 |
+
+**Notes:**
+- Scores map to 0-99 player tier scale (blends directly into team grade)
+- Manual override expected — market conditions, trade urgency, team need shift values
+- Original slot tiers preserved for traded picks (2027 1st tracks back to original slot)
 
 ---
 
