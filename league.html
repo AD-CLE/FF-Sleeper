@@ -321,7 +321,7 @@
                     <span>🔍</span> Manager Profiles
                 </a>
             </div>
-            <span class="nav-version">v1.9.16-beta</span>
+            <span class="nav-version">v1.9.14-beta</span>
         </div>
     </nav>
 
@@ -334,7 +334,7 @@
 
     <div class="main-content">
         <div class="league-picker">
-            <input type="text" id="leagueIdInput" class="league-input" placeholder="Paste a League ID..." value="1313956225737580544" />
+            <input type="text" id="leagueIdInput" class="league-input" placeholder="Paste a League ID..." />
             <button class="load-btn" id="loadBtn" onclick="loadLeague()">Load League</button>
         </div>
 
@@ -359,7 +359,7 @@
         if (urlLeagueId) {
             leagueIdInput.value = urlLeagueId;
         }
-        window.addEventListener('load', () => loadLeague());
+        window.addEventListener('load', () => {});
 
         async function loadPlayerLookup() {
             if (Object.keys(playerLookupCache).length > 0) return;
@@ -404,7 +404,36 @@
             return { playerName: `Unknown (${s})`, position: 'UNK', age: 'N/A', team: 'N/A', depthChartPos: 'N/A', depthChartOrder: 0, yearsExp: 0, posRank: 'UNK_000', defaultRank: 9999 };
         }
 
-        function dynastyGrade(roster) {
+        function scorePick(pick) {
+            // 2026 picks
+            if (pick.season === '2026') {
+                if (pick.round === 1) {
+                    const slotScores = { 1: 90, 2: 78, 3: 76, 4: 74, 5: 72, 6: 70, 7: 68, 8: 66, 9: 64, 10: 62, 11: 60, 12: 58 };
+                    return slotScores[pick.pickNumber] || 60;
+                } else if (pick.round === 2) {
+                    return pick.pickNumber <= 6 ? 45 : 40;
+                } else if (pick.round === 3) {
+                    return 30;
+                } else if (pick.round === 4) {
+                    return 20;
+                }
+            }
+            // 2027 picks
+            else if (pick.season === '2027') {
+                if (pick.round === 1) {
+                    return (pick.origPickNumber >= 1 && pick.origPickNumber <= 4) ? 75 : 60;
+                } else if (pick.round === 2) {
+                    return 45;
+                }
+            }
+            // 2028+ picks
+            else if (pick.season >= '2028') {
+                if (pick.round === 1) return 60;
+            }
+            return 0;
+        }
+
+        function dynastyGrade(roster, tradedPicks, rosterId) {
             if (!roster.players || roster.players.length === 0) {
                 return { label: 'Oblivious', totalScore: 0, t1: 0, t2: 0, t3: 0, t4: 0 };
             }
@@ -419,8 +448,37 @@
                 else if (s >= 35) t3++;
                 else if (s > 0) t4++;
             });
+            
+            // Add pick scores
+            if (tradedPicks && rosterId !== undefined) {
+                tradedPicks.forEach(tp => {
+                    if (tp.owner_id === rosterId) {
+                        const pickScore = scorePick({ season: String(tp.season), round: tp.round, pickNumber: tp.pick_no || 0 });
+                        totalScore += pickScore;
+                    }
+                });
+            }
+            
             totalScore = Math.round(totalScore);
             return { totalScore, t1, t2, t3, t4 };
+        }
+
+        function getSellNowSignal(data, roster, teamScore) {
+            if (!data || !roster) return null;
+            const age = parseInt(data.age) || 0;
+            const exp = parseInt(data.yearsExp) || 0;
+            const score = scorePlayer(data);
+            
+            // Only for rebuilding teams (low score)
+            if (teamScore >= 70) return null;
+            
+            // Aging T2 players (exp 5+, age 27+)
+            if (score >= 55 && score <= 84 && age >= 27 && exp >= 5) {
+                const urgency = (age >= 30 || exp >= 8) ? 'CRITICAL' : 'HIGH';
+                return { signal: urgency, icon: '📉' };
+            }
+            
+            return null;
         }
 
         function getScoringLabel(league) {
@@ -704,7 +762,7 @@
             // Grade all rosters and sort by score desc
             const gradedRosters = rosters.map(roster => {
                 const user = userMap[roster.owner_id] || {};
-                const grade = dynastyGrade(roster);
+                const grade = dynastyGrade(roster, tradedPicks, roster.roster_id);
                 return { roster, user, grade };
             }).sort((a,b) => b.grade.totalScore - a.grade.totalScore);
 
@@ -771,12 +829,59 @@
                     <button class="expand-btn" onclick="toggleRoster(${idx})">▼ Full roster</button>
 
                     <div class="roster-detail hidden" id="roster-detail-${idx}">
-                        ${renderRosterDetail(roster)}
+                        ${renderRosterDetail(roster, grade.totalScore)}
                     </div>
                 </div>`;
             });
 
             html += `</div>`;
+            
+            // Sell Now Candidates section
+            const sellNowCandidates = [];
+            gradedRosters.forEach(item => {
+                const { roster, grade } = item;
+                if (!roster.players || grade.totalScore >= 70) return; // Only rebuilding teams
+                roster.players.forEach(playerId => {
+                    const playerData = getPlayerData(playerId);
+                    const signal = getSellNowSignal(playerData, roster, grade.totalScore);
+                    if (signal) {
+                        const score = scorePlayer(playerData);
+                        sellNowCandidates.push({
+                            playerId,
+                            playerName: playerData.playerName,
+                            team: playerData.team,
+                            age: playerData.age,
+                            exp: playerData.yearsExp,
+                            score,
+                            rosterScore: grade.totalScore,
+                            signal: signal.signal,
+                            rosterName: roster.metadata?.team_name || 'Unknown Team'
+                        });
+                    }
+                });
+            });
+            
+            if (sellNowCandidates.length > 0) {
+                sellNowCandidates.sort((a,b) => b.score - a.score);
+                html += `<div style="margin-top:2rem;padding:1.5rem;background:rgba(15,23,42,0.6);border:1px solid rgba(251,191,36,0.2);border-radius:0.75rem;">
+                    <div style="font-size:1.1rem;font-weight:700;color:#fbbf24;margin-bottom:1rem;">📉 Sell Now Candidates</div>
+                    <div style="display:grid;gap:0.5rem;max-height:300px;overflow-y:auto;">`;
+                sellNowCandidates.forEach(cand => {
+                    const urgencyColor = cand.signal === 'CRITICAL' ? '#ef4444' : '#f97316';
+                    html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:0.75rem;background:rgba(71,85,105,0.2);border-radius:0.5rem;border-left:3px solid ${urgencyColor};">
+                        <div>
+                            <div style="color:#f1f5f9;font-weight:500;">${cand.playerName} <span style="color:#94a3b8;font-size:0.85rem;">(${cand.team})</span></div>
+                            <div style="color:#64748b;font-size:0.8rem;">${cand.rosterName} · Age ${cand.age}, Exp ${cand.exp} · ${cand.signal}</div>
+                        </div>
+                        <div style="text-align:right;flex-shrink:0;">
+                            <div style="color:#fbbf24;font-weight:600;font-size:1.1rem;">${cand.score}</div>
+                            <div style="color:#94a3b8;font-size:0.75rem;">pts</div>
+                        </div>
+                    </div>`;
+                });
+                html += `</div></div>`;
+            }
+            
             contentDiv.innerHTML = html;
         }
 
@@ -788,7 +893,7 @@
             </div>`;
         }
 
-        function renderRosterDetail(roster) {
+        function renderRosterDetail(roster, teamScore) {
             if (!roster.players || roster.players.length === 0) return '<p style="color:#475569;font-size:0.82rem;">No players found.</p>';
 
             const byPos = {};
@@ -809,11 +914,13 @@
                     const isTaxi = roster.taxi?.includes(id);
                     const flag = isIR ? ' 💔' : isTaxi ? ' 🚕' : '';
                     const dynScore = scorePlayer(data);
+                    const sellNow = getSellNowSignal(data, roster, teamScore);
+                    const sellNowIcon = sellNow ? ' ' + sellNow.icon : '';
                     const scoreCol = dynScore >= 85 ? '#fbbf24' : dynScore >= 60 ? '#34d399' : dynScore >= 35 ? '#94a3b8' : '#475569';
                     const scoreDisplay = dynScore > 0 ? dynScore : (data.defaultRank < 9999 ? 'OVR #' + data.defaultRank : '—');
                     html += `<div class="player-row">
                         <div>
-                            <div class="player-row-name">${data.playerName || id}${flag}</div>
+                            <div class="player-row-name">${data.playerName || id}${flag}${sellNowIcon}</div>
                             <div class="player-row-meta">${data.team || ''} · Age ${data.age || '?'}</div>
                         </div>
                         <div class="player-row-rank" style="color:${scoreCol}">${scoreDisplay}</div>
