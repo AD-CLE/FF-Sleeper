@@ -7,7 +7,7 @@ No frameworks, no build tools — vanilla everything.
 
 **Live URL:** https://ad-cle.github.io/FF-Sleeper/
 **Repo:** https://github.com/ad-cle/FF-Sleeper
-**Current Version: v1.9.18-beta**
+**Current Version: v1.9.19-beta**
 
 ---
 
@@ -17,8 +17,10 @@ FF-Sleeper/
 ├── index.html      — My Rosters (Page 1)
 ├── league.html     — League View (Page 2)
 ├── profile.html    — Manager Profiles (Page 3)
+├── utils.js        — Shared utilities (scoring, allocation, player lookup, picks)
 ├── players.json    — Player data master (sourced from Excel via EasyMorph)
-└── CLAUDE.md       — Project reference file
+├── CLAUDE.md       — Project reference file
+└── CHANGELOG.md    — Version history, decisions, and session log
 ```
 
 ---
@@ -26,6 +28,7 @@ FF-Sleeper/
 ## Version Control Rules
 - Bump the version number on EVERY file output, even small fixes
 - Version format: v1.9.x-beta — increment the patch number each output
+- ALL four files (index.html, league.html, profile.html, CLAUDE.md) must always be on the same version number — bump all four in every output even if a file had no changes
 - User decides when to move to next minor version
 - Always present files for download/review BEFORE user pushes to GitHub
 - Never tell the user to push — let them decide
@@ -38,7 +41,7 @@ FF-Sleeper/
 - This applies to ALL changes — logic, cosmetic, one-liners, cleanups, and anything bundled with an approved change. No exceptions.
 - If Claude recognizes mid-plan that an additional change is needed, it must stop, describe it, and get confirmation before proceeding.
 - Always confirm before outputting a new file
-- Output updated CLAUDE.md at the end of every session
+- At the end of every session, append a new entry to CHANGELOG.md with: version, EST timestamp, what changed, which files, why it changed, and any decisions made that affect future work
 
 ---
 

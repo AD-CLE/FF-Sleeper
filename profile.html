@@ -98,7 +98,7 @@
                 <a href="league.html" class="nav-link"><span>🏟️</span> League View</a>
                 <a href="profile.html" class="nav-link active"><span>🔍</span> Manager Profiles</a>
             </div>
-            <span class="nav-version">v1.9.18-beta</span>
+            <span class="nav-version">v1.9.19-beta</span>
         </div>
     </nav>
 
@@ -127,67 +127,12 @@
         </div>
     </div>
 
+    <script src="utils.js"></script>
     <script>
         const contentDiv = document.getElementById('content');
         const usernameInput = document.getElementById('usernameInput');
         const yearSelect = document.getElementById('yearSelect');
         const searchBtn = document.getElementById('searchBtn');
-        let playerLookupCache = {};
-
-        async function loadPlayerLookup() {
-            if (Object.keys(playerLookupCache).length > 0) return;
-            try {
-                const response = await fetch('players.json');
-                if (!response.ok) throw new Error('players.json not found');
-                const data = await response.json();
-                const players = data.players || data;
-                players.forEach(row => {
-                    const sleeperId = String(row['SLEEPER_ID']);
-                    playerLookupCache[sleeperId] = {
-                        playerName: row['PLAYER_NAME'], position: row['POSITION'],
-                        age: parseInt(row['AGE']) || 0, team: row['TEAM'],
-                        college: row['COLLEGE'] || '',
-                        depthChartPos: row['DEPTH_CHART_POS'],
-                        depthChartOrder: parseInt(row['DEPTH_CHART_ORDER']) || 0,
-                        yearsExp: parseInt(row['YEARS_EXP']) || 0,
-                        posRank: row['POS_RANK'],
-                        defaultRank: parseInt(row['Default_Rank']) || 9999
-                    };
-                });
-            } catch (e) { console.log('Could not load players.json:', e); }
-        }
-
-        const defenseMap = {'ARZ':'Arizona Cardinals Defense','ATL':'Atlanta Falcons Defense','BAL':'Baltimore Ravens Defense','BUF':'Buffalo Bills Defense','CAR':'Carolina Panthers Defense','CHI':'Chicago Bears Defense','CIN':'Cincinnati Bengals Defense','CLE':'Cleveland Browns Defense','DAL':'Dallas Cowboys Defense','DEN':'Denver Broncos Defense','DET':'Detroit Lions Defense','GB':'Green Bay Packers Defense','HOU':'Houston Texans Defense','IND':'Indianapolis Colts Defense','JAX':'Jacksonville Jaguars Defense','KC':'Kansas City Chiefs Defense','LAC':'Los Angeles Chargers Defense','LAR':'Los Angeles Rams Defense','LV':'Las Vegas Raiders Defense','MIA':'Miami Dolphins Defense','MIN':'Minnesota Vikings Defense','NE':'New England Patriots Defense','NO':'New Orleans Saints Defense','NYG':'New York Giants Defense','NYJ':'New York Jets Defense','PHI':'Philadelphia Eagles Defense','PIT':'Pittsburgh Steelers Defense','SF':'San Francisco 49ers Defense','SEA':'Seattle Seahawks Defense','TB':'Tampa Bay Buccaneers Defense','TEN':'Tennessee Titans Defense','WAS':'Washington Commanders Defense'};
-
-        function getPlayerData(id) {
-            const s = String(id);
-            if (playerLookupCache[s]) return playerLookupCache[s];
-            if (defenseMap[s]) return { playerName: defenseMap[s], position: 'DEF', age: 0, team: s, college: '', depthChartPos: 'DEF', depthChartOrder: 1, yearsExp: 0, posRank: 1, defaultRank: 9999 };
-            return { playerName: `Unknown (${s})`, position: 'UNK', age: 0, team: 'N/A', college: '', depthChartPos: 'N/A', depthChartOrder: 0, yearsExp: 0, posRank: 9999, defaultRank: 9999 };
-        }
-
-        // ── SCORING ENGINE (same as index/league) ──
-        function getPosRankNum(posRank) { if (!posRank && posRank !== 0) return 9999; return parseInt(posRank) || 9999; }
-        function getWRBaseScore(r) { if(r<=12)return 99-((r-1)*(4/11));if(r<=18)return 94-((r-13)*(4/5));if(r<=24)return 88-((r-19)*(4/5));if(r<=36)return 82-((r-25)*(6/11));if(r<=48)return 75-((r-37)*(7/11));if(r<=60)return 67-((r-49)*(7/11));if(r<=78)return 50-((r-61)*(15/17));if(r<=125)return 32-((r-79)*(20/46));return 0; }
-        function getWRMod(exp,depth) { const d=Math.min(depth,4); const m={0:[1.00,1.00,0.90,0.50],1:[1.05,1.00,0.95,0.60],2:[1.00,0.95,0.75,0.40],3:[0.85,0.80,0.60,0.20]}; const t=exp===0?0:exp<=3?1:exp<=7?2:3; return m[t][d-1]||0.20; }
-        function getRBBaseScore(r) { if(r<=6)return 99-((r-1)*(4/5));if(r<=12)return 94-((r-7)*(6/5));if(r<=24)return 87-((r-13)*(9/11));if(r<=36)return 77-((r-25)*(9/11));if(r<=48)return 67-((r-37)*(12/11));if(r<=60)return 54-((r-49)*(12/11));if(r<=85)return 38-((r-61)*(20/24));if(r<=101)return 15-((r-86)*(10/15));return 0; }
-        function getRBMod(exp,depth) { const d=Math.min(depth,4); const m={0:[1.00,1.00,0.90,0.40],1:[1.05,1.00,0.90,0.50],2:[1.00,0.90,0.75,0.25],3:[0.85,0.70,0.40,0.10],4:[0.75,0.40,0.15,0.05]}; const t=exp===0?0:exp<=3?1:exp<=6?2:exp<=8?3:4; return m[t][d-1]||0.05; }
-        function getTEBaseScore(r) { if(r<=6)return 99-((r-1)*(4/5));if(r<=12)return 94-((r-7)*(6/5));if(r<=24)return 87-((r-13)*(15/11));if(r<=36)return 68-((r-25)*(18/11));if(r<=48)return 45-((r-37)*(20/11));return 0; }
-        function getTEMod(exp,depth) { const d=Math.min(depth,4); const m={0:[1.00,0.90,0.60,0.20],1:[1.05,0.85,0.55,0.15],2:[1.00,0.80,0.45,0.10],3:[0.80,0.50,0.20,0.05]}; const t=exp===0?0:exp<=3?1:exp<=9?2:3; return m[t][d-1]||0.05; }
-        function getQBBaseScore(r) { if(r===1)return 99;if(r<=12)return Math.round(99-((r-1)*(14/11)));if(r<=18)return Math.round(85-((r-12)*(5/6)));if(r<=24)return Math.round(80-((r-18)*(10/6)));if(r<=36)return Math.round(70-((r-24)*(10/12)));if(r<=64)return Math.round(60-((r-36)*(55/28)));return 0; }
-        function getQBMod(exp,depth) { const d=Math.min(depth,4); const m={0:[1.00,0.95,0.50,0.20],1:[1.02,0.90,0.40,0.15],2:[1.00,0.80,0.30,0.10],3:[0.97,0.60,0.20,0.05],4:[0.85,0.30,0.10,0.02]}; const t=exp===0?0:exp<=3?1:exp<=7?2:exp<=12?3:4; return m[t][d-1]||0.02; }
-        function cleanDepth(depth,exp) { if(!depth||depth===0)return exp===0?3:4; if(depth>=5)return 4; return depth; }
-        function scorePlayer(p) {
-            if(!p)return 0;
-            const pos=p.position, rank=getPosRankNum(p.posRank), exp=p.yearsExp||0, depth=cleanDepth(p.depthChartOrder,exp);
-            let base=0,mod=1.0;
-            if(pos==='WR'){base=getWRBaseScore(rank);mod=getWRMod(exp,depth);}
-            else if(pos==='RB'){base=getRBBaseScore(rank);mod=getRBMod(exp,depth);}
-            else if(pos==='TE'){base=getTEBaseScore(rank);mod=getTEMod(exp,depth);}
-            else if(pos==='QB'){base=getQBBaseScore(rank);mod=getQBMod(exp,depth);}
-            else return 0;
-            return Math.min(99,Math.max(0,Math.round(base*mod)));
-        }
 
         function getScoringInfo(league) {
             const s = league.scoring_settings || {};
