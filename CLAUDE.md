@@ -7,7 +7,7 @@ No frameworks, no build tools — vanilla everything.
 
 **Live URL:** https://ad-cle.github.io/FF-Sleeper/
 **Repo:** https://github.com/ad-cle/FF-Sleeper
-**Current Version: v1.9.15-beta**
+**Current Version: v1.9.16-beta**
 
 ---
 
@@ -391,6 +391,34 @@ Note: GothamCityToymen co-owner user_id 1264427906721914880 — not in draft_ord
 - Nav: sticky, rgba(10,16,30,0.95), amber brand color
 - Score colors: T1 amber #fbbf24 | T2 green #34d399 | T3 slate #94a3b8 | T4 orange #f97316 | 0 red #ef4444
 - Status colors: green #34d399 starters | orange #f97316 trade | red #ef4444 cut
+
+---
+
+## Changelog — v1.9.16-beta
+
+**Fixes:**
+- Fixed `posRank.split()` TypeError in index.html (3 locations: lines 470, 550, 918) — converted to String before split
+- Fixed `posRank.split()` TypeError in profile.html (line 170) — converted to String before split
+
+**Features Added:**
+- ✅ Pick Scoring Framework (0-99 scale, ready for all pages)
+  - 2026 Round 1: granular scoring (1.01=90, 1.02=78, ... 1.12=58)
+  - 2026 Round 2: split (2.01-2.06=45, 2.07-2.12=40)
+  - 2026 Rd 3=30, Rd 4=20
+  - 2027: 1st (orig 1.01-1.04)=75, 1st (orig 1.05-1.12)=60, Rd 2=45, Rd 3-4=0
+  - 2028+: any 1st=60, Rd 2+=0
+  - Integrated into league.html team grading
+- ✅ Sell Now Candidates (league.html only)
+  - Identifies aging vets on rebuilding teams (age 27+, exp 5-10, score 55-84, D1-2 depth)
+  - 📉 icon in roster detail next to candidates
+  - "Sell Now Candidates" section at bottom of league page, sorted by score descending
+  - Signal urgency: HIGH (age 27-29, exp 5-7) or CRITICAL (age 30+, exp 8+)
+- ✅ Removed default auto-populate values
+  - index.html: removed value="ankurdeora" from username input
+  - league.html: removed value="1313956225737580544" from league ID input + removed auto-load
+  - profile.html: removed value="ankurdeora" from username input
+
+**Status:** All files ready for GitHub push
 
 ---
 
