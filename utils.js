@@ -1,4 +1,4 @@
-// ── FF-Sleeper Shared Utilities ── v1.9.19-beta
+// ── FF-Sleeper Shared Utilities ── v1.9.20-beta
 
 // ── PLAYER LOOKUP ──
 
@@ -336,7 +336,49 @@ function allocateRoster(roster, league, tepTier) {
 }
 
 
-// ── PICK INVENTORY ──
+// ── SELL NOW SIGNAL ──
+
+function getSellNowSignal(player) {
+    const age = parseInt(player.age) || 0;
+    const exp = parseInt(player.yearsExp) || 0;
+    const score = scorePlayer(player);
+    const depth = player.depthChartOrder || 0;
+    const pos = player.position;
+
+    // Only skill positions
+    if (!['WR','RB','TE','QB'].includes(pos)) return null;
+
+    // Only D1-D2 (job secure = better trade value to contenders)
+    if (depth > 2 || depth === 0) return null;
+
+    let hit = false;
+    let urgency = 'MEDIUM';
+
+    if (pos === 'WR') {
+        if (score >= 55 && score <= 84 && age >= 27 && exp >= 6 && exp <= 10) {
+            hit = true;
+            urgency = (age >= 32 || exp >= 9) ? 'CRITICAL' : (age >= 30 || exp >= 7) ? 'HIGH' : 'MEDIUM';
+        }
+    } else if (pos === 'RB') {
+        if (score >= 55 && score <= 80 && age >= 26 && exp >= 5 && exp <= 7) {
+            hit = true;
+            urgency = (age >= 30 || exp >= 7) ? 'CRITICAL' : (age >= 28 || exp >= 6) ? 'HIGH' : 'MEDIUM';
+        }
+    } else if (pos === 'TE') {
+        if (score >= 55 && score <= 80 && age >= 30 && exp >= 9 && exp <= 12) {
+            hit = true;
+            urgency = (age >= 33 || exp >= 11) ? 'CRITICAL' : 'HIGH';
+        }
+    } else if (pos === 'QB') {
+        if (score >= 55 && score <= 80 && age >= 35 && exp >= 10) {
+            hit = true;
+            urgency = 'CRITICAL';
+        }
+    }
+
+    if (!hit) return null;
+    return { signal: 'SELL_NOW', urgency, score, age, exp, depth };
+}
 
 function buildPickInventory(myRosterId, tradedPicks, rosterMap, totalTeams) {
     const years = ['2026','2027','2028'];

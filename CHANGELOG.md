@@ -4,6 +4,25 @@ All versions, decisions, and session notes. Append-only — newest at top.
 
 ---
 
+## v1.9.20-beta — 2026-04-12 @ ~9:30 PM EST
+
+### Changes
+- `utils.js` — added `getSellNowSignal()` function with position-adjusted criteria (WR/RB/TE/QB) and urgency levels (CRITICAL/HIGH/MEDIUM)
+- `league.html` — added Sell Now section at bottom of page; `renderSellNowSection()` shows all sell candidates from bottom 8 teams grouped by position, sorted by urgency then score desc
+- `index.html`, `profile.html` — version bump only
+- `CLAUDE.md` — Sell Now Framework added as locked section with full spec and backlog items
+
+### Decisions
+- Sell Now shows for bottom 8 teams by dynasty score (top 4 = contenders, bottom 8 = sellers)
+- Both age AND exp must align to trigger (biology + NFL curve — neither alone is sufficient)
+- Depth D1–2 only — job secure players get better trade value from contenders
+- Layout: one combined section at bottom of league.html, grouped by position
+- Player pricing, package logic, and PP API check deferred to backlog
+
+### Why
+- Framework locked in prior session, now implemented
+- Gives rebuilding managers systematic view of who to move and when
+
 ## v1.9.19-beta — 2026-04-12 @ ~8:30 PM EST
 
 ### Changes

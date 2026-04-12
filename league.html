@@ -321,7 +321,7 @@
                     <span>🔍</span> Manager Profiles
                 </a>
             </div>
-            <span class="nav-version">v1.9.19-beta</span>
+            <span class="nav-version">v1.9.20-beta</span>
         </div>
     </nav>
 
@@ -515,6 +515,10 @@
             });
 
             html += `</div>`;
+
+            // ── SELL NOW SECTION ──
+            html += renderSellNowSection(gradedRosters, userMap);
+
             contentDiv.innerHTML = html;
         }
 
@@ -567,6 +571,75 @@
                 });
                 html += `</div>`;
             });
+            return html;
+        }
+
+        function renderSellNowSection(gradedRosters, userMap) {
+            // Bottom 8 teams by dynasty score are sellers
+            const sellers = gradedRosters.slice(4); // already sorted desc, so bottom 8
+
+            // Collect all sell candidates grouped by position
+            const byPos = { 'WR': [], 'RB': [], 'TE': [], 'QB': [] };
+
+            sellers.forEach(({ roster, user }) => {
+                const teamName = roster.metadata?.team_name || user.metadata?.team_name || user.display_name || `Team ${roster.roster_id}`;
+                (roster.players || []).forEach(id => {
+                    const data = getPlayerData(id);
+                    const signal = getSellNowSignal(data);
+                    if (!signal) return;
+                    if (!byPos[data.position]) return;
+                    byPos[data.position].push({ data, signal, teamName });
+                });
+            });
+
+            // Sort each position: CRITICAL first, then HIGH, then MEDIUM, then by score desc
+            const urgencyOrder = { 'CRITICAL': 0, 'HIGH': 1, 'MEDIUM': 2 };
+            Object.keys(byPos).forEach(pos => {
+                byPos[pos].sort((a, b) =>
+                    urgencyOrder[a.signal.urgency] !== urgencyOrder[b.signal.urgency]
+                        ? urgencyOrder[a.signal.urgency] - urgencyOrder[b.signal.urgency]
+                        : b.signal.score - a.signal.score
+                );
+            });
+
+            const urgencyStyle = {
+                'CRITICAL': { color: '#ef4444', bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.25)', icon: '🚨' },
+                'HIGH':     { color: '#f97316', bg: 'rgba(249,115,22,0.1)', border: 'rgba(249,115,22,0.25)', icon: '🔥' },
+                'MEDIUM':   { color: '#fbbf24', bg: 'rgba(251,191,36,0.1)', border: 'rgba(251,191,36,0.25)', icon: '⚠️' }
+            };
+
+            const hasAnyCandidates = Object.values(byPos).some(arr => arr.length > 0);
+
+            let html = `<div style="margin-top:2rem;">
+                <h3 style="font-size:1.1rem;font-weight:700;color:white;margin-bottom:0.5rem;">⏰ Sell Now Window</h3>
+                <p style="font-size:0.78rem;color:#64748b;margin-bottom:1.25rem;">Aging vets on rebuilding teams (bottom 8) with high trade value to contenders now but declining dynasty value in 1–2 years. Grouped by position, sorted by urgency.</p>`;
+
+            if (!hasAnyCandidates) {
+                html += `<div style="color:#475569;font-size:0.85rem;">No sell candidates identified.</div>`;
+            } else {
+                ['WR','RB','TE','QB'].forEach(pos => {
+                    if (byPos[pos].length === 0) return;
+                    html += `<div style="margin-bottom:1.5rem;">
+                        <div style="font-size:0.72rem;color:#475569;text-transform:uppercase;letter-spacing:0.06em;font-weight:600;margin-bottom:0.5rem;padding-bottom:0.35rem;border-bottom:1px solid #1e293b;">${pos}</div>`;
+
+                    byPos[pos].forEach(({ data, signal, teamName }) => {
+                        const s = urgencyStyle[signal.urgency];
+                        html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:0.6rem 0.875rem;margin-bottom:0.35rem;background:rgba(30,41,59,0.6);border-left:3px solid ${s.color};border-radius:0.25rem;">
+                            <div>
+                                <div style="color:white;font-weight:600;font-size:0.88rem;">${data.playerName} <span style="color:#475569;font-weight:400;font-size:0.78rem;">(${data.team || 'FA'})</span> <span style="color:#64748b;font-size:0.75rem;">— ${teamName}</span></div>
+                                <div style="color:#475569;font-size:0.75rem;margin-top:0.15rem;">Age ${data.age} · Exp ${data.yearsExp}yr · Depth #${data.depthChartOrder} · Score ${signal.score}</div>
+                            </div>
+                            <div style="flex-shrink:0;margin-left:1rem;">
+                                <span style="background:${s.bg};color:${s.color};border:1px solid ${s.border};padding:0.2rem 0.6rem;border-radius:99px;font-size:0.72rem;font-weight:700;">${s.icon} ${signal.urgency}</span>
+                            </div>
+                        </div>`;
+                    });
+
+                    html += `</div>`;
+                });
+            }
+
+            html += `</div>`;
             return html;
         }
 

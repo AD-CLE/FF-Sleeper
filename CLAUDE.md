@@ -7,7 +7,7 @@ No frameworks, no build tools — vanilla everything.
 
 **Live URL:** https://ad-cle.github.io/FF-Sleeper/
 **Repo:** https://github.com/ad-cle/FF-Sleeper
-**Current Version: v1.9.19-beta**
+**Current Version: v1.9.20-beta**
 
 ---
 
@@ -267,7 +267,36 @@ Notes:
 
 ---
 
-## Scoring Backlog (agreed, not yet built)
+## Sell Now Framework — LOCKED (built in league.html)
+Identifies aging vets on rebuilding teams (bottom 8 by dynasty score) with high trade value to contenders now but declining dynasty value in 1–2 years.
+
+### Criteria by position
+| Position | Score | Age | Exp | Depth |
+|----------|-------|-----|-----|-------|
+| WR | 55–84 | 27+ | 6–10 | D1–2 |
+| RB | 55–80 | 26+ | 5–7 | D1–2 |
+| TE | 55–80 | 30+ | 9–12 | TE1–2 |
+| QB | 55–80 | 35+ | 10+ | QB1–2 |
+
+### Urgency levels
+- CRITICAL 🚨 — age 32+/exp 9+ (WR), age 30+/exp 7+ (RB), age 33+/exp 11+ (TE)
+- HIGH 🔥 — standard hit
+- MEDIUM ⚠️ — lower end of criteria
+
+### Notes
+- Both age AND exp must align to trigger (biology + NFL curve)
+- Depth D1–2 only — job secure = better trade value to contenders
+- Target buyers = top 4 teams by dynasty score (contenders with capital)
+- UX: Combined section at bottom of league.html, grouped by position, sorted by urgency then score desc
+
+### Backlog (not yet built)
+- Player pricing (what's a 30yo T2 WR worth in picks/assets)
+- Package logic (1-for-many, many-for-many trade construction)
+- Potential Points API check (unresolved — currently using allocateRoster "not starting" as proxy)
+- Show on profile.html per manager
+- Dedicated Sell Now page (future)
+
+---
 - WR FA caps not yet implemented: WR 100+ AND exp 9+ AND FA → 10 | WR 100+ AND FA → 15 | WR 100+ AND exp 9+ → 18
 - Pick capital scoring (framework locked, not yet in grade)
 - 1QB league QB curve flattening
