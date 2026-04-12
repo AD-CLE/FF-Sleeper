@@ -349,7 +349,7 @@
                     <span class="nav-icon">🔍</span> Manager Profiles
                 </a>
             </div>
-            <span class="nav-version">v1.9.14-beta</span>
+            <span class="nav-version">v1.9.15-beta</span>
         </div>
     </nav>
 
@@ -363,7 +363,7 @@
     <div class="main-content">
         <form class="search-form" id="searchForm">
             <div class="search-container">
-                <input type="text" id="username" class="search-input" placeholder="Enter your Sleeper username...">
+                <input type="text" id="username" class="search-input" placeholder="Enter your Sleeper username..." value="ankurdeora">
             </div>
             <select id="year" class="year-select">
                 <option value="2023">2023</option>
@@ -563,8 +563,7 @@
         // ── PLAYER SCORING ENGINE ──
         function getPosRankNum(posRank) {
             if (!posRank) return 9999;
-            const str = String(posRank);
-            const parts = str.split('_');
+            const parts = posRank.split('_');
             return parseInt(parts[parts.length - 1]) || 9999;
         }
 
