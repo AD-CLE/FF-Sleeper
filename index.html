@@ -563,7 +563,8 @@
         // ── PLAYER SCORING ENGINE ──
         function getPosRankNum(posRank) {
             if (!posRank) return 9999;
-            const parts = posRank.split('_');
+            const str = String(posRank);
+            const parts = str.split('_');
             return parseInt(parts[parts.length - 1]) || 9999;
         }
 
