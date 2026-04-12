@@ -349,7 +349,7 @@
                     <span class="nav-icon">🔍</span> Manager Profiles
                 </a>
             </div>
-            <span class="nav-version">v1.9.14-beta</span>
+            <span class="nav-version">v1.9.16-beta</span>
         </div>
     </nav>
 
@@ -363,7 +363,7 @@
     <div class="main-content">
         <form class="search-form" id="searchForm">
             <div class="search-container">
-                <input type="text" id="username" class="search-input" placeholder="Enter your Sleeper username...">
+                <input type="text" id="username" class="search-input" placeholder="Enter your Sleeper username..." value="ankurdeora">
             </div>
             <select id="year" class="year-select">
                 <option value="2023">2023</option>
@@ -432,8 +432,8 @@
         function getPlayerData(sleeperId) {
             const s = String(sleeperId);
             if (playerLookupCache[s]) return playerLookupCache[s];
-            if (defenseMap[s]) return { sleeperId, playerName: defenseMap[s], position: 'DEF', age: 'N/A', team: s, depthChartPos: 'DEF', depthChartOrder: 1, yearsExp: 0, posRank: 'DEF_001', defaultRank: 9999 };
-            return { sleeperId, playerName: `Unknown (${sleeperId})`, position: 'UNK', age: 'N/A', team: 'N/A', depthChartPos: 'N/A', depthChartOrder: 0, yearsExp: 0, posRank: 'UNK_000', defaultRank: 9999 };
+            if (defenseMap[s]) return { sleeperId, playerName: defenseMap[s], position: 'DEF', age: 'N/A', team: s, depthChartPos: 'DEF', depthChartOrder: 1, yearsExp: 0, posRank: 1, defaultRank: 9999 };
+            return { sleeperId, playerName: `Unknown (${sleeperId})`, position: 'UNK', age: 'N/A', team: 'N/A', depthChartPos: 'N/A', depthChartOrder: 0, yearsExp: 0, posRank: 9999, defaultRank: 9999 };
         }
 
         function getStatusIcon(status) {
@@ -467,7 +467,7 @@
                 const posRank = playerObj.posRank || '';
                 const yearsExp = playerObj.yearsExp;
                 const depthChartOrder = playerObj.depthChartOrder;
-                const posRankNum = posRank ? parseInt(String(posRank).split('_')[1]) : 9999;
+                const posRankNum = posRank ? parseInt(posRank) : 9999;
                 let classification = 'Trade';
 
                 if (position === 'UNK') { classification = 'KEEP'; }
@@ -545,16 +545,6 @@
                 }
             });
 
-            Object.keys(allocation).forEach(playerId => {
-                const record = allocation[playerId];
-                const posRankNum = record.posRank ? parseInt(String(record.posRank).split('_')[1]) : 9999;
-                let isStars = false;
-                if (record.position === 'QB') isStars = positionStarters['QB'] === 1 ? posRankNum <= 6 : posRankNum <= 12;
-                else if (record.position === 'RB' || record.position === 'WR') isStars = posRankNum <= 12;
-                else if (record.position === 'TE') isStars = tepTier === 'Off' ? posRankNum <= 6 : posRankNum <= 12;
-                if (isStars && (record.finalStatus === 'Starter' || record.finalStatus === 'FLEX')) record.finalStatus = '⭐ ' + record.finalStatus;
-            });
-
             return allocation;
         }
 
@@ -562,10 +552,8 @@
 
         // ── PLAYER SCORING ENGINE ──
         function getPosRankNum(posRank) {
-            if (!posRank) return 9999;
-            const str = String(posRank);
-            const parts = str.split('_');
-            return parseInt(parts[parts.length - 1]) || 9999;
+            if (!posRank && posRank !== 0) return 9999;
+            return parseInt(posRank) || 9999;
         }
 
         function getWRBaseScore(rank) {
@@ -915,16 +903,16 @@
             const team = playerObj?.team || 'N/A';
             const ovrRank = playerObj?.defaultRank < 9999 ? playerObj.defaultRank : 'Unranked';
             const posRank = playerObj?.posRank || '';
-            const posNum = posRank ? String(posRank).split('_')[1] : '';
+            const posNum = posRank ? String(posRank) : '';
             const status = alloc?.finalStatus || 'Unknown';
 
             // Calculate dynasty score first — drives star flag
             const dynastyScore = scorePlayer(playerObj);
             const hasDynastyScore = ['WR','RB','TE','QB'].includes(position) && dynastyScore > 0;
 
-            // Star = T1 (score >= 90), independent of old allocation logic
+            // Star = T1 (score >= 90), independent of allocation logic
             const isStar = dynastyScore >= 90;
-            const slotIcon = getStatusIcon(status.replace('⭐ ', '').trim());
+            const slotIcon = getStatusIcon(status);
             const displayIcon = isStar ? `⭐ ${slotIcon}` : slotIcon;
 
             const isOnIR = userRoster.reserve?.includes(playerId);
