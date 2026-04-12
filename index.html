@@ -349,7 +349,7 @@
                     <span class="nav-icon">🔍</span> Manager Profiles
                 </a>
             </div>
-            <span class="nav-version">v1.9.15-beta</span>
+            <span class="nav-version">v1.9.16-beta</span>
         </div>
     </nav>
 
@@ -467,7 +467,7 @@
                 const posRank = playerObj.posRank || '';
                 const yearsExp = playerObj.yearsExp;
                 const depthChartOrder = playerObj.depthChartOrder;
-                const posRankNum = posRank ? parseInt(posRank.split('_')[1]) : 9999;
+                const posRankNum = posRank ? parseInt(String(posRank).split('_')[1]) : 9999;
                 let classification = 'Trade';
 
                 if (position === 'UNK') { classification = 'KEEP'; }
@@ -547,7 +547,7 @@
 
             Object.keys(allocation).forEach(playerId => {
                 const record = allocation[playerId];
-                const posRankNum = record.posRank ? parseInt(record.posRank.split('_')[1]) : 9999;
+                const posRankNum = record.posRank ? parseInt(String(record.posRank).split('_')[1]) : 9999;
                 let isStars = false;
                 if (record.position === 'QB') isStars = positionStarters['QB'] === 1 ? posRankNum <= 6 : posRankNum <= 12;
                 else if (record.position === 'RB' || record.position === 'WR') isStars = posRankNum <= 12;
@@ -915,7 +915,7 @@
             const team = playerObj?.team || 'N/A';
             const ovrRank = playerObj?.defaultRank < 9999 ? playerObj.defaultRank : 'Unranked';
             const posRank = playerObj?.posRank || '';
-            const posNum = posRank ? posRank.split('_')[1] : '';
+            const posNum = posRank ? String(posRank).split('_')[1] : '';
             const status = alloc?.finalStatus || 'Unknown';
 
             // Calculate dynasty score first — drives star flag
