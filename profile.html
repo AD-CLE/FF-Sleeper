@@ -98,7 +98,7 @@
                 <a href="league.html" class="nav-link"><span>🏟️</span> League View</a>
                 <a href="profile.html" class="nav-link active"><span>🔍</span> Manager Profiles</a>
             </div>
-            <span class="nav-version">v1.9.16-beta</span>
+            <span class="nav-version">v1.9.18-beta</span>
         </div>
     </nav>
 
@@ -211,8 +211,8 @@
             const skillPlayers = players.filter(p => ['QB','RB','WR','TE'].includes(p.data.position));
 
             const totalScore = skillPlayers.reduce((s,p) => s+p.score, 0);
-            const t1 = skillPlayers.filter(p => p.score >= 85).length;
-            const t2 = skillPlayers.filter(p => p.score >= 60 && p.score < 85).length;
+            const t1 = skillPlayers.filter(p => p.score >= 90).length;
+            const t2 = skillPlayers.filter(p => p.score >= 60 && p.score < 90).length;
             const t3 = skillPlayers.filter(p => p.score >= 35 && p.score < 60).length;
             const t4 = skillPlayers.filter(p => p.score > 0 && p.score < 35).length;
 
@@ -425,10 +425,10 @@
                         ${tendBar('T1', tierPct.T1, '#fbbf24')}
                         ${tendBar('T2', tierPct.T2, '#34d399')}
                         ${tendBar('T3', tierPct.T3, '#94a3b8')}
-                        ${tendBar('T4', tierPct.T4, '#475569')}
+                        ${tendBar('T4', tierPct.T4, '#64748b')}
                     </div>
                 </div>
-                <div style="font-size:0.72rem;color:#334155;margin-top:0.5rem;">Aggregated across ${totalLeagues} selected leagues · T1=85+ · T2=60-84 · T3=35-59 · T4=1-34</div>
+                <div style="font-size:0.72rem;color:#334155;margin-top:0.5rem;">Aggregated across ${totalLeagues} selected leagues · T1=90+ · T2=60-89 · T3=35-59 · T4=1-34</div>
             </div>`;
 
             // Format tendencies
@@ -603,10 +603,10 @@
                         ${tendBar('T1', tierPct.T1, '#fbbf24')}
                         ${tendBar('T2', tierPct.T2, '#34d399')}
                         ${tendBar('T3', tierPct.T3, '#94a3b8')}
-                        ${tendBar('T4', tierPct.T4, '#475569')}
+                        ${tendBar('T4', tierPct.T4, '#64748b')}
                     </div>
                 </div>
-                <div style="font-size:0.72rem;color:#334155;margin-top:0.5rem;">Aggregated across ${totalLeagues} selected leagues · T1=85+ · T2=60-84 · T3=35-59 · T4=1-34</div>
+                <div style="font-size:0.72rem;color:#334155;margin-top:0.5rem;">Aggregated across ${totalLeagues} selected leagues · T1=90+ · T2=60-89 · T3=35-59 · T4=1-34</div>
             </div>`;
 
             // Format tendencies

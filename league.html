@@ -321,7 +321,7 @@
                     <span>🔍</span> Manager Profiles
                 </a>
             </div>
-            <span class="nav-version">v1.9.16-beta</span>
+            <span class="nav-version">v1.9.18-beta</span>
         </div>
     </nav>
 
@@ -689,8 +689,124 @@
             return html || '<span style="color:#475569;font-size:0.8rem">No future picks</span>';
         }
 
+        function getStatusIcon(status) {
+            if (status.includes('Starter') || status.includes('FLEX')) return '🎯';
+            if (status === 'Bench') return '🪑';
+            if (status === 'Trade') return '🔀';
+            if (status === 'Cut') return '🗑️';
+            return '';
+        }
+
+        function allocateRoster(roster, league, tepTier) {
+            if (!roster.players || roster.players.length === 0) return {};
+            const rosterSlots = {};
+            league.roster_positions?.forEach(pos => { rosterSlots[pos] = (rosterSlots[pos] || 0) + 1; });
+            const positionStarters = {
+                'QB': (rosterSlots['QB'] || 0) + (rosterSlots['SUPER_FLEX'] || 0),
+                'RB': rosterSlots['RB'] || 0, 'WR': rosterSlots['WR'] || 0,
+                'TE': rosterSlots['TE'] || 0, 'K': rosterSlots['K'] || 0,
+                'DEF': rosterSlots['DEF'] || 0, 'FLEX': rosterSlots['FLEX'] || 0,
+                'SUPER_FLEX': rosterSlots['SUPER_FLEX'] || 0
+            };
+            const classified = {'KEEP': [], 'Trade': [], 'Cut': []};
+            const allocation = {};
+
+            roster.players.forEach(playerId => {
+                const playerObj = getPlayerData(playerId);
+                if (!playerObj) return;
+                const position = playerObj.position;
+                const defaultRank = playerObj.defaultRank;
+                const posRank = playerObj.posRank || '';
+                const yearsExp = playerObj.yearsExp;
+                const depthChartOrder = playerObj.depthChartOrder;
+                const posRankNum = posRank ? parseInt(posRank) : 9999;
+                let classification = 'Trade';
+
+                if (position === 'UNK') { classification = 'KEEP'; }
+                else if (position === 'QB') {
+                    if (positionStarters['QB'] === 1) {
+                        const allQBs = roster.players.map(id => ({ id, rank: getPlayerData(id)?.defaultRank || 9999, yearsExp: getPlayerData(id)?.yearsExp || 0 })).filter(q => getPlayerData(q.id)?.position === 'QB').sort((a, b) => a.rank - b.rank);
+                        const qbRankIndex = allQBs.findIndex(q => q.id === playerId);
+                        if (qbRankIndex <= 2) { classification = 'KEEP'; }
+                        else { classification = allQBs[qbRankIndex].yearsExp < 2 ? 'Trade' : 'Cut'; }
+                    } else {
+                        if (depthChartOrder === 1) classification = 'KEEP';
+                        else if (depthChartOrder === 2) classification = 'Trade';
+                        else if (depthChartOrder >= 3) classification = yearsExp < 4 ? 'Trade' : 'Cut';
+                        else classification = yearsExp === 0 ? 'Trade' : 'Cut';
+                    }
+                } else if (position === 'RB' || position === 'TE') {
+                    if (depthChartOrder === 1) classification = 'KEEP';
+                    else if (depthChartOrder === 2) classification = yearsExp < 4 ? 'KEEP' : 'Trade';
+                    else if (depthChartOrder >= 3) { if (yearsExp < 2) classification = 'KEEP'; else if (defaultRank <= 300) classification = 'Trade'; else classification = 'Cut'; }
+                    else classification = yearsExp === 0 ? 'Trade' : 'Cut';
+                    if (position === 'TE' && tepTier === 'Off') {
+                        if (depthChartOrder === 1) { classification = 'KEEP'; }
+                        else { classification = posRankNum <= 2 ? 'KEEP' : (defaultRank <= 200 || yearsExp === 0 ? 'Trade' : 'Cut'); }
+                    }
+                } else if (position === 'WR') {
+                    classification = (defaultRank > 120 && yearsExp > 4 && depthChartOrder > 3) ? 'Cut' : 'KEEP';
+                } else if (position === 'K' || position === 'DEF') {
+                    if (depthChartOrder === 1) { classification = 'KEEP'; }
+                    else { classification = posRankNum <= 6 ? 'Bench' : 'Cut'; }
+                }
+                allocation[playerId] = { position, classification, defaultRank, posRank, yearsExp, depthChartOrder, finalStatus: null };
+                classified[classification] = classified[classification] || [];
+                classified[classification].push(playerId);
+            });
+
+            Object.keys(classified).forEach(c => { classified[c].sort((a, b) => (getPlayerData(a)?.defaultRank || 9999) - (getPlayerData(b)?.defaultRank || 9999)); });
+
+            const assigned = new Set();
+            const positions = ['QB', 'RB', 'WR', 'TE', 'K', 'DEF'];
+            positions.forEach(pos => {
+                const slots = positionStarters[pos] || 0;
+                for (let i = 0; i < slots; i++) {
+                    const keepPlayer = classified['KEEP'].find(id => getPlayerData(id)?.position === pos && !assigned.has(id));
+                    if (keepPlayer) { allocation[keepPlayer].finalStatus = 'Starter'; assigned.add(keepPlayer); continue; }
+                    const tradePlayer = classified['Trade'].find(id => getPlayerData(id)?.position === pos && !assigned.has(id));
+                    if (tradePlayer) { allocation[tradePlayer].finalStatus = 'Starter'; assigned.add(tradePlayer); }
+                }
+            });
+
+            const flexSlots = positionStarters['FLEX'] || 0;
+            for (let i = 0; i < flexSlots; i++) {
+                const flexEligible = ['RB', 'WR', 'TE'];
+                const fp = classified['KEEP'].find(id => flexEligible.includes(getPlayerData(id)?.position) && !assigned.has(id));
+                if (fp) { allocation[fp].finalStatus = 'FLEX'; assigned.add(fp); }
+                else {
+                    const ft = classified['Trade'].find(id => flexEligible.includes(getPlayerData(id)?.position) && !assigned.has(id));
+                    if (ft) { allocation[ft].finalStatus = 'FLEX'; assigned.add(ft); }
+                }
+            }
+
+            const totalRosterSlots = league.roster_positions?.length || 22;
+            const benchSlots = Math.max(0, totalRosterSlots - assigned.size);
+            for (let i = 0; i < benchSlots; i++) {
+                const bk = classified['KEEP'].find(id => !assigned.has(id));
+                if (bk) { allocation[bk].finalStatus = 'Bench'; assigned.add(bk); continue; }
+                const bt = classified['Trade'].find(id => !assigned.has(id));
+                if (bt) { allocation[bt].finalStatus = 'Bench'; assigned.add(bt); }
+            }
+
+            roster.players.forEach(playerId => {
+                if (!assigned.has(playerId)) {
+                    const record = allocation[playerId];
+                    record.finalStatus = record.classification === 'Cut' ? 'Cut' : 'Trade';
+                }
+            });
+
+            return allocation;
+        }
+
         function renderLeague(league, rosters, userMap, tradedPicks, rosterMap) {
             const scoring = getScoringLabel(league);
+
+            // Compute tepTier once — same for all 12 teams
+            const scoringSettings = league.scoring_settings || {};
+            const bonusRecTe = parseFloat(scoringSettings.bonus_rec_te) || 0;
+            const tepTier = bonusRecTe === 0 ? 'Off' : (bonusRecTe <= 1 ? 'TEP' : 'TEP+');
+
             let html = `<div class="league-info-bar">
                 <div>
                     <div class="league-info-name">${league.name}</div>
@@ -716,8 +832,6 @@
                 const losses = roster.settings?.losses || 0;
                 const pf = roster.settings?.fpts ? parseFloat(roster.settings.fpts).toFixed(1) : '—';
 
-
-
                 // T1 players (dynasty score >= 90) sorted by score desc
                 const allScoredPlayers = (roster.players || [])
                     .map(id => ({ id, data: getPlayerData(id), score: scorePlayer(getPlayerData(id)) }))
@@ -725,6 +839,9 @@
                 const t1Players = allScoredPlayers
                     .filter(p => p.score >= 90)
                     .sort((a,b) => b.score - a.score);
+
+                // Run full allocation for this roster (same league slots for all teams)
+                const allocation = allocateRoster(roster, league, tepTier);
 
                 html += `<div class="team-card" id="team-card-${idx}">
                     <div class="team-card-header">
@@ -736,7 +853,6 @@
                     html += `<div class="team-avatar-placeholder">👤</div>`;
                 }
 
-                const username = user.display_name ? user.username || '' : '';
                 html += `<div class="team-info">
                                 <div class="team-name">${teamName}</div>
                                 <div class="team-manager"><a href="profile.html?user=${user.username || ''}" style="color:#94a3b8;text-decoration:none;" onmouseover="this.style.color='#fbbf24'" onmouseout="this.style.color='#94a3b8'">@${managerName} →</a></div>
@@ -769,7 +885,7 @@
                     <button class="expand-btn" onclick="toggleRoster(${idx})">▼ Full roster</button>
 
                     <div class="roster-detail hidden" id="roster-detail-${idx}">
-                        ${renderRosterDetail(roster)}
+                        ${renderRosterDetail(roster, allocation)}
                     </div>
                 </div>`;
             });
@@ -786,7 +902,7 @@
             </div>`;
         }
 
-        function renderRosterDetail(roster) {
+        function renderRosterDetail(roster, allocation) {
             if (!roster.players || roster.players.length === 0) return '<p style="color:#475569;font-size:0.82rem;">No players found.</p>';
 
             const byPos = {};
@@ -805,14 +921,22 @@
                 byPos[pos].sort((a,b) => (a.data.defaultRank||9999)-(b.data.defaultRank||9999)).forEach(({id, data}) => {
                     const isIR = roster.reserve?.includes(id);
                     const isTaxi = roster.taxi?.includes(id);
-                    const flag = isIR ? ' 💔' : isTaxi ? ' 🚕' : '';
+                    const slotFlag = isIR ? ' 💔' : isTaxi ? ' 🚕' : '';
                     const dynScore = scorePlayer(data);
-                    const scoreCol = dynScore >= 90 ? '#fbbf24' : dynScore >= 60 ? '#34d399' : dynScore >= 35 ? '#94a3b8' : '#475569';
+                    const isStar = dynScore >= 90;
+                    const alloc = allocation[id];
+                    const status = alloc?.finalStatus || '';
+                    const slotIcon = getStatusIcon(status);
+                    const displayIcon = isStar ? `⭐ ${slotIcon}` : slotIcon;
+
+                    const scoreCol = dynScore >= 90 ? '#fbbf24' : dynScore >= 60 ? '#34d399' : dynScore >= 35 ? '#94a3b8' : '#64748b';
+                    const borderCol = dynScore > 0 ? scoreCol : '#334155';
                     const scoreDisplay = dynScore > 0 ? dynScore : (data.defaultRank < 9999 ? 'OVR #' + data.defaultRank : '—');
-                    html += `<div class="player-row">
+
+                    html += `<div class="player-row" style="border-left:3px solid ${borderCol};padding-left:0.5rem;">
                         <div>
-                            <div class="player-row-name">${data.playerName || id}${flag}</div>
-                            <div class="player-row-meta">${data.team || ''} · Age ${data.age || '?'}</div>
+                            <div class="player-row-name">${displayIcon}${slotFlag} ${data.playerName || id}</div>
+                            <div class="player-row-meta">${data.team || ''} · Age ${data.age || '?'} · Exp ${data.yearsExp ?? '?'}yr · Depth #${data.depthChartOrder || '?'}</div>
                         </div>
                         <div class="player-row-rank" style="color:${scoreCol}">${scoreDisplay}</div>
                     </div>`;

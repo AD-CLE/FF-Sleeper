@@ -7,7 +7,7 @@ No frameworks, no build tools — vanilla everything.
 
 **Live URL:** https://ad-cle.github.io/FF-Sleeper/
 **Repo:** https://github.com/ad-cle/FF-Sleeper
-**Current Version: v1.9.16-beta**
+**Current Version: v1.9.18-beta**
 
 ---
 
@@ -34,9 +34,9 @@ FF-Sleeper/
 ---
 
 ## Change Rules
-- Cosmetic/small UI changes — can build and output without confirmation
-- Logic changes — always discuss and confirm before writing any code
-- New features — confirm plan first, then build
+- 🚨 GOLDEN RULE: Before writing any code, Claude must output a confirmation request in this exact format: "Ready to build: [summary of changes]. Confirm?" and stop. No code is written until the user explicitly replies yes.
+- This applies to ALL changes — logic, cosmetic, one-liners, cleanups, and anything bundled with an approved change. No exceptions.
+- If Claude recognizes mid-plan that an additional change is needed, it must stop, describe it, and get confirmation before proceeding.
 - Always confirm before outputting a new file
 - Output updated CLAUDE.md at the end of every session
 
@@ -60,11 +60,10 @@ FF-Sleeper/
   - GET /v1/league/league_id/traded_picks
   - GET /v1/league/league_id/drafts
 - players.json — local player data file, loaded via fetch('players.json')
-  - Format: { "players": [ {...}, {...} ] }
+  - Format: raw JSON array [ {...}, {...} ] — no wrapper object
   - 528 players, sourced from Excel master on Dropbox, exported via EasyMorph
-  - Columns: SLEEPER_ID, PLAYER_NAME, POSITION, AGE, TEAM, DEPTH_CHART_POS, DEPTH_CHART_ORDER, YEARS_EXP, POS_RANK, Default_Rank
+  - Columns: SLEEPER_ID, PLAYER_NAME, POSITION, AGE, TEAM, COLLEGE, DEPTH_CHART_POS, DEPTH_CHART_ORDER, YEARS_EXP, FANTASY_POSITIONS, POS_RANK, DEFAULT_RANK, DynastyNerds_SFTEP_Rk, DynastyNerds_SFTEP_Value, FantasyPros_Dynasty_Rk
   - "a": null sentinel column is intentional — detects new fields
-  - COLLEGE column — not yet added, needed for college bias feature
 
 ## EasyMorph Export Settings
 - Encoding: UTF-8, Don't write BOM ✅, Wrap in quotes: Never, Don't write column headers ✅
@@ -91,7 +90,7 @@ FF-Sleeper/
 - T1 players shown on each card (all 90+ players, sorted by score desc)
 - Full pick inventory per team
 - @manager link → profile.html?user=username
-- Roster detail shows dynasty scores (color coded)
+- Roster detail shows dynasty scores (color coded) + full slot icons (⭐🎯🪑🔀🗑️💔🚕) via full allocateRoster() logic
 - Teams sorted by total dynasty score descending
 - Grade labels (Contender/Middling/Rebuilding/Oblivious) removed pending score validation
 
@@ -251,37 +250,22 @@ Notes:
 
 ---
 
-## Allocation Logic (index.html) — Current State
+## Allocation Logic — Current State
 - allocateRoster() assigns KEEP/Trade/Cut then Starter/FLEX/Bench/Trade/Cut based on roster slots
-- positionStarters is a GLOBAL variable — causes state issues if run for multiple teams
-- Star flag now driven by score >= 90 (T1), NOT by old pos-rank thresholds
+- positionStarters is a LOCAL variable inside allocateRoster() — fixed, no longer a global
+- Star flag driven by score >= 90 (T1), stacks with slot icon: ⭐🎯 = Star + Starter
 - Status icons: ⭐ Star (score>=90) stacks with 🎯 Starter | 🪑 Bench | 🔀 Trade | 🗑️ Cut
+- league.html: tepTier and positionStarters computed ONCE per league (all 12 teams share same slots), passed into allocateRoster() per roster
 
-## Next Up — Consistency Pass (confirmed plan)
-- Merge allocation logic with scoring engine — score drives Trade/Cut recommendation
-- Add slot icons (🎯🪑🔀🗑️) to league.html roster detail using score-driven Option A:
-  - 90+ = ⭐ Star
-  - 60-89 = 🎯 Startable
-  - 35-59 = 🪑 Bench/depth
-  - 1-34 = 🔀 Trade candidate
-  - 0 = 🗑️ Cut
-- Fix positionStarters global variable issue before extending to multi-team views
-
----
-
-## Sell Now Analysis — LOCKED (league.html only, v1.9.15-beta)
-
-**Framework:**
-- **Identification:** Players age 27+, exp 5–10, score 55–84, D1–2 depth on rebuilding teams (score <70)
-- **Display:** 📉 icon in roster detail + "Sell Now Candidates" section at bottom of league page, sorted by score descending
-- **Signal:** HIGH (age 27-29, exp 5-7) or CRITICAL (age 30+, exp 8+)
-- **Use case:** Rebuilders identify aging vets with peak trade value to contenders; contenders see who to target
-
-**Status:** ✅ Implemented in league.html
+## Allocation Logic Rules — ALWAYS follow
+- ALWAYS use the full allocateRoster() slot-counting logic for status icons — never use score-only icon mapping as a shortcut
+- Score-only mapping (90+=⭐, 60-89=🎯 etc.) is explicitly rejected — it ignores actual roster construction
+- league.html computes league slot counts once, runs allocateRoster() once per team
 
 ---
 
 ## Scoring Backlog (agreed, not yet built)
+- WR FA caps not yet implemented: WR 100+ AND exp 9+ AND FA → 10 | WR 100+ AND FA → 15 | WR 100+ AND exp 9+ → 18
 - Pick capital scoring (framework locked, not yet in grade)
 - 1QB league QB curve flattening
 - Rushing QB multiplier (needs IS_RUSHING_QB in players.json)
@@ -296,53 +280,22 @@ Notes:
 
 ---
 
-## Pick Scoring Framework — LOCKED (0-99 scale, manual override expected)
-
-### 2026 Draft Picks (12-team league)
-
-**Round 1 (granular):**
-| Slot | Score |
-|------|-------|
-| 1.01 | 90 |
-| 1.02 | 78 |
-| 1.03 | 76 |
-| 1.04 | 74 |
-| 1.05 | 72 |
-| 1.06 | 70 |
-| 1.07 | 68 |
-| 1.08 | 66 |
-| 1.09 | 64 |
-| 1.10 | 62 |
-| 1.11 | 60 |
-| 1.12 | 58 |
-
-**Round 2 (split by half):**
-| Half | Score |
-|------|-------|
-| Picks 2.01-2.06 (first half) | 45 |
-| Picks 2.07-2.12 (second half) | 40 |
-
-**Round 3-4 (flat by round):**
-| Round | Score |
-|-------|-------|
-| Rd 3 (all picks) | 30 |
-| Rd 4 (all picks) | 20 |
-
-### 2027-2028 (tiered framework)
-
-| Pick | Score |
-|------|-------|
-| 2027 1st (orig 1.01-1.04) | 75 |
-| 2027 1st (orig 1.05-1.12) | 60 |
-| 2027 Rd 2 | 45 |
+## Pick Scoring Framework — LOCKED (not yet in grade logic)
+| Pick | Points |
+|------|--------|
+| 2026 1.01 | 20 |
+| 2026 1.02-1.05 | 15 |
+| 2026 1.06-1.09 | 10 |
+| 2026 1.10-1.12 | 4 |
+| 2026 Rd 2 | 3 |
+| 2026 Rd 3-4 | 1 |
+| 2027 1st top tier (orig picks 1.01-1.04) | 15 |
+| 2027 1st mid tier (orig picks 1.05-1.08) | 10 |
+| 2027 1st low tier (orig picks 1.09-1.12) | 6 |
+| 2027 Rd 2 | 4 |
 | 2027 Rd 3-4 | 0 |
-| 2028 any 1st | 60 |
+| 2028 any 1st | 10 |
 | 2028 Rd 2+ | 0 |
-
-**Notes:**
-- Scores map to 0-99 player tier scale (blends directly into team grade)
-- Manual override expected — market conditions, trade urgency, team need shift values
-- Original slot tiers preserved for traded picks (2027 1st tracks back to original slot)
 
 ---
 
@@ -389,36 +342,8 @@ Note: GothamCityToymen co-owner user_id 1264427906721914880 — not in draft_ord
 - Accent: #fbbf24 (amber/gold)
 - Font: system-apple/Segoe UI stack
 - Nav: sticky, rgba(10,16,30,0.95), amber brand color
-- Score colors: T1 amber #fbbf24 | T2 green #34d399 | T3 slate #94a3b8 | T4 orange #f97316 | 0 red #ef4444
+- Score colors: T1 amber #fbbf24 | T2 green #34d399 | T3 slate #94a3b8 | T4 gray #64748b | 0 red #ef4444
 - Status colors: green #34d399 starters | orange #f97316 trade | red #ef4444 cut
-
----
-
-## Changelog — v1.9.16-beta
-
-**Fixes:**
-- Fixed `posRank.split()` TypeError in index.html (3 locations: lines 470, 550, 918) — converted to String before split
-- Fixed `posRank.split()` TypeError in profile.html (line 170) — converted to String before split
-
-**Features Added:**
-- ✅ Pick Scoring Framework (0-99 scale, ready for all pages)
-  - 2026 Round 1: granular scoring (1.01=90, 1.02=78, ... 1.12=58)
-  - 2026 Round 2: split (2.01-2.06=45, 2.07-2.12=40)
-  - 2026 Rd 3=30, Rd 4=20
-  - 2027: 1st (orig 1.01-1.04)=75, 1st (orig 1.05-1.12)=60, Rd 2=45, Rd 3-4=0
-  - 2028+: any 1st=60, Rd 2+=0
-  - Integrated into league.html team grading
-- ✅ Sell Now Candidates (league.html only)
-  - Identifies aging vets on rebuilding teams (age 27+, exp 5-10, score 55-84, D1-2 depth)
-  - 📉 icon in roster detail next to candidates
-  - "Sell Now Candidates" section at bottom of league page, sorted by score descending
-  - Signal urgency: HIGH (age 27-29, exp 5-7) or CRITICAL (age 30+, exp 8+)
-- ✅ Removed default auto-populate values
-  - index.html: removed value="ankurdeora" from username input
-  - league.html: removed value="1313956225737580544" from league ID input + removed auto-load
-  - profile.html: removed value="ankurdeora" from username input
-
-**Status:** All files ready for GitHub push
 
 ---
 

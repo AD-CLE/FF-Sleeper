@@ -349,7 +349,7 @@
                     <span class="nav-icon">🔍</span> Manager Profiles
                 </a>
             </div>
-            <span class="nav-version">v1.9.16-beta</span>
+            <span class="nav-version">v1.9.18-beta</span>
         </div>
     </nav>
 
@@ -386,7 +386,6 @@
         const searchBtn = document.getElementById('searchBtn');
 
         let playerLookupCache = {};
-        let positionStarters = {};
 
         async function loadPlayerLookup() {
             if (Object.keys(playerLookupCache).length > 0) return;
@@ -449,7 +448,7 @@
             if (!userRoster.players || userRoster.players.length === 0) return {};
             const rosterSlots = {};
             league.roster_positions?.forEach(pos => { rosterSlots[pos] = (rosterSlots[pos] || 0) + 1; });
-            positionStarters = {
+            const positionStarters = {
                 'QB': (rosterSlots['QB'] || 0) + (rosterSlots['SUPER_FLEX'] || 0),
                 'RB': rosterSlots['RB'] || 0, 'WR': rosterSlots['WR'] || 0,
                 'TE': rosterSlots['TE'] || 0, 'K': rosterSlots['K'] || 0,
@@ -934,7 +933,7 @@
             const scoreColor = dynastyScore >= 90 ? '#fbbf24'
                 : dynastyScore >= 60 ? '#34d399'
                 : dynastyScore >= 35 ? '#94a3b8'
-                : dynastyScore > 0 ? '#f97316'
+                : dynastyScore > 0 ? '#64748b'
                 : '#ef4444';
 
             // Border color — use score color for scored positions, status color for others
