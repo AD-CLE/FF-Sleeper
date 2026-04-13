@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sell Now — Full Diagnostic</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            padding: 2rem 1.5rem;
+            color: #cbd5e1;
+        }
+        h1 { color: #fbbf24; font-size: 1.5rem; margin-bottom: 0.25rem; }
+        .subtitle { color: #475569; font-size: 0.85rem; margin-bottom: 2rem; }
+        .summary { display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; }
+        .summary-pill {
+            padding: 0.4rem 1rem;
+            border-radius: 99px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .pos-section { margin-bottom: 2rem; }
+        .pos-header {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #475569;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.4rem;
+            border-bottom: 1px solid #1e293b;
+        }
+        .player-row {
+            display: grid;
+            grid-template-columns: 80px 1fr 80px 60px 60px 60px 90px;
+            gap: 0.75rem;
+            align-items: center;
+            padding: 0.6rem 0.75rem;
+            border-radius: 0.375rem;
+            margin-bottom: 0.35rem;
+            background: rgba(30,41,59,0.6);
+            font-size: 0.82rem;
+        }
+        .player-row:hover { background: rgba(30,41,59,1); }
+        .urgency-badge {
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 0.2rem 0.5rem;
+            border-radius: 99px;
+            text-align: center;
+        }
+        .CRITICAL { background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
+        .HIGH     { background: rgba(249,115,22,0.2); color: #f97316; border: 1px solid rgba(249,115,22,0.3); }
+        .MEDIUM   { background: rgba(251,191,36,0.2); color: #fbbf24; border: 1px solid rgba(251,191,36,0.3); }
+        .score { font-weight: 700; }
+        .col-label { font-size: 0.68rem; color: #334155; text-transform: uppercase; letter-spacing: 0.05em; }
+        .header-row {
+            display: grid;
+            grid-template-columns: 80px 1fr 80px 60px 60px 60px 90px;
+            gap: 0.75rem;
+            padding: 0.3rem 0.75rem;
+            margin-bottom: 0.4rem;
+        }
+        .loading { color: #475569; padding: 2rem 0; }
+        .total-count { color: #94a3b8; font-size: 0.8rem; margin-bottom: 0.5rem; }
+    </style>
+</head>
+<body>
+
+<h1>⏰ Sell Now — Full Diagnostic</h1>
+<p class="subtitle">All qualifying players from players.json · No team/league filter · Sorted by urgency then score desc</p>
+
+<div id="summary" class="summary"></div>
+<div id="output"><p class="loading">Loading players.json...</p></div>
+
+<script src="utils.js"></script>
+<script>
+    const urgencyOrder = { CRITICAL: 0, HIGH: 1, MEDIUM: 2 };
+    const urgencyEmoji = { CRITICAL: '🚨', HIGH: '🔥', MEDIUM: '⚠️' };
+
+    async function run() {
+        await loadPlayerLookup();
+
+        const all = Object.values(playerLookupCache);
+        const results = [];
+
+        all.forEach(player => {
+            const signal = getSellNowSignal(player);
+            if (!signal) return;
+            results.push({ player, signal });
+        });
+
+        // Sort: position order, then urgency, then score desc
+        const posOrder = ['WR', 'RB', 'TE', 'QB'];
+        results.sort((a, b) => {
+            const pA = posOrder.indexOf(a.player.position);
+            const pB = posOrder.indexOf(b.player.position);
+            if (pA !== pB) return pA - pB;
+            if (urgencyOrder[a.signal.urgency] !== urgencyOrder[b.signal.urgency])
+                return urgencyOrder[a.signal.urgency] - urgencyOrder[b.signal.urgency];
+            return b.signal.score - a.signal.score;
+        });
+
+        // Summary pills
+        const counts = { CRITICAL: 0, HIGH: 0, MEDIUM: 0 };
+        results.forEach(r => counts[r.signal.urgency]++);
+        const summaryEl = document.getElementById('summary');
+        summaryEl.innerHTML = `
+            <span class="summary-pill" style="background:rgba(148,163,184,0.1);color:#94a3b8;border:1px solid #334155;">Total: ${results.length}</span>
+            <span class="summary-pill CRITICAL">🚨 CRITICAL: ${counts.CRITICAL}</span>
+            <span class="summary-pill HIGH">🔥 HIGH: ${counts.HIGH}</span>
+            <span class="summary-pill MEDIUM">⚠️ MEDIUM: ${counts.MEDIUM}</span>
+        `;
+
+        // Group by position
+        const byPos = {};
+        results.forEach(r => {
+            const pos = r.player.position;
+            if (!byPos[pos]) byPos[pos] = [];
+            byPos[pos].push(r);
+        });
+
+        let html = '';
+        posOrder.forEach(pos => {
+            if (!byPos[pos] || byPos[pos].length === 0) return;
+            html += `<div class="pos-section">
+                <div class="pos-header">${pos} — ${byPos[pos].length} players</div>
+                <div class="header-row">
+                    <span class="col-label">Urgency</span>
+                    <span class="col-label">Player</span>
+                    <span class="col-label">Team</span>
+                    <span class="col-label">Score</span>
+                    <span class="col-label">Age</span>
+                    <span class="col-label">Exp</span>
+                    <span class="col-label">Depth</span>
+                </div>`;
+
+            byPos[pos].forEach(({ player, signal }) => {
+                const scoreColor = signal.score >= 75 ? '#34d399' : signal.score >= 60 ? '#94a3b8' : '#64748b';
+                html += `<div class="player-row">
+                    <span class="urgency-badge ${signal.urgency}">${urgencyEmoji[signal.urgency]} ${signal.urgency}</span>
+                    <span style="color:white;font-weight:600;">${player.playerName}</span>
+                    <span style="color:#64748b;">${player.team || '—'}</span>
+                    <span class="score" style="color:${scoreColor}">${signal.score}</span>
+                    <span>${signal.age}</span>
+                    <span>${signal.exp}yr</span>
+                    <span style="color:#94a3b8;">D${signal.depth}</span>
+                </div>`;
+            });
+
+            html += `</div>`;
+        });
+
+        document.getElementById('output').innerHTML = html;
+    }
+
+    run();
+</script>
+</body>
+</html>
