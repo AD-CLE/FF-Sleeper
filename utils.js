@@ -1,4 +1,4 @@
-// ── FF-Sleeper Shared Utilities ── v1.9.22-beta
+// ── FF-Sleeper Shared Utilities ── v1.9.23-beta
 
 // ── PLAYER LOOKUP ──
 
@@ -293,9 +293,14 @@ function allocateRoster(roster, league, tepTier) {
         classified[classification].push(playerId);
     });
 
-    // Sort each bucket by defaultRank ascending (best players first)
+    // Sort each bucket by score desc, posRank asc as tiebreaker
     Object.keys(classified).forEach(c => {
-        classified[c].sort((a, b) => (getPlayerData(a)?.defaultRank || 9999) - (getPlayerData(b)?.defaultRank || 9999));
+        classified[c].sort((a, b) => {
+            const scoreA = scorePlayer(getPlayerData(a));
+            const scoreB = scorePlayer(getPlayerData(b));
+            if (scoreB !== scoreA) return scoreB - scoreA;
+            return (getPosRankNum(getPlayerData(a)?.posRank) || 9999) - (getPosRankNum(getPlayerData(b)?.posRank) || 9999);
+        });
     });
 
     const assigned = new Set();

@@ -4,6 +4,21 @@ All versions, decisions, and session notes. Append-only — newest at top.
 
 ---
 
+## v1.9.23-beta — 2026-04-12 @ ~11:59 PM EST
+
+### Changes
+- `utils.js` — `allocateRoster()` bucket sort updated: score descending (primary), posRank ascending (tiebreaker)
+
+### Decisions
+- Sort should reflect engine output (score) not raw data field (defaultRank)
+- posRank is always distinct — reliable tiebreaker that never produces a tie
+
+### Why
+- defaultRank sort ignored exp/depth modifier — two players with same defaultRank but different depth/exp would sort arbitrarily
+- Score is the correct representation of player value within a roster context
+
+---
+
 ## v1.9.22-beta — 2026-04-12 @ ~11:55 PM EST
 
 ### Changes
