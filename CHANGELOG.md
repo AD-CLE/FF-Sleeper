@@ -4,6 +4,31 @@ All versions, decisions, and session notes. Append-only — newest at top.
 
 ---
 
+## v1.9.24-beta — 2026-04-13 @ ~12:30 AM EST
+
+### Changes
+- `utils.js` — full rewrite: engine.js promoted as new utils.js, old utils.js retired
+- `utils.js` — `getSellNowSignal()` merged in from old utils.js
+- `utils.js` — `getTier()` updated to return numeric (1/2/3/4/0) not strings ('T1'/'T2')
+- `utils.js` — `dynastyGrade()` updated to match numeric tier comparisons
+- `utils.js` — `allocateRoster()` sort updated: score desc, posRank asc tiebreaker
+- `utils.js` — now includes `computePositionStarters()`, `dynastyGrade()`, `getStatusIcon()`, full pick scoring (`scorePick()`, `scorePickInventory()`, `DRAFT_ORDER_2026`)
+- `engine.js` — retired, no longer used
+
+### Decisions
+- engine.js was the more complete/advanced file — promoted as the single JS file
+- utils.js was the file all HTML pages loaded — engine.js content adopted into utils.js name
+- getTier() returns numbers not strings for consistency with all HTML page comparisons
+- One JS file, one source of truth — no more duplication between engine.js and utils.js
+
+### Why
+- engine.js and utils.js had significant duplication with diverging implementations
+- engine.js had pick scoring, computePositionStarters, dynastyGrade with player array — utils.js did not
+- utils.js had getSellNowSignal and updated RB two-window logic — engine.js did not
+- Merger eliminates the split permanently
+
+---
+
 ## v1.9.23-beta — 2026-04-12 @ ~11:59 PM EST
 
 ### Changes
