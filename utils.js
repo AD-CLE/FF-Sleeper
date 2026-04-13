@@ -1,4 +1,4 @@
-// ── FF-Sleeper Shared Utilities ── v1.9.20-beta
+// ── FF-Sleeper Shared Utilities ── v1.9.21-beta
 
 // ── PLAYER LOOKUP ──
 
@@ -360,9 +360,18 @@ function getSellNowSignal(player) {
             urgency = (age >= 32 || exp >= 9) ? 'CRITICAL' : (age >= 30 || exp >= 7) ? 'HIGH' : 'MEDIUM';
         }
     } else if (pos === 'RB') {
-        if (score >= 55 && score <= 80 && age >= 26 && exp >= 5 && exp <= 7) {
+        // Score 0 = cut, no trade value
+        if (score === 0) return null;
+        // Window 1 — Approaching cliff: exp 5-7, age 26-29, D1-D2
+        const w1 = exp >= 5 && exp <= 7 && age >= 26 && age <= 29;
+        // Window 2 — On the cliff: exp 8+, age 29+, D1-D2
+        const w2 = exp >= 8 && age >= 29;
+        if (w2) {
             hit = true;
-            urgency = (age >= 30 || exp >= 7) ? 'CRITICAL' : (age >= 28 || exp >= 6) ? 'HIGH' : 'MEDIUM';
+            urgency = score >= 60 ? 'HIGH' : 'CRITICAL';
+        } else if (w1) {
+            hit = true;
+            urgency = score >= 75 ? 'MEDIUM' : score >= 60 ? 'HIGH' : 'MEDIUM';
         }
     } else if (pos === 'TE') {
         if (score >= 55 && score <= 80 && age >= 30 && exp >= 9 && exp <= 12) {
