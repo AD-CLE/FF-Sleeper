@@ -4,6 +4,48 @@ All versions, decisions, and session notes. Append-only — newest at top.
 
 ---
 
+## v1.9.22-beta — 2026-04-12 @ ~11:55 PM EST
+
+### Changes
+- `utils.js` — added `getTier(score)` as single source of truth for tier classification (T1=90+, T2=60-89, T3=35-59, T4=1-34, 0=cut)
+- `utils.js` — `dynastyGrade()` updated to use `getTier()`
+- `league.html` — `dynastyGrade()` updated to use `getTier()`; T1 filter and score color updated to use `getTier()`
+- `index.html` — isStar and scoreColor updated to use `getTier()`
+- `profile.html` — t1/t2/t3 filters updated to use `getTier()`
+- All files — version bumped to v1.9.22-beta
+
+### Decisions
+- `getTier()` is the ONLY place tier thresholds are defined — never inline again
+- Lives in utils.js alongside scorePlayer() — tightly coupled, single file
+
+### Why
+- T1 threshold had drifted to 85 in some places vs 90 elsewhere — caused bugs
+- Inline tier conditionals were duplicated across 4 files with no guarantee of consistency
+- Single function eliminates drift permanently
+
+---
+
+## v1.9.21-beta — 2026-04-12 @ ~11:30 PM EST
+
+### Changes
+- `utils.js` — RB Sell Now logic in `getSellNowSignal()` fully rewritten with two locked windows
+
+### Decisions
+- RB Window 1 (approaching cliff): exp 5–7, age 26–29, D1–D2, score > 0 → urgency: score 75+ = MEDIUM, score 60–74 = HIGH, score < 60 = MEDIUM
+- RB Window 2 (on the cliff): exp 8+, age 29+, D1–D2, score > 0 → urgency: score 60+ = HIGH, score < 60 = CRITICAL
+- Score 0 = excluded from Sell Now entirely (cut candidates have no trade value)
+- D3+ and FA (depth 0) = NO SIGNAL — no job security means no trade value
+- Urgency definitions locked: CRITICAL = sell ASAP, HIGH = mid-season trade target, MEDIUM = listen to offers / unload if committing to rebuild
+- Cut is the ONLY place a player is classified as cut — all score > 0 players have value
+- Top 4 teams by dynasty score = contenders, Sell Now suppressed. Bottom 8 = signal activates.
+
+### Why
+- Old RB logic had a single window (exp 5–7) that missed Henry, CMC, Saquon, Kamara, Jones, Conner entirely
+- Urgency was driven by age/exp only — score not factored in, causing false equivalences
+- Two-window framework validated against all 27 RBs with exp 6+ and confirmed correct
+
+---
+
 ## v1.9.20-beta — 2026-04-12 @ ~9:30 PM EST
 
 ### Changes

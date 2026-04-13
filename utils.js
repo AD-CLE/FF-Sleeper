@@ -1,4 +1,4 @@
-// ── FF-Sleeper Shared Utilities ── v1.9.21-beta
+// ── FF-Sleeper Shared Utilities ── v1.9.22-beta
 
 // ── PLAYER LOOKUP ──
 
@@ -209,6 +209,17 @@ function scorePlayer(playerData) {
     return Math.min(99, Math.max(0, score));
 }
 
+
+
+// ── TIER ──
+
+function getTier(score) {
+    if (score >= 90) return 1;
+    if (score >= 60) return 2;
+    if (score >= 35) return 3;
+    if (score > 0)  return 4;
+    return 0;
+}
 
 // ── ALLOCATION ──
 

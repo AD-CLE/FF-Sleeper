@@ -349,7 +349,7 @@
                     <span class="nav-icon">🔍</span> Manager Profiles
                 </a>
             </div>
-            <span class="nav-version">v1.9.20-beta</span>
+            <span class="nav-version">v1.9.22-beta</span>
         </div>
     </nav>
 
@@ -535,7 +535,7 @@
 
             const dynastyScore = scorePlayer(playerObj);
             const hasDynastyScore = ['WR','RB','TE','QB'].includes(position) && dynastyScore > 0;
-            const isStar = dynastyScore >= 90;
+            const isStar = getTier(dynastyScore) === 1;
             const slotIcon = getStatusIcon(status);
             const displayIcon = isStar ? `⭐ ${slotIcon}` : slotIcon;
 
@@ -555,9 +555,10 @@
                 : status === 'Cut' ? '#ef4444'
                 : '#334155';
 
-            const scoreColor = dynastyScore >= 90 ? '#fbbf24'
-                : dynastyScore >= 60 ? '#34d399'
-                : dynastyScore >= 35 ? '#94a3b8'
+            const t = getTier(dynastyScore);
+            const scoreColor = t === 1 ? '#fbbf24'
+                : t === 2 ? '#34d399'
+                : t === 3 ? '#94a3b8'
                 : dynastyScore > 0 ? '#64748b'
                 : '#ef4444';
 

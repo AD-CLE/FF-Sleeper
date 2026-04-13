@@ -126,6 +126,28 @@ FF-Sleeper/
 
 ---
 
+---
+
+## Order of Operations — index.html
+
+The full chain from raw data to rendered UI, in sequence:
+
+1. **players.json** — raw data: Sleeper fields, player facts, 3rd party rankings (POS_RANK, DEFAULT_RANK, DN, FP)
+2. **scorePlayer()** — takes players.json data → outputs score 0-99. Player attribute, same across all leagues.
+3. **getTier()** — takes score → outputs tier 0-4. Player attribute, same across all leagues.
+4. **allocateRoster()** — takes score/tier + league format → outputs Keep/Trade/Cut + slot assignment (Starter/FLEX/Bench). League attribute — same rules for all teams within a league, varies across leagues.
+5. **renderUI()** — orchestrates league cards, draft picks, calls allocateRoster() per league, loops through players calling renderPlayerItem()
+6. **renderPlayerItem()** — applies display flags: ⭐ Star (getTier===1), 💔 IR (roster.reserve), 🚕 Taxi (roster.taxi). Display layer only, no logic impact.
+7. **getSellNowSignal()** — takes score + age + exp + depth + team ranking → outputs Sell Now flag (CRITICAL/HIGH/MEDIUM). Activated only for bottom 8 teams by dynasty score.
+
+### Notes
+- Steps 2-3 are pure player attributes — score and tier never change regardless of league
+- Step 4 is league-scoped — same player can be KEEP in one league, TRADE in another
+- Steps 5-6 are display only — no downstream logic depends on them
+- Step 7 requires team context (roster ranking) to activate — player signal alone is not sufficient
+
+---
+
 ## Dynasty Scoring Engine — scorePlayer()
 Scores each player 0-99 based on POS_RANK × exp/depth modifier. Global 99 cap.
 

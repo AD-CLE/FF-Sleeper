@@ -321,7 +321,7 @@
                     <span>🔍</span> Manager Profiles
                 </a>
             </div>
-            <span class="nav-version">v1.9.20-beta</span>
+            <span class="nav-version">v1.9.22-beta</span>
         </div>
     </nav>
 
@@ -368,10 +368,11 @@
                 if (!p || ['DEF','K','UNK'].includes(p.position)) return;
                 const s = scorePlayer(p);
                 totalScore += s;
-                if (s >= 90) t1++;
-                else if (s >= 60) t2++;
-                else if (s >= 35) t3++;
-                else if (s > 0) t4++;
+                const tier = getTier(s);
+                if (tier === 1) t1++;
+                else if (tier === 2) t2++;
+                else if (tier === 3) t3++;
+                else if (tier === 4) t4++;
             });
             return { totalScore: Math.round(totalScore), t1, t2, t3, t4 };
         }
@@ -461,7 +462,7 @@
                     .map(id => ({ id, data: getPlayerData(id), score: scorePlayer(getPlayerData(id)) }))
                     .filter(p => !['DEF','K','UNK'].includes(p.data.position));
                 const t1Players = allScoredPlayers
-                    .filter(p => p.score >= 90)
+                    .filter(p => getTier(p.score) === 1)
                     .sort((a,b) => b.score - a.score);
 
                 // Run full allocation for this roster (same league slots for all teams)
@@ -551,13 +552,13 @@
                     const isTaxi = roster.taxi?.includes(id);
                     const slotFlag = isIR ? ' 💔' : isTaxi ? ' 🚕' : '';
                     const dynScore = scorePlayer(data);
-                    const isStar = dynScore >= 90;
+                    const isStar = getTier(dynScore) === 1;
                     const alloc = allocation[id];
                     const status = alloc?.finalStatus || '';
                     const slotIcon = getStatusIcon(status);
                     const displayIcon = isStar ? `⭐ ${slotIcon}` : slotIcon;
 
-                    const scoreCol = dynScore >= 90 ? '#fbbf24' : dynScore >= 60 ? '#34d399' : dynScore >= 35 ? '#94a3b8' : '#64748b';
+                    const t = getTier(dynScore); const scoreCol = t === 1 ? '#fbbf24' : t === 2 ? '#34d399' : t === 3 ? '#94a3b8' : t === 4 ? '#64748b' : '#ef4444';
                     const borderCol = dynScore > 0 ? scoreCol : '#334155';
                     const scoreDisplay = dynScore > 0 ? dynScore : (data.defaultRank < 9999 ? 'OVR #' + data.defaultRank : '—');
 

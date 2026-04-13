@@ -98,7 +98,7 @@
                 <a href="league.html" class="nav-link"><span>🏟️</span> League View</a>
                 <a href="profile.html" class="nav-link active"><span>🔍</span> Manager Profiles</a>
             </div>
-            <span class="nav-version">v1.9.20-beta</span>
+            <span class="nav-version">v1.9.22-beta</span>
         </div>
     </nav>
 
@@ -156,9 +156,9 @@
             const skillPlayers = players.filter(p => ['QB','RB','WR','TE'].includes(p.data.position));
 
             const totalScore = skillPlayers.reduce((s,p) => s+p.score, 0);
-            const t1 = skillPlayers.filter(p => p.score >= 90).length;
-            const t2 = skillPlayers.filter(p => p.score >= 60 && p.score < 90).length;
-            const t3 = skillPlayers.filter(p => p.score >= 35 && p.score < 60).length;
+            const t1 = skillPlayers.filter(p => getTier(p.score) === 1).length;
+            const t2 = skillPlayers.filter(p => getTier(p.score) === 2).length;
+            const t3 = skillPlayers.filter(p => getTier(p.score) === 3).length;
             const t4 = skillPlayers.filter(p => p.score > 0 && p.score < 35).length;
 
             // Score by position
