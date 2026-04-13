@@ -11,6 +11,14 @@ No frameworks, no build tools — vanilla everything.
 
 ---
 
+## Session Setup Checklist
+Before starting any session:
+1. ✅ Verify model is **Claude Sonnet** (not Haiku) — check bottom of chat window
+2. ✅ Drag current project files into chat (index.html, league.html, profile.html, utils.js, CLAUDE.md, CHANGELOG.md)
+3. ✅ Confirm version number matches across all files before touching anything
+
+---
+
 ## File Structure
 ```
 FF-Sleeper/
