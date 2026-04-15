@@ -53,7 +53,7 @@
         }
 
         .nav-link {
-            padding: 0.4rem 1rem;
+            padding: 0.5rem 1rem;
             border-radius: 0.375rem;
             font-size: 0.875rem;
             font-weight: 500;
@@ -63,6 +63,7 @@
             display: flex;
             align-items: center;
             gap: 0.4rem;
+            min-height: 44px;
         }
 
         .nav-link:hover {
@@ -306,7 +307,7 @@
         }
 
         .player-item {
-            padding: 0.65rem 0.875rem;
+            padding: 0.75rem 0.875rem;
             margin-bottom: 0.375rem;
             background: rgba(30, 41, 59, 0.6);
             border-left: 3px solid #334155;
@@ -314,21 +315,42 @@
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
+            gap: 0.75rem;
         }
 
         .player-info { flex: 1; }
-        .player-name { color: white; font-weight: 600; font-size: 0.9rem; }
-        .player-meta { color: #475569; font-size: 0.78rem; margin-top: 0.2rem; }
+        .player-name { color: white; font-weight: 600; font-size: 1rem; }
+        .player-meta { color: #475569; font-size: 0.875rem; margin-top: 0.25rem; }
 
-        .player-ranks { text-align: right; flex-shrink: 0; margin-left: 1rem; }
-        .player-ovr { font-weight: 600; font-size: 0.875rem; }
-        .player-pos { color: #475569; font-size: 0.75rem; margin-top: 0.15rem; }
+        .player-ranks { text-align: right; flex-shrink: 0; }
+        .player-ovr { font-weight: 600; font-size: 1rem; }
+        .player-pos { color: #475569; font-size: 0.875rem; margin-top: 0.2rem; }
 
         @media (max-width: 640px) {
-            .main-content { padding: 1.5rem 1rem; }
-            .search-form { flex-direction: column; }
-            .search-button, .year-select { width: 100%; }
+            .nav-inner { padding: 0 1rem; height: 52px; }
+            .nav-brand { font-size: 0.95rem; margin-right: 1rem; }
+            .nav-links { gap: 0; }
+            .nav-link { padding: 0.5rem 0.75rem; font-size: 0.8rem; }
             .nav-version { display: none; }
+            
+            .header-section { padding: 1.5rem 1rem; }
+            .header-content h1 { font-size: 1.35rem; }
+            
+            .main-content { padding: 1.5rem 1rem; }
+            .search-form { flex-direction: column; gap: 0.75rem; }
+            .search-input, .search-button, .year-select { width: 100%; padding: 0.75rem; font-size: 1rem; }
+            
+            .league-card { padding: 1.25rem 1rem; }
+            .league-header { flex-direction: column; gap: 0.75rem; }
+            .league-header > div:first-child { text-align: left; }
+            .league-header > div:last-child { width: 100%; text-align: left; }
+            
+            .player-item { flex-direction: column; gap: 0.5rem; padding: 0.75rem 0.75rem; }
+            .player-ranks { width: 100%; text-align: left; }
+            .player-meta { font-size: 0.8rem; }
+            
+            .draft-picks { display: grid; grid-template-columns: 1fr; gap: 0.5rem; }
+            .draft-pick { padding: 0.6rem; font-size: 0.85rem; }
         }
     </style>
 </head>

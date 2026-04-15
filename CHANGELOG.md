@@ -4,7 +4,38 @@ All versions, decisions, and session notes. Append-only — newest at top.
 
 ---
 
-## v1.9.24-beta — 2026-04-13 @ ~12:30 AM EST
+## v1.9.26-beta — 2026-04-13 @ ~2:00 AM EST
+
+### Changes
+- `index.html` — expanded mobile media query (640px breakpoint) with full responsive layout
+- `index.html` — increased player-name from 0.9rem to 1rem, player-meta/pos from 0.78rem/0.75rem to 0.875rem
+- `index.html` — nav-link min-height set to 44px for WCAG AA tap target compliance
+- `index.html` — player-item now stacks vertically on mobile with improved padding
+- `league.html` — expanded mobile media query with team-card stacking and responsive header
+- `league.html` — nav-link min-height set to 44px for mobile tap targets
+- `league.html` — team-card-header flex-direction column on mobile, adjusted badge/name sizing
+- `league.html` — league-info-scoring responsive layout (stacks under on mobile)
+- `CLAUDE.md` — bumped version v1.9.25-beta → v1.9.26-beta
+
+### Decisions
+- Typography scaled up across both pages for mobile readability (0.8rem minimum)
+- Tap targets standardized to 44px (WCAG AA standard)
+- Player/team cards stack vertically on mobile instead of horizontal flex layout
+- Nav brand and links shrink on mobile but remain accessible
+- All responsive features use 640px breakpoint (consistent with existing media queries)
+
+### Why
+- Mobile users require larger font sizes (0.9rem+ for body text)
+- Horizontal stacking unreadable on phones (<375px width)
+- 44px tap targets prevent accidental clicks on small screens
+- index.html and league.html are primary user-facing pages (profile.html deferred)
+
+### Files
+- `index.html` (275 lines) — CSS + responsive media query
+- `league.html` (295 lines) — CSS + responsive media query
+- `CLAUDE.md` — version bump only
+
+---
 
 ### Changes
 - `utils.js` — full rewrite: engine.js promoted as new utils.js, old utils.js retired

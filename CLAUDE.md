@@ -7,7 +7,7 @@ No frameworks, no build tools — vanilla everything.
 
 **Live URL:** https://ad-cle.github.io/FF-Sleeper/
 **Repo:** https://github.com/ad-cle/FF-Sleeper
-**Current Version: v1.9.20-beta**
+**Current Version: v1.9.26-beta**
 
 ---
 
@@ -339,6 +339,7 @@ Identifies aging vets on rebuilding teams (bottom 8 by dynasty score) with high 
 - Consistency score across leagues on profile page
 - Trade intel (overweight/underweight positions) on profile page
 - Extend Manager Profiles to show all 11 CC managers automatically
+- Mobile friendly interface
 
 ---
 
