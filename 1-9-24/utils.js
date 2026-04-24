@@ -1,4 +1,4 @@
-// ── FF-Sleeper Shared Utilities ── v2.0.0
+// ── FF-Sleeper Shared Utilities ── v1.9.24-beta
 // Scoring engine, allocation, pick logic, sell now signal
 // Used by index.html, league.html, profile.html
 
@@ -55,9 +55,8 @@ async function loadPlayerLookup() {
 function getPlayerData(sleeperId) {
     const s = String(sleeperId);
     if (playerLookupCache[s]) return playerLookupCache[s];
-    // Fixed: posRank must be integers — strings cause NaN in scoring engine
-    if (defenseMap[s]) return { sleeperId, playerName: defenseMap[s], position: 'DEF', age: 'N/A', team: s, depthChartPos: 'DEF', depthChartOrder: 1, yearsExp: 0, posRank: 1, defaultRank: 9999 };
-    return { sleeperId, playerName: `Unknown (${sleeperId})`, position: 'UNK', age: 'N/A', team: 'N/A', depthChartPos: 'N/A', depthChartOrder: 0, yearsExp: 0, posRank: 9999, defaultRank: 9999 };
+    if (defenseMap[s]) return { sleeperId, playerName: defenseMap[s], position: 'DEF', age: 'N/A', team: s, depthChartPos: 'DEF', depthChartOrder: 1, yearsExp: 0, posRank: 'DEF_001', defaultRank: 9999 };
+    return { sleeperId, playerName: `Unknown (${sleeperId})`, position: 'UNK', age: 'N/A', team: 'N/A', depthChartPos: 'N/A', depthChartOrder: 0, yearsExp: 0, posRank: 'UNK_000', defaultRank: 9999 };
 }
 
 
@@ -228,15 +227,15 @@ function getTier(score) {
 function computePositionStarters(league) {
     const rosterSlots = {};
     league.roster_positions?.forEach(pos => { rosterSlots[pos] = (rosterSlots[pos] || 0) + 1; });
-    // SUPER_FLEX is folded into QB count — not returned as its own key to avoid double-counting
     return {
-        'QB':   (rosterSlots['QB'] || 0) + (rosterSlots['SUPER_FLEX'] || 0),
-        'RB':    rosterSlots['RB'] || 0,
-        'WR':    rosterSlots['WR'] || 0,
-        'TE':    rosterSlots['TE'] || 0,
-        'K':     rosterSlots['K'] || 0,
-        'DEF':   rosterSlots['DEF'] || 0,
-        'FLEX':  rosterSlots['FLEX'] || 0,
+        'QB':         (rosterSlots['QB'] || 0) + (rosterSlots['SUPER_FLEX'] || 0),
+        'RB':          rosterSlots['RB'] || 0,
+        'WR':          rosterSlots['WR'] || 0,
+        'TE':          rosterSlots['TE'] || 0,
+        'K':           rosterSlots['K'] || 0,
+        'DEF':         rosterSlots['DEF'] || 0,
+        'FLEX':        rosterSlots['FLEX'] || 0,
+        'SUPER_FLEX':  rosterSlots['SUPER_FLEX'] || 0
     };
 }
 
@@ -346,10 +345,13 @@ function allocateRoster(userRoster, league, tepTier, positionStarters) {
         }
     });
 
-    // Store score + tier on each record — star display is handled by render layer only
+    // Star flag: score >= 90 stacks with starter status
     userRoster.players.forEach(playerId => {
         const record = allocation[playerId];
         const score = scorePlayer(getPlayerData(playerId));
+        if (score >= 90 && record.finalStatus && !record.finalStatus.startsWith('⭐')) {
+            record.finalStatus = '⭐ ' + record.finalStatus;
+        }
         record.score = score;
         record.tier = getTier(score);
     });
@@ -398,10 +400,10 @@ function dynastyGrade(roster, tradedPicks, rosterMap) {
 
 
 // ── STATUS ICON ──
-// Star (⭐) is determined by score >= 90 in the render layer — never stored in finalStatus
 
 function getStatusIcon(status) {
     if (!status) return '';
+    if (status.startsWith('⭐')) return '⭐';
     if (status.includes('Starter') || status.includes('FLEX')) return '🎯';
     if (status === 'Bench') return '🪑';
     if (status === 'Trade') return '🔀';

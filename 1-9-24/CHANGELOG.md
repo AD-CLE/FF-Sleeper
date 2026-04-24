@@ -4,40 +4,6 @@ All versions, decisions, and session notes. Append-only — newest at top.
 
 ---
 
-## v2.0.0 — 2026-04-24 @ ~12:00 PM EST
-
-### Changes
-- `utils.js` — Fixed `getPlayerData()`: DEF fallback posRank `'DEF_001'` → `1` (integer); UNK fallback posRank `'UNK_000'` → `9999` (integer). String posRanks caused NaN in scoring engine.
-- `utils.js` — Removed star prepend from `allocateRoster()`: deleted the block that prepended `'⭐ '` to `finalStatus`. Star display now lives in render layer only.
-- `utils.js` — `computePositionStarters()`: removed `SUPER_FLEX` from return object. SUPER_FLEX slots are already folded into QB count — returning it separately caused double-counting in slot assignment.
-- `utils.js` — `getStatusIcon()`: removed `if (status.startsWith('⭐')) return '⭐'` branch — now unnecessary since finalStatus is always clean.
-- `index.html` — Removed `value="ankurdeora"` from username input. Page now shows empty state on load.
-- `index.html` — Auto-load on `window.load` now only triggers if `?user=` URL param is present.
-- `index.html` — `renderPlayerItem()`: star logic unchanged (correct — isStar check is score-based). Status color/border checks no longer need to handle `⭐` prefix in status string.
-- `league.html` — Removed `value="1313956225737580544"` from league ID input.
-- `league.html` — Removed unconditional `window.addEventListener('load', () => loadLeague())`. Auto-load now only fires if `?id=` URL param is present.
-- `league.html` — `renderRosterDetail()`: star logic unchanged (correct — isStar check is score-based, never read from finalStatus).
-- `profile.html` — Removed `value="ankurdeora"` from username input. Page now shows empty state on load.
-- `profile.html` — Auto-load on `window.load` now only triggers if `?user=` URL param is present.
-- `CLAUDE.md` — Bumped version to v2.0.0. Updated Session Setup Checklist (step 2 changed from "drag" to "upload"). Updated Page 1/2/3 descriptions to reflect no-default behavior. Added star display rule to Allocation Logic section. Updated SUPER_FLEX note in computePositionStarters. Version format note updated.
-
-### Decisions
-- **Star display rule (LOCKED):** ⭐ is determined by `getTier(score) === 1` in the render layer only. `allocateRoster()` stores `record.score` and `record.tier` but never writes `⭐` into `finalStatus`. `getStatusIcon()` reads clean slot strings only.
-- **SUPER_FLEX not returned from computePositionStarters():** SUPER_FLEX count is already added to QB count. Returning it separately caused QB starters to be double-counted in slot assignment.
-- **No default values on any page:** All three pages start with empty state. Pages auto-load only when navigated to via URL params (?user= or ?id=). This makes the app usable by any Sleeper user, not just the developer.
-- **DEF/UNK posRank integers:** Confirmed locked as integers (1 and 9999). String fallbacks were a latent bug from pre-v1.9.16 that survived the utils.js merger.
-- **Version bumped to v2.0.0:** Breaking structural change (default values removed changes app entry behavior). Justifies major version bump.
-
-### Files
-- `utils.js` — posRank fix, star prepend removed, SUPER_FLEX removed from return, getStatusIcon cleaned
-- `index.html` — default username removed, auto-load gated on URL param
-- `league.html` — default league ID removed, auto-load gated on URL param
-- `profile.html` — default username removed, auto-load gated on URL param
-- `CLAUDE.md` — version bump, session checklist update, star rule documented, page descriptions updated
-- `CHANGELOG.md` — this entry
-
----
-
 ## v1.9.26-beta — 2026-04-13 @ ~2:00 AM EST
 
 ### Changes

@@ -7,14 +7,14 @@ No frameworks, no build tools — vanilla everything.
 
 **Live URL:** https://ad-cle.github.io/FF-Sleeper/
 **Repo:** https://github.com/ad-cle/FF-Sleeper
-**Current Version: v2.0.0**
+**Current Version: v1.9.26-beta**
 
 ---
 
 ## Session Setup Checklist
 Before starting any session:
 1. ✅ Verify model is **Claude Sonnet** (not Haiku) — check bottom of chat window
-2. ✅ Upload current project files into chat (index.html, league.html, profile.html, utils.js, CLAUDE.md, CHANGELOG.md)
+2. ✅ Drag current project files into chat (index.html, league.html, profile.html, utils.js, CLAUDE.md, CHANGELOG.md)
 3. ✅ Confirm version number matches across all files before touching anything
 
 ---
@@ -35,9 +35,9 @@ FF-Sleeper/
 
 ## Version Control Rules
 - Bump the version number on EVERY file output, even small fixes
-- Version format: vX.Y.Z — major version for breaking/structural changes, minor for features, patch for fixes
+- Version format: v1.9.x-beta — increment the patch number each output
 - ALL four files (index.html, league.html, profile.html, CLAUDE.md) must always be on the same version number — bump all four in every output even if a file had no changes
-- User decides when to move to next version
+- User decides when to move to next minor version
 - Always present files for download/review BEFORE user pushes to GitHub
 - Never tell the user to push — let them decide
 - User pushes via GitHub Desktop
@@ -85,9 +85,7 @@ FF-Sleeper/
 ## App Pages
 
 ### Page 1 — index.html (My Rosters)
-- Username search → loads all leagues for that user
-- No default username — page shows empty state until user submits a username
-- Accepts ?user= URL param (auto-fills and loads on arrival from profile links)
+- Username search → loads all leagues for that user (defaults to ankurdeora)
 - Per league: scoring type, roster requirements, player allocation, draft picks
 - Player status icons: ⭐ Star | 🎯 Starter/FLEX | 🪑 Bench | 🔀 Trade | 🗑️ Cut | 💔 IR | 🚕 Taxi
 - ⭐ Star = score >= 90 (T1), shown IN ADDITION to slot icon (e.g. ⭐🎯 = Star + Starter)
@@ -98,8 +96,7 @@ FF-Sleeper/
 - "View My Profile →" link on user card → profile.html?user=username
 
 ### Page 2 — league.html (League View)
-- No default league ID — page shows empty state until user pastes a League ID and clicks Load
-- Auto-loads only if ?id= URL param is present (e.g. linked from index.html or profile.html)
+- Defaults to CC league (1313956225737580544), auto-loads on open
 - Each team card: dynasty point total, T1/T2/T3/T4 tier pill counts
 - T1 players shown on each card (all 90+ players, sorted by score desc)
 - Full pick inventory per team
@@ -109,8 +106,7 @@ FF-Sleeper/
 - Grade labels (Contender/Middling/Rebuilding/Oblivious) removed pending score validation
 
 ### Page 3 — profile.html (Manager Profiles)
-- No default username — page shows empty state until user enters a username
-- Accepts ?user= URL param (auto-fills and loads on arrival from other pages)
+- Auto-loads ankurdeora on open, accepts ?user= URL param
 - Step 1: League selector with checkboxes (all checked by default), Toggle All button
 - Step 2: "Analyze Selected Leagues →" runs analysis on checked leagues only
 - ← Back button to return to selector
@@ -289,19 +285,14 @@ Notes:
 
 ## Allocation Logic — Current State
 - allocateRoster() assigns KEEP/Trade/Cut then Starter/FLEX/Bench/Trade/Cut based on roster slots
-- positionStarters is a LOCAL variable inside allocateRoster() — not a global
-- SUPER_FLEX slots are folded into the QB count in computePositionStarters() — not returned as a separate key
-- Star flag (⭐) lives in the RENDER LAYER ONLY — never stored in finalStatus
-  - allocateRoster() stores score + tier on each record but does NOT prepend ⭐ to finalStatus
-  - renderPlayerItem() (index.html) and renderRosterDetail() (league.html) check getTier(score) === 1 to show ⭐
-  - getStatusIcon() reads clean finalStatus (Starter/FLEX/Bench/Trade/Cut) with no ⭐ prefix
+- positionStarters is a LOCAL variable inside allocateRoster() — fixed, no longer a global
+- Star flag driven by score >= 90 (T1), stacks with slot icon: ⭐🎯 = Star + Starter
 - Status icons: ⭐ Star (score>=90) stacks with 🎯 Starter | 🪑 Bench | 🔀 Trade | 🗑️ Cut
 - league.html: tepTier and positionStarters computed ONCE per league (all 12 teams share same slots), passed into allocateRoster() per roster
 
 ## Allocation Logic Rules — ALWAYS follow
 - ALWAYS use the full allocateRoster() slot-counting logic for status icons — never use score-only icon mapping as a shortcut
 - Score-only mapping (90+=⭐, 60-89=🎯 etc.) is explicitly rejected — it ignores actual roster construction
-- Star display is score-based in render layer only — never write ⭐ into finalStatus
 - league.html computes league slot counts once, runs allocateRoster() once per team
 
 ---

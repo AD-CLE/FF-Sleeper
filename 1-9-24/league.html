@@ -347,7 +347,7 @@
                     <span>🔍</span> Manager Profiles
                 </a>
             </div>
-            <span class="nav-version">v2.0.0</span>
+            <span class="nav-version">v1.9.22-beta</span>
         </div>
     </nav>
 
@@ -360,7 +360,7 @@
 
     <div class="main-content">
         <div class="league-picker">
-            <input type="text" id="leagueIdInput" class="league-input" placeholder="Paste a League ID..." />
+            <input type="text" id="leagueIdInput" class="league-input" placeholder="Paste a League ID..." value="1313956225737580544" />
             <button class="load-btn" id="loadBtn" onclick="loadLeague()">Load League</button>
         </div>
 
@@ -378,13 +378,11 @@
         const leagueIdInput = document.getElementById('leagueIdInput');
         const loadBtn = document.getElementById('loadBtn');
 
-        // Auto-fill from URL param only — no default league ID
+        // Auto-fill from URL param or default to CC
         const urlParams = new URLSearchParams(window.location.search);
         const urlLeagueId = urlParams.get('id');
-        if (urlLeagueId) {
-            leagueIdInput.value = urlLeagueId;
-            window.addEventListener('load', () => loadLeague());
-        }
+        if (urlLeagueId) leagueIdInput.value = urlLeagueId;
+        window.addEventListener('load', () => loadLeague());
 
         function dynastyGrade(roster) {
             if (!roster.players || roster.players.length === 0) {
@@ -580,16 +578,13 @@
                     const isTaxi = roster.taxi?.includes(id);
                     const slotFlag = isIR ? ' 💔' : isTaxi ? ' 🚕' : '';
                     const dynScore = scorePlayer(data);
-
-                    // Star is score-based only — never read from finalStatus
                     const isStar = getTier(dynScore) === 1;
                     const alloc = allocation[id];
                     const status = alloc?.finalStatus || '';
                     const slotIcon = getStatusIcon(status);
                     const displayIcon = isStar ? `⭐ ${slotIcon}` : slotIcon;
 
-                    const t = getTier(dynScore);
-                    const scoreCol = t === 1 ? '#fbbf24' : t === 2 ? '#34d399' : t === 3 ? '#94a3b8' : t === 4 ? '#64748b' : '#ef4444';
+                    const t = getTier(dynScore); const scoreCol = t === 1 ? '#fbbf24' : t === 2 ? '#34d399' : t === 3 ? '#94a3b8' : t === 4 ? '#64748b' : '#ef4444';
                     const borderCol = dynScore > 0 ? scoreCol : '#334155';
                     const scoreDisplay = dynScore > 0 ? dynScore : (data.defaultRank < 9999 ? 'OVR #' + data.defaultRank : '—');
 
